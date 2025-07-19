@@ -49,6 +49,10 @@
           ]
         }
       ]
+    },
+    {
+      "name": "webrtc_cj",
+      "srcPath": "./webrtc_cj"
     }
   ]
 }
