@@ -1,0 +1,5 @@
+{
+  "libwebrtc_cpp.so": {
+    "source": "src/mock/Libwebrtc_cpp.mock.ets"
+  }
+}

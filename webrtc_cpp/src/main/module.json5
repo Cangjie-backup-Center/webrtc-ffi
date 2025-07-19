@@ -1,0 +1,28 @@
+{
+  "module": {
+    "name": "webrtc_cpp",
+    "type": "feature",
+    "description": "$string:module_desc",
+    "mainElement": "Webrtc_cppAbility",
+    "deviceTypes": [
+      "phone",
+      "tablet",
+      "2in1"
+    ],
+    "deliveryWithInstall": true,
+    "installationFree": false,
+    "pages": "$profile:main_pages",
+    "abilities": [
+      {
+        "name": "Webrtc_cppAbility",
+        "srcEntry": "./ets/webrtc_cppability/Webrtc_cppAbility.ets",
+        "description": "$string:Webrtc_cppAbility_desc",
+        "icon": "$media:layered_image",
+        "label": "$string:Webrtc_cppAbility_label",
+        "startWindowIcon": "$media:startIcon",
+        "startWindowBackground": "$color:start_window_background",
+        "exported": true
+      }
+    ]
+  }
+}
