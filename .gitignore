@@ -19,3 +19,7 @@
 /webrtc_cpp/src/main/cpp/libohos_webrtc.so
 /webrtc_cpp/src/main/cpp/libwebrtc.a
 /webrtc_cpp/.vscode/
+/webrtc_cpp/src/main/cpp/include/**/*.cc
+/webrtc_cpp/src/main/cpp/include/**/*.cpp
+/webrtc_cpp/src/main/cpp/include/**/*.c
+/webrtc_cpp/src/main/cpp/back/
