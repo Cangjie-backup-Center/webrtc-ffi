@@ -17,3 +17,5 @@
 **/IDL_Dependencies_List~
 **/build-script-cache
 /webrtc_cpp/src/main/cpp/libohos_webrtc.so
+/webrtc_cpp/src/main/cpp/libwebrtc.a
+/webrtc_cpp/.vscode/
