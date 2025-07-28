@@ -7,9 +7,9 @@ import std.convert.*
 let XComponentController1_TAG: String = "[XComponentController1]"
 
 public struct ScalingMode {
-    let fill: Int32 = 0
-    let aspectFill: Int32 = 1
-    let aspectFit: Int32 = 2
+    public let fill: Int32 = 0
+    public let aspectFill: Int32 = 1
+    public let aspectFit: Int32 = 2
 }
 
 public class VideoRenderController <: XComponentController {
@@ -31,16 +31,16 @@ public class VideoRenderController <: XComponentController {
         return renderer
     }
 
-    public func setVideoTrack(ffiNVR : Int64) {
-        cj_setVideoTrack(ffiNVR, Int64.parse(mySurfaceId))
+    public func setVideoTrack(ffiMST : Int64) {
+        cj_setVideoTrack(renderer, ffiMST)
     }
 
-    public func setMirror(ffiNVR : Int64, mirrorVerticallyBool: Bool) {
-        cj_setMirror(ffiNVR, mirrorVerticallyBool)
+    public func setMirror(mirrorVerticallyBool: Bool) {
+        cj_setMirror(renderer, mirrorVerticallyBool)
     }
 
-    public func setScalingMode(ffiNVR : Int64, scalingMode : Int64) {
-        cj_setScalingMode(ffiNVR, scalingMode)
+    public func setScalingMode(scalingMode : Int32) {
+        cj_setScalingMode(renderer, scalingMode)
     }
 
    protected override func onSurfaceDestroyed(surfaceId: String) {

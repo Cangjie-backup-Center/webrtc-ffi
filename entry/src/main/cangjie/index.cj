@@ -23,8 +23,7 @@ let SIGNAL_SERVER = "wss://youzhi.life:8443"
 // 用于测试的STUN服务器地址
 let STUN_SERVER = "stun:stun.l.google.com:19302"
 
-func getContext():
-AbilityContext {
+func getContext():AbilityContext {
     match (globalAbilityContext) {
         case Some(context) => context
         case _ => throw
@@ -37,8 +36,8 @@ AbilityContext {
 class Index_WebRTC {
     @State var buttonTitle: String = "Connect"
     @State var statusText: String = ""
-    @State private var myId: String = ""
-    @State private var peerId: String = ""
+    @State var myId: String = ""
+    @State var peerId: String = ""
     @State var muteBtnTitle: String = "Mute"
     private var muted: Bool = false
     private var mXComponentController1: VideoRenderController = VideoRenderController()
@@ -80,7 +79,7 @@ class Index_WebRTC {
     }
 
     protected override func aboutToAppear() {
-        let stageContext = getStageContext(getStageContext())
+        let stageContext = getStageContext(getContext())
         let atManager = AbilityAccessCtrl.createAtManager()
         let permissionList = ["ohos.permission.MICROPHONE", "ohos.permission.CAMERA"]
         var resultCallback = {
@@ -93,7 +92,7 @@ class Index_WebRTC {
                         for (index in 0..value.permissions.size) {
                             AppLog.info("${Index_WebRTC_TAG} request permission [" + value.permissions[index] + "] with result: " +
                             "${value.authResults[index]}")
-                            if (value.authResults[index] != AbilityAccessCtrl.GrantStatus.PERMISSION_GRANTED) {
+                            if (value.authResults[index] != 0) {
                                 granted = false
                             }
                         }
@@ -183,13 +182,13 @@ class Index_WebRTC {
     func sendMessage(message:String):Future<Unit> {
         spawn {
             this.ws.send(MessageData.STRING_DATA(message),{
-                errorcode:Option<AsyncError>,data:Option<Bool>=> if (let Some(e) <- errorCode) {
+                errorCode:Option<AsyncError>,data:Option<Bool>=> if (let Some(e) <- errorCode) {
                     AppLog.error("${Index_WebRTC_TAG} websocket send errorCode: ${e.code}")
                 } else {
                     if (let Some(value) <- data) {
-                        Applog.info("${Index_WebRTC_TAG} websocket send:${message}")
+                        AppLog.info("${Index_WebRTC_TAG} websocket send:${message}")
                         if (value) {
-                            AppLog.info("${Index_WebRTC_TAG} websocket send success:${messsge}")
+                            AppLog.info("${Index_WebRTC_TAG} websocket send success:${message}")
                         } else {
                             AppLog.error("${Index_WebRTC_TAG} websocket send error:${errorCode.isNone()}")
                         }
@@ -222,7 +221,7 @@ class Index_WebRTC {
 
     func createPeerConnectionFactory(): Future<Unit> {
         spawn {
-            this.pcf = cj_newPeerConnectionFactory(cjADM_int64 , cj_newHardwareVideoEncoderFactory() , cj_newHardwareVideoDecoderFactory())
+            this.pcf = cj_newPeerConnectionFactory(this.adm , cj_newHardwareVideoEncoderFactory() , cj_newHardwareVideoDecoderFactory())
         }
     }
 
