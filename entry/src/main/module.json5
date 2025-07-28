@@ -1,0 +1,66 @@
+{
+  "module": {
+    "name": "entry",
+    "type": "entry",
+    "description": "$string:module_desc",
+    "mainElement": "EntryAbility",
+    "deviceTypes": [
+      "phone"
+    ],
+    "deliveryWithInstall": true,
+    "installationFree": false,
+    "srcEntry": "ohos_app_cangjie_entry.MyAbilityStage",
+    "abilities": [
+      {
+        "name": "EntryAbility",
+        "srcEntry": "ohos_app_cangjie_entry.MainAbility",
+        "description": "$string:EntryAbility_desc",
+        "icon": "$media:layered_image",
+        "label": "$string:EntryAbility_label",
+        "startWindowIcon": "$media:startIcon",
+        "startWindowBackground": "$color:start_window_background",
+        "exported": true,
+        "skills": [
+          {
+            "entities": [
+              "entity.system.home"
+            ],
+            "actions": [
+              "action.system.home"
+            ]
+          }
+        ]
+      }
+    ],
+    "requestPermissions": [
+      {
+        "name" : "ohos.permission.INTERNET",
+        "reason": "$string:internet_permission_reason"
+      },
+      {
+        "name" : "ohos.permission.CAMERA",
+        "reason": "$string:camera_permission_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.MICROPHONE",
+        "reason": "$string:microphone_permission_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.KEEP_BACKGROUND_RUNNING",
+        "reason": "$string:background_running_permission_reason"
+      }
+    ]
+  }
+}
