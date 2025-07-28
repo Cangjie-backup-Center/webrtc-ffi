@@ -91,7 +91,8 @@ class Index_WebRTC {
                     case Some(value) =>
                         var granted = true
                         for (index in 0..value.permissions.size) {
-                            AppLog.info("${Index_WebRTC_TAG} request permission [" + value.permissions[index] + "] with result: " + value.authResults[index])
+                            AppLog.info("${Index_WebRTC_TAG} request permission [" + value.permissions[index] + "] with result: " +
+                            "${value.authResults[index]}")
                             if (value.authResults[index] != AbilityAccessCtrl.GrantStatus.PERMISSION_GRANTED) {
                                 granted = false
                             }
@@ -132,20 +133,32 @@ class Index_WebRTC {
             }
         )
 
-    let messageCallBack = WebSocketAsyncCallback<MessageData>(
-        {
-            errorCode: Option<AsyncError>, data: Option<MessageData> => match (errorCode) {
-                case Some(e) => 0 // error
-                case _ => match (data) {
-                    case Some(value) => this.createPeerConnection()
-                    case _ => 0 // error
+        let messageCallBack = WebSocketAsyncCallback<MessageData>(
+            {
+                errorCode: Option<AsyncError>, data: Option<MessageData> => match (errorCode) {
+                    case Some(e) => 0 // error
+                    case _ => match (data) {
+                        case Some(value) => this.createPeerConnection()
+                        case _ => 0 // error
+                    }
                 }
-            }
-        })
-    this.ws.on(OnOffType.OPEN, openCallBack)
-    this.ws.on(OnOffType.MESSAGE, messageCallBack)
-    this.createAudioDeviceModule()
-    this.createPeerConnectionFactory()
+            })
+        this.ws.on(OnOffType.OPEN, openCallBack)
+        this.ws.on(OnOffType.MESSAGE, messageCallBack)
+        spawn {
+            let syncCounter: SyncCounter = SyncCounter(1)
+                this.createAudioDeviceModule({
+                    value => lauch {
+                        this.adm = value
+                        syncCounter.dec()
+                    }
+                })
+            syncCounter.waitUnitlZero()
+            this.createPeerConnectionFactory({
+                value => launch
+                this.pcf = value
+            })
+        }
     }
 
     protected override func aboutToDisappear() {
@@ -170,19 +183,18 @@ class Index_WebRTC {
     func sendMessage(message:String):Future<Unit> {
         spawn {
             this.ws.send(MessageData.STRING_DATA(message),{
-                    errorcode:Option<AsyncError>,data:
-                    Option<Bool>=> if (let Some(e) <- errorCode) {
-                        AppLog.error("${Index_WebRTC_TAG} websocket send errorCode: ${e.code}")
-                    } else {
-                        if (let Some(value) <- data) {
-                            Applog.info("${Index_WebRTC_TAG} websocket send:${message}")
-                            if (value) {
-                                AppLog.info("${Index_WebRTC_TAG} websocket send success:${messsge}")
-                            } else {
-                                AppLog.error("${Index_WebRTC_TAG} websocket send error:${errorCode.isNone()}")
-                            }
+                errorcode:Option<AsyncError>,data:Option<Bool>=> if (let Some(e) <- errorCode) {
+                    AppLog.error("${Index_WebRTC_TAG} websocket send errorCode: ${e.code}")
+                } else {
+                    if (let Some(value) <- data) {
+                        Applog.info("${Index_WebRTC_TAG} websocket send:${message}")
+                        if (value) {
+                            AppLog.info("${Index_WebRTC_TAG} websocket send success:${messsge}")
+                        } else {
+                            AppLog.error("${Index_WebRTC_TAG} websocket send error:${errorCode.isNone()}")
                         }
                     }
+                }
             })
         }
     }
