@@ -18,6 +18,7 @@ endif()
 include_directories(
                     ${NATIVERENDER_ROOT_PATH}/include
                     ${NATIVERENDER_ROOT_PATH}/include/api
+                    ${NATIVERENDER_ROOT_PATH}/include/rtc_base
                     ${NATIVERENDER_ROOT_PATH}/include/api/video_codecs
                     ${NATIVERENDER_ROOT_PATH}/include/api/video
                     ${NATIVERENDER_ROOT_PATH}/include/third_party/abseil-cpp
@@ -41,6 +42,7 @@ add_library(webrtc_cpp SHARED
 
 target_compile_definitions(webrtc_cpp
     PUBLIC  NODE_ADDON_API_DISABLE_DEPRECATED             # 对当前目标及依赖目标可见
+    PUBLIC  DCHECK_ALWAYS_ON             # 对当前目标及依赖目标可见
     PUBLIC  NAPI_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
     PUBLIC  NDK_HELPER_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
     PUBLIC  NODE_ADDON_API_ENABLE_TYPE_CHECK_ON_AS             # 对当前目标及依赖目标可见
