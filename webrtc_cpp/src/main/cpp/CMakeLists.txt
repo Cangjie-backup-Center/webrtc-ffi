@@ -40,17 +40,30 @@ add_library(webrtc_cpp SHARED
                         ${CPP_FILES}
                         )
 
-target_compile_definitions(webrtc_cpp
-    PUBLIC  NODE_ADDON_API_DISABLE_DEPRECATED             # 对当前目标及依赖目标可见
-    PUBLIC  DCHECK_ALWAYS_ON             # 对当前目标及依赖目标可见
-    PUBLIC  NAPI_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
-    PUBLIC  NDK_HELPER_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
-    PUBLIC  NODE_ADDON_API_ENABLE_TYPE_CHECK_ON_AS             # 对当前目标及依赖目标可见
-    PUBLIC  WEBRTC_POSIX             # 对当前目标及依赖目标可见
-    PUBLIC  WEBRTC_OHOS             # 对当前目标及依赖目标可见
-    PUBLIC  WEBRTC_LINUX             # 对当前目标及依赖目标可见
-    PUBLIC  OHOS             # 对当前目标及依赖目标可见
-)
+if(CMAKE_BUILD_TYPE EQUAL "Debug")
+    target_compile_definitions(webrtc_cpp
+        PUBLIC  NODE_ADDON_API_DISABLE_DEPRECATED             # 对当前目标及依赖目标可见
+        PUBLIC  NAPI_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
+        PUBLIC  NDK_HELPER_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
+        PUBLIC  NODE_ADDON_API_ENABLE_TYPE_CHECK_ON_AS             # 对当前目标及依赖目标可见
+        PUBLIC  WEBRTC_POSIX             # 对当前目标及依赖目标可见
+        PUBLIC  WEBRTC_OHOS             # 对当前目标及依赖目标可见
+        PUBLIC  WEBRTC_LINUX             # 对当前目标及依赖目标可见
+        PUBLIC  OHOS             # 对当前目标及依赖目标可见
+    )
+else()
+    target_compile_definitions(webrtc_cpp
+        PUBLIC  NODE_ADDON_API_DISABLE_DEPRECATED             # 对当前目标及依赖目标可见
+        PUBLIC  DCHECK_ALWAYS_ON             # 对当前目标及依赖目标可见
+        PUBLIC  NAPI_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
+        PUBLIC  NDK_HELPER_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
+        PUBLIC  NODE_ADDON_API_ENABLE_TYPE_CHECK_ON_AS             # 对当前目标及依赖目标可见
+        PUBLIC  WEBRTC_POSIX             # 对当前目标及依赖目标可见
+        PUBLIC  WEBRTC_OHOS             # 对当前目标及依赖目标可见
+        PUBLIC  WEBRTC_LINUX             # 对当前目标及依赖目标可见
+        PUBLIC  OHOS             # 对当前目标及依赖目标可见
+    )
+endif()
 
 # so 文件 链接的so
 target_compile_options(webrtc_cpp PRIVATE -fno-rtti) # 若 WebRTC 禁用 RTTI，则项目中需同步禁用

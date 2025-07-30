@@ -27,7 +27,7 @@
 #include "api/audio_options.h"
 
 namespace webrtc {
-
+bool ValidateString(const std::string& str, std::string& errorMessage);
 class NapiMediaConstraints {
 public:
     NAPI_ATTRIBUTE_NAME_DECLARE(Width, width);

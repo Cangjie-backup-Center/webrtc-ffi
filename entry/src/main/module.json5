@@ -33,6 +33,37 @@
           }
         ]
       }
+    ],
+    "requestPermissions": [
+      {
+        "name" : "ohos.permission.INTERNET",
+        "reason": "$string:internet_permission_reason"
+      },
+      {
+        "name" : "ohos.permission.CAMERA",
+        "reason": "$string:camera_permission_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.MICROPHONE",
+        "reason": "$string:microphone_permission_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.KEEP_BACKGROUND_RUNNING",
+        "reason": "$string:background_running_permission_reason"
+      }
     ]
+
   }
 }

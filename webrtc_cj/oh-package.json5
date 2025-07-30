@@ -7,6 +7,6 @@
   "types": "./Index.d.ets",
   "license": "Apache-2.0",
   "dependencies": {
-    'webrtc_cpp': "file:../webrtc_cpp"
+    "webrtc_cpp": "file:../webrtc_cpp"
   }
 }

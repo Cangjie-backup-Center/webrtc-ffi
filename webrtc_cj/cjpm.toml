@@ -15,10 +15,10 @@
 
 [package]
   cjc-version = "0.48.2"
-  compile-option = "--dy-std --cfg=\"${COMPILE_CONDITION}\""
+  compile-option = "--dy-std"
   description = "CangjieUI Application"
   link-option = ""
-  name = "ohos_app_cangjie_webrtc_cj"
+  name = "webrtc_cj"
   output-type = "dynamic"
   src-dir = "./src/main/cangjie"
   target-dir = ""
@@ -34,3 +34,8 @@
     debug = "-g -Woff all -Won apilevel-check"
     release = "--fast-math -O2 -s -Woff all -Won apilevel-check"
   [profile.test]
+
+[ffi]
+  [ffi.c]
+    [ffi.c.webrtc_cpp]
+      path = "./libs/${ABI}"

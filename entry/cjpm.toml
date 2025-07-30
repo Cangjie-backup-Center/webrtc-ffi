@@ -34,3 +34,7 @@
     debug = "-g -Woff all -Won apilevel-check"
     release = "--fast-math -O2 -s -Woff all -Won apilevel-check"
   [profile.test]
+
+[dependencies]
+  [dependencies.webrtc_cj]
+    path = "${webrtc_cj}"

@@ -1,4 +1,4 @@
-package ohos_app_cangjie_webrtc_cj
+package webrtc_cj
 
 internal import ohos.base.nativeLog
 
