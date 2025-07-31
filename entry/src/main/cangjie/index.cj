@@ -47,13 +47,12 @@ class EntryView {
     private var mXComponentController1: VideoRenderController = VideoRenderController()
     private var mXComponentController2: VideoRenderController = VideoRenderController()
     private var ws: WebSocket = createWebSocket()
-    private var localAudioSource: Int64 = 0
-    private var localVideoSource: Int64 = 0
-    private var localAudioTrack: Int64 = 0
-    private var localVideoTrack: Int64 = 0
-    @State var adm: Int64 = 0
-    @State var pcf: Int64 = 0
-    private var surfaceId: String = ""
+    private var localAudioSource: AudioSource = AudioSource()
+    private var localVideoSource: VideoSource = VideoSource()
+    private var localAudioTrack: AudioTrack = AudioTrack()
+    private var localVideoTrack: VideoTrack = VideoTrack()
+    @State var adm: AudioDeviceModule = AudioDeviceModule()
+    @State var pcf: PeerConnectionFactory = PeerConnectionFactory()
 
     func build() {
         Column() {
@@ -152,21 +151,21 @@ class EntryView {
             let syncCounter: SyncCounter = SyncCounter(1)
                 this.createAudioDeviceModule({
                     value => launch {
-                        this.adm = value
+                        this.adm.createID(value)
                         syncCounter.dec()
                     }
                 })
             syncCounter.waitUntilZero()
             this.createPeerConnectionFactory({
                 value => launch {
-                    this.pcf = value
+                    this.pcf.createID(value)
                 }
             })
         }
     }
 
     protected override func aboutToDisappear() {
-        cj_StopAecDump(this.pcf)
+        cj_StopAecDump(this.pcf.getID())
         this.ws.close(
             {
                 errorCode: Option<AsyncError>, data: Option<Bool> => match (errorCode) {
@@ -217,43 +216,43 @@ class EntryView {
         this.statusText = error
     }
 
-    func createAudioDeviceModule(callback: (adm:Int64) -> Unit): Future<Unit> {
+    func createAudioDeviceModule(callback: (admID:Int64) -> Unit): Future<Unit> {
         spawn {
             callback(cj_newAudioDeviceModule(true , true))
         }
     }
 
-    func createPeerConnectionFactory(callback: (pcf:Int64) -> Unit): Future<Unit> {
+    func createPeerConnectionFactory(callback: (pcfID:Int64) -> Unit): Future<Unit> {
         spawn {
-            callback(cj_newPeerConnectionFactory(this.adm , cj_newHardwareVideoEncoderFactory() , cj_newHardwareVideoDecoderFactory()))
+            callback(cj_newPeerConnectionFactory(this.adm.getID() , cj_newHardwareVideoEncoderFactory() , cj_newHardwareVideoDecoderFactory()))
         }
     }
 
     func prepareLocalMedia(): Future<Unit> {
         spawn {
-            if (this.localAudioTrack == 0) {
-                var ffiao: ffiAudioOptions = ffiAudioOptions()
+            if (this.localAudioTrack.getID() == 0) {
+                var ffiao: FFIAudioOptions = FFIAudioOptions()
                 ffiao.noise_suppression = true
                 ffiao.echo_cancellation = true
-                this.localAudioSource = cj_createAudioSource(this.pcf, ffiao)
+                this.localAudioSource.createAudioSourceID(this.pcf, ffiao)
 
                 let audioChar: CString = unsafe{LibC.mallocCString("audio")}
-                this.localAudioTrack = cj_createAudioTrack(this.pcf, audioChar)
+                this.localAudioTrack.createAudioTrackID(this.pcf, audioChar)
             }
 
-            if (this.localVideoTrack == 0) {
-                var ffiCVSP:ffiCreateVideoSourceParameters = ffiCreateVideoSourceParameters()
+            if (this.localVideoTrack.getID() == 0) {
+                var ffiCVSP:FFICreateVideoSourceParameters = FFICreateVideoSourceParameters()
                 ffiCVSP.width = 1280.0
                 ffiCVSP.height = 720.0
                 ffiCVSP.facingMode = unsafe {LibC.mallocCString("user")}
                 ffiCVSP.isScreencast = false
-                this.localVideoSource = cj_createVideoSource(this.pcf, ffiCVSP)
+                this.localVideoSource.createVideoSourceID(this.pcf, ffiCVSP)
 
                 let videoChar: CString = unsafe {LibC.mallocCString("video")}
-                this.localVideoTrack = cj_createVideoTrack(this.pcf, videoChar)
+                this.localVideoTrack.createVideoTrackID(this.pcf, videoChar)
 
                 this.mXComponentController1.newNativeVideoRenderer()
-                this.mXComponentController1.setVideoTrack(this.localVideoTrack)
+                this.mXComponentController1.setVideoTrack(this.localVideoTrack.getID())
                 this.mXComponentController1.setMirror(true)
                 this.mXComponentController1.setScalingMode(ScalingMode().aspectFit)
             }
