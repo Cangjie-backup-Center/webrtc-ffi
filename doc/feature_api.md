@@ -80,7 +80,7 @@ public class VideoRenderController <: XComponentController {
 struct ffiCreateVideoSourceParameters{
     var width : Float64 = 0.00   // 宽度
     var height : Float64 = 0.00  // 高度
-    var facingMode : CString = unsafe{LibC.mallocCString("")}  // 表示媒体轨道是否支持摄像头朝向模式约束条件
+    var facingMode : CString = unsafe{LibC.mallocCString("")}  // 表示媒体轨道是否支持摄像头朝向模式约束条件，user为前置摄像头，非user为后置摄像头
     var isScreencast : Bool = false;   // 是否是屏幕录像，true：使用屏幕录像作为视频源（当前仅支持 width、height约束条件，且不支持 advanced 属性）；false：使用相机作为视频源（当前支持 width、height、aspectRatio、framRate、facingMode、deviceId约束条件）。
 }
 ```
@@ -97,43 +97,74 @@ struct ffiAudioOptions{
 ### 1.4 webrtc 提供 全局函数
 
 ```cangjie
+	/*
+     * 创建新音频设备模块
+     *
+     * 参数 Bool - 是否使用立体声输入
+     * 参数 Bool - 是否使用立体声输出
+     * 返回值 Int64 - 新硬件视频编码器id
+     */
+    public func cj_newAudioDeviceModule(useStereoInput : Bool, useStereoOutput : Bool) : Unit
+
 
     /*
-     * 创建音频源
-     * 
-     * 参数 Int64 - 传入cj_newPeerConnectionFactory的返回值对等连接工厂id
-     * 参数 ffiAudioOptions - 音频配置选项
-     * 返回值 Int64 - 音频源id
+     * 创建新对等连接工厂
+     *
+     * 参数 Int64 - 音频设备模块id
+     * 参数 Int64 - 传入cj_newAudioDeviceModule的返回值(硬件视频编码器工厂id)
+     * 参数 Int64 - 传入cj_newHardwareVideoDecoderFactory的返回值(硬件视频解码器工厂id)
+     * 返回值 Int64 - 对等连接工厂id
      */
-    public func cj_createAudioSource(cjPCF_int64 : Int64, cjao : ffiAudioOptions) : Int64
- 
+    public func cj_newPeerConnectionFactory(cjADM_int64 : Int64, cjHVEF_int64 : Int64 , cjHVDF_int64 : Int64) : Int64 
+     
+     /*
+     * 创建音频源
+	 *
+     * 参数 pcf:PeerConnectionFactory - 传入连接工厂
+     * 参数 options:ffiAudioOptions - 音频配置选项
+     */
+     public class AudioSource <: webrtcClass {
+    	public func createAudioSourceID(pcf: PeerConnectionFactory, options: ffiAudioOptions) {
+        this.ID = cj_createAudioSource(pcf.ID, options)
+        }
+     }
+     
     /*
      * 创建音轨
      *
-     * 参数 Int64 - 传入cj_newPeerConnectionFactory的返回值对等连接工厂id
-     * 参数 Int64 - 音频源id
-     * 返回值 Int64 - 音轨id
+     * 参数 pcf:PeerConnectionFactory - 传入连接工厂
+	 * 参数 tag:CString - 音轨标签(自定)
      */
-    public func cj_createAudioTrack(cjPCF_int64 : Int64, cj_audioId : CString) : Int64
+     public class VideoTrack <: webrtcClass {
+        public func createVideoTrackID(pcf: PeerConnectionFactory, tag: CString) {
+            this.ID = cj_createVideoTrack(pcf.ID, videoChar)
+        }
+     }
             
     /*
      * 创建视频源
      *
-     * 参数 Int64 - 传入cj_newPeerConnectionFactory的返回值对等连接工厂id
-     * 参数 ffiCreateVideoSourceParameters - 视频配置选项
-     * 返回值 Int64 - 视频源id
+     * 参数 pcf: PeerConnectionFactory - 传入连接工厂
+     * 参数 ffiCVSP: ffiCreateVideoSourceParameters - 视频配置
      */
-    public func cj_createVideoSource(cjPCF_int64 : Int64, cjCVSP : ffiCreateVideoSourceParameters) : Int64
+    public class VideoSource <: webrtcClass {
+    	public func createVideoSourceID(pcf: PeerConnectionFactory, ffiCVSP: ffiCreateVideoSourceParameters) {
+            this.ID = cj_createVideoSource(pcf.ID, ffiCVSP)
+        }
+    }
  
     /*
      * 创建视频轨道
      *
-     * 参数 Int64 - 传入cj_newPeerConnectionFactory的返回值对等连接工厂id
-     * 参数 CString - 视频源id
-     * 返回值 Int64 - 视频轨道id
+     * 参数 pcf: PeerConnectionFactory - 传入连接工厂
+     * 参数 tag: CString - 视频源标签
      */
-    public func cj_createVideoTrack(cjPCF_int64 : Int64, cj_videoId : CString) : Int64
-            
+    public class VideoTrack <: webrtcClass {
+    public func createVideoTrackID(pcf: PeerConnectionFactory, tag: CString) {
+        this.ID = cj_createVideoTrack(pcf.ID, tag)
+        }
+    }
+    
     /*
      * 创建新硬件视频编码器厂
      * 
@@ -148,21 +179,6 @@ struct ffiAudioOptions{
      */
     public func cj_newHardwareVideoDecoderFactory() : Int64
 
-    /*
-     * 创建新音频设备模块
-     * 参数 Bool - 是否使用立体声输入
-     * 参数 Bool - 是否使用立体声输出
-     * 返回值 Int64 - 新硬件视频编码器id
-     */
-    public func cj_newAudioDeviceModule(useStereoInput : Bool, useStereoOutput : Bool) : Unit
-
-
-    /*
-     * 创建新对等连接工厂
-     * 参数 Int64 - 音频设备模块id
-     * 参数 Int64 - 传入cj_newAudioDeviceModule的返回值(硬件视频编码器工厂id)
-     * 参数 Int64 - 传入cj_newHardwareVideoDecoderFactory的返回值(硬件视频解码器工厂id)
-     * 返回值 Int64 - 对等连接工厂id
-     */
-    public func cj_newPeerConnectionFactory(cjADM_int64 : Int64, cjHVEF_int64 : Int64 , cjHVDF_int64 : Int64) : Int64 
+    
+            
 ```
