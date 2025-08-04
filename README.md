@@ -17,11 +17,7 @@ webrtc4cj 是一个基于仓颉版终端提供WebRTC的接口封装，并在C++�
 
 ### 特性
 
-- 相机相关模块
-- 视频编解码相关模块
-- 日志接口适配
-- 视频相关模块
-- 音频模块
+实时音频、视频的采集与显示功能
 
 
 ## 软件架构
@@ -46,12 +42,61 @@ webrtc4cj 是一个基于仓颉版终端提供WebRTC的接口封装，并在C++�
 
 ### 编译运行
 
-    使用DevEco Studio搭配com.huawei.cangjie-support-plugin插件用于
-    构建工程项目, 生成 hap 包.
+1. 通过 module 引入
+
+   1. 克隆下载项目
+
+   2. 将 webrtc 模块拷贝到应用项目下
+
+   3. 修改自身应用 entry 下的 oh-package.json5 文件，在 dependencies 字段添加 "webrtc": "file:../webrtc"
+
+   ```shell
+   {
+     "name": "entry",
+     "version": "1.0.0",
+     "description": "Please describe the basic information.",
+     "main": "",
+     "author": "",
+     "license": "",
+     "dependencies": {
+       "webrtc":"file:../webrtc"
+     }
+   }
+   ```
+
+   4.   在项目中使用 import webrtc.* 引用 webrtc项目 
+
+   ```cangjie
+   import webrtc.*
+   ```
+
+2. 把 webrtc4cj作为三方库依赖引入 
+
+   1. 目标工程把 webrtc4cj依赖库作为 git submodule 引入
+
+   ```shell
+   > cd $工程根目录
+   > mkdir third-party
+   > cd third-party
+   > git submodule add "https://gitcode.com/Cangjie-TPC/webrtc4cj.git"
+   ```
+
+   2. 修改自身应用 entry 下的 cjpm.toml 文件，添加依赖
+
+   ```
+   [dependencies]
+   	webrtc = {path = "../third-party/webrtc4cj/webrtc/src/main/cangjie", version = "1.0.0"}
+   ```
+
+   3.  在项目中使用 webrtc 组件 
+
+   ```cangjie
+   import banner.*
+   ```
 
 ### 功能示例
 
-用例代码在entry目录下 [功能示例](./cangjie/index_webrtc.cj)
+用例代码在entry目录下 [功能示例](./entry/src/main/cangjie/index.cj)
 
 ## 约束与限制
 1. 在下述版本验证通过：

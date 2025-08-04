@@ -13,63 +13,35 @@ public class VideoRenderController <: XComponentController {
     public init()
 
     /*
-     * 在首次创建surface后调用。
-     * 
-     * 参数 String - 需要传入XComponent创建的surfaceId。
+     * 创建视频渲染器
      * 返回值 Unit - Unit
      */
-    protected override func onSurfaceCreated(surfaceId: String): Unit
+    public func newNativeVideoRenderer(): Unit
 
     /*
-     * 在surface信息更改后调用。
+     * 设置视频轨
      * 
-     * 参数 String - 需要传入XComponent创建的surfaceId。
-     * 参数 SurfaceRect - XComponent创建的曲面的矩形信息。
-     * 返回值 Unit - Unit
-     */  
-    protected override func onSurfaceChanged(surfaceId: String, rect: SurfaceRect): Unit
-
-    /*
-     * 创建新的原生视频渲染器
-     * 
-     * 参数 Int64 - 需要传入XComponent创建的surfaceId。
-     * 返回值 Int64 - 返回nativevideoRenderer的组件ID
-     */
-    public func newNativeVideoRenderer(surfaceId : Int64): Int64
-
-    /*
-     * 设置视频轨道
-     * 
-     * 参数 Int64 - 需要传入nativevideoRenderer的组件ID
+     * 参数 VideoTrack - 传入ID赋值成功的VideoTrack类
      * 返回值 Unit - Unit
      */
-    public func setVideoTrack(ffiNVR : Int64): Unit
+    public func setVideoTrack(mst : VideoTrack): Unit
 
     /*
      * 设置是否是镜像模式
-     * 
-     * 参数 Int64 - 需要传入nativevideoRenderer的组件ID
+     *
      * 参数 Bool - 是否是镜像模式
      * 返回值 Unit - Unit
      */
-    public func setMirror(ffiNVR : Int64, mirrorVerticallyBool: Bool): Unit
+    public func setMirror(mirrorVerticallyBool: Bool): Unit
 
     /*
-     * 设置缩放模式
-     * 
-     * 参数 Int64 - 需要传入nativevideoRenderer的组件ID
-     * 参数 Int64 - 缩放倍数
+     * 视频填充模式选择
+     *
+     * 参数 Int32 - 传入结构体ScalingMode中元素用以视频显示的设置
      * 返回值 Unit - Unit
      */
-    public func setScalingMode(ffiNVR : Int64, scalingMode : Int64) : Unit
+    public func setScalingMode(scalingMode : Int32): Unit
 
-    /*
-     * 当Surface即将被破坏时调用。
-     * 
-     * 参数 String - 需要传入XComponent创建的surfaceId。
-     * 返回值 Unit - Unit
-     */
-    protected override func onSurfaceDestroyed(surfaceId: String): Unit
 }
     
 ```
@@ -94,7 +66,20 @@ struct ffiAudioOptions{
 
 ```
 
-### 1.4 webrtc 提供 全局函数
+### 1.4  webrtc 提供 ScalingMode
+
+``` cangjie
+/*
+* 该结构体中参数值已初始化，根据需要传值即可，不必再自行赋值
+*/
+public struct ScalingMode {
+    public let fill: Int32 = 0 // 视频显示填充
+    public let aspectFill: Int32 = 1 // 视频拉伸填充
+    public let aspectFit: Int32 = 2 // 视频自适应
+}
+```
+
+### 1.5 webrtc 提供 全局函数
 
 ```cangjie
 	/*
@@ -124,9 +109,7 @@ struct ffiAudioOptions{
      * 参数 options:ffiAudioOptions - 音频配置选项
      */
      public class AudioSource <: webrtcClass {
-    	public func createAudioSourceID(pcf: PeerConnectionFactory, options: ffiAudioOptions) {
-        this.ID = cj_createAudioSource(pcf.ID, options)
-        }
+    	public func createAudioSourceID(pcf: PeerConnectionFactory, options: ffiAudioOptions) 
      }
      
     /*
@@ -136,9 +119,7 @@ struct ffiAudioOptions{
 	 * 参数 tag:CString - 音轨标签(自定)
      */
      public class VideoTrack <: webrtcClass {
-        public func createVideoTrackID(pcf: PeerConnectionFactory, tag: CString) {
-            this.ID = cj_createVideoTrack(pcf.ID, videoChar)
-        }
+        public func createVideoTrackID(pcf: PeerConnectionFactory, tag: CString) 
      }
             
     /*
@@ -148,9 +129,7 @@ struct ffiAudioOptions{
      * 参数 ffiCVSP: ffiCreateVideoSourceParameters - 视频配置
      */
     public class VideoSource <: webrtcClass {
-    	public func createVideoSourceID(pcf: PeerConnectionFactory, ffiCVSP: ffiCreateVideoSourceParameters) {
-            this.ID = cj_createVideoSource(pcf.ID, ffiCVSP)
-        }
+    	public func createVideoSourceID(pcf: PeerConnectionFactory, ffiCVSP: ffiCreateVideoSourceParameters) 
     }
  
     /*
@@ -160,9 +139,7 @@ struct ffiAudioOptions{
      * 参数 tag: CString - 视频源标签
      */
     public class VideoTrack <: webrtcClass {
-    public func createVideoTrackID(pcf: PeerConnectionFactory, tag: CString) {
-        this.ID = cj_createVideoTrack(pcf.ID, tag)
-        }
+    	public func createVideoTrackID(pcf: PeerConnectionFactory, tag: CString)
     }
     
     /*

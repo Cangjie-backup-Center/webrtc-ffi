@@ -34,15 +34,15 @@ public class VideoRenderController <: XComponentController {
         renderer = cj_newNativeVideoRenderer(Int64.parse(mySurfaceId))
     }
 
-    public func setVideoTrack(mstID : Int64) {
-        cj_setVideoTrack(renderer, mstID)
+    public func setVideoTrack(mst : VideoTrack): Unit {
+        cj_setVideoTrack(renderer, mst.getID())
     }
 
-    public func setMirror(mirrorVerticallyBool: Bool) {
+    public func setMirror(mirrorVerticallyBool: Bool): Unit {
         cj_setMirror(renderer, mirrorVerticallyBool)
     }
 
-    public func setScalingMode(scalingMode : Int32) {
+    public func setScalingMode(scalingMode : Int32): Unit {
         cj_setScalingMode(renderer, scalingMode)
     }
 
