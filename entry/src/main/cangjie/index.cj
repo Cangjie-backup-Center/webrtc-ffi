@@ -252,7 +252,7 @@ class EntryView {
                 this.localVideoTrack.createVideoTrackID(this.pcf, videoChar)
 
                 this.mXComponentController1.newNativeVideoRenderer()
-                this.mXComponentController1.setVideoTrack(this.localVideoTrack.getID())
+                this.mXComponentController1.setVideoTrack(this.localVideoTrack)
                 this.mXComponentController1.setMirror(true)
                 this.mXComponentController1.setScalingMode(ScalingMode().aspectFit)
             }
