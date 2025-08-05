@@ -40,9 +40,10 @@ add_library(webrtc_cpp SHARED
                         ${CPP_FILES}
                         )
 
-if(CMAKE_BUILD_TYPE EQUAL "Debug")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(webrtc_cpp
         PUBLIC  NODE_ADDON_API_DISABLE_DEPRECATED             # 对当前目标及依赖目标可见
+#        PUBLIC  NDEBUG             # 对当前目标及依赖目标可见
         PUBLIC  NAPI_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
         PUBLIC  NDK_HELPER_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
         PUBLIC  NODE_ADDON_API_ENABLE_TYPE_CHECK_ON_AS             # 对当前目标及依赖目标可见
@@ -79,6 +80,7 @@ target_link_libraries(webrtc_cpp
                                 libnative_window.so
                                 libnative_image.so
                                 libEGL.so
+                                libuv.so
                                 libGLESv3.so
                                 libnative_media_codecbase.so
                                 libnative_media_core.so

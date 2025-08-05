@@ -16,7 +16,11 @@
 #include <stdio.h>
 #include <hilog/log.h>
 
-bool OHOS_LOG_ON = true;//log开关、默认关
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
+bool OHOS_LOG_ON = false;
+#else
+bool OHOS_LOG_ON = true;
+#endif
 void __ohos_log_print(enum WebrtcLogLevel level, const char* tag, const char* fmt, ...)
 {
     if (!OHOS_LOG_ON) {

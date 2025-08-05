@@ -79,6 +79,9 @@ public:
     rtc::scoped_refptr<VideoTrackInterface>* videoTrackPtr_;
 
     ffiMediaStreamTrack* ffiMST_;
+    std::shared_ptr<PeerConnectionFactoryWrapper> GetPeerConnectionFactoryWrapper () const {
+        return wrapper_;
+    }
 
 private:
     std::shared_ptr<PeerConnectionFactoryWrapper> wrapper_;

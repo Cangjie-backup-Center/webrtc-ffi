@@ -20,6 +20,7 @@
 #include "async_work/async_worker_get_user_media.h"
 #include "async_work/async_worker_get_display_media.h"
 #include "utils/marcos.h"
+#include "async_work/uv_work.h"
 
 #include "rtc_base/logging.h"
 
@@ -144,7 +145,7 @@ Napi::Value NapiMediaDevices::GetDisplayMedia(const Napi::CallbackInfo& info)
         NAPI_THROW(Error::New(info.Env(), "No default peer connection factory"), info.Env().Undefined());
     }
 
-    auto asyncWorker = AsyncWorkerGetDisplayMedia::Create(info.Env(), std::move(factory));
+    auto asyncWorker = AsyncWorkerGetDisplayMedia::Create(info.Env(), std::move(factory)); // execute
     auto deferred = asyncWorker->GetDeferred();
 
     if (info.Length() == 0 || !info[0].IsObject()) {
@@ -191,6 +192,7 @@ Napi::Value NapiMediaDevices::GetDisplayMedia(const Napi::CallbackInfo& info)
     }
 
     asyncWorker->Start(std::move(audio), std::move(video), std::move(systemAudio));
+    // OnOk()
     return asyncWorker->GetPromise();
 }
 

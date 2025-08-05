@@ -26,6 +26,11 @@ public:
 
     void RemoveVideoSink(rtc::VideoSinkInterface<VideoFrame>* sink);
     void AddVideoSink(rtc::VideoSinkInterface<VideoFrame>* sink);
+    
+    rtc::scoped_refptr<MediaStreamTrackInterface> Get() const
+    {
+        return track_;
+    }
 
 protected:
 

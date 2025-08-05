@@ -17,6 +17,7 @@
 #endif  // NAPI_HAS_THREADS
 #include <type_traits>
 #include <utility>
+#include "napi.h"
 
 namespace Napi {
 
