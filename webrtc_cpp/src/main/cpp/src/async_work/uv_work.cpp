@@ -5,7 +5,7 @@
 // please include "napi/native_api.h".
 
 #include "uv_work.h"
-
+#include <stdlib.h>
 
 void Cangjie_CallBack(void* data, void (*calculate_fib)(uv_work_t* req), void (*after_calculate)(uv_work_t* req, int status)) {
     uv_loop_t* loop = uv_default_loop();

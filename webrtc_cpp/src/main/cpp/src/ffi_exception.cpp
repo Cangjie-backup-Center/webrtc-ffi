@@ -15,6 +15,7 @@ void CANGJIE_THROW(std::string msg) {
             throw_cangjie_exception(""); 
         }
     }
+    std::string().swap(msg);
 }
 
 

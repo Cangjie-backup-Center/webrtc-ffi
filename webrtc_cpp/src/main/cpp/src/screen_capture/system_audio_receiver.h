@@ -20,7 +20,7 @@
 #include <memory>
 #include <atomic>
 
-#include "napi.h"
+//#include "napi.h"
 
 #include "api/sequence_checker.h"
 #include "modules/audio_device/audio_device_buffer.h"

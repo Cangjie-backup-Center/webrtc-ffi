@@ -11,6 +11,7 @@
 #include "api/scoped_refptr.h"
 
 #include "peer_connection_factory.h"
+#include "logging/ohos_log.h"
 
 namespace webrtc {
 class peerConnectionFactoryWrapper;

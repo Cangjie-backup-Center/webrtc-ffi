@@ -27,7 +27,7 @@ void ffiMediaStreamTrack::RemoveVideoSink(rtc::VideoSinkInterface<VideoFrame>* s
     {
         std::lock_guard<std::mutex> lock(sinksMutex_);
         if (videoSinks_.erase(sink) == 0) {
-            OH_LOG_Print(LOG_APP, LOG_ERROR, OHOS_LOG_DOMAIN, "webrtc", "Failed to erase video sink");
+            LOGI("Failed to erase video sink");
             return;
         }
     }
@@ -41,7 +41,7 @@ void ffiMediaStreamTrack::AddVideoSink(rtc::VideoSinkInterface<VideoFrame>* sink
         std::lock_guard<std::mutex> lock(sinksMutex_);
         auto setRet = videoSinks_.insert(sink);
         if (!setRet.second) {
-            OH_LOG_Print(LOG_APP, LOG_ERROR, OHOS_LOG_DOMAIN, "webrtc", "Failed to insert video sink");
+            LOGI("Failed to insert video sink");
             return;
         }
     }
