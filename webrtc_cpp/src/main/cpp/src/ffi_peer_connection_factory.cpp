@@ -254,4 +254,66 @@ bool ffiValidateAndCopyConstraintSet(ffiCreateVideoSourceParameters createVideos
     return true;
 }
 
+void ffiValidateAndCopyBooleanConstraint(bool ffiCreateVideoSourceBool, NakedValueDisposition nakedTreatment, BooleanConstraint& constraint){
+    switch (nakedTreatment) {
+        case NakedValueDisposition::kTreatAsIdeal:
+            constraint.SetIdeal(ffiCreateVideoSourceBool);
+            break;
+        case NakedValueDisposition::kTreatAsExact:
+            constraint.SetExact(ffiCreateVideoSourceBool);
+            break;
+    }
+}
+
+
+void ffiValidateAndCopyConstraint(bool ffiCreateVideoSourceBool, NakedValueDisposition nakedTreatment, BooleanConstraint& constraint){
+    if(NapiMediaConstraints::IsConstraintSupported(constraint.GetName())){
+        ffiValidateAndCopyBooleanConstraint(ffiCreateVideoSourceBool, nakedTreatment, constraint);
+    }
+}
+
+bool ffiValidateAndCopyConstraintSetExtension(CJ_MediaTrackConstraintSet cjMediaTrackConstraintSet, NakedValueDisposition nakedTreatment, MediaTrackConstraintSet& trackConstraints, std::string& errorMessage){
+    ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.ohosScreenCaptureDisplayId, nakedTreatment, trackConstraints.ohosScreenCaptureDisplayId);
+    if (!ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.ohosScreenCaptureMode, nakedTreatment,
+                                   trackConstraints.ohosScreenCaptureMode, errorMessage)) {
+        return false;
+    }
+
+    if (!ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.ohosScreenCaptureMissionId, nakedTreatment,
+                                   trackConstraints.ohosScreenCaptureMissionId, errorMessage)) {
+        return false;
+    }
+
+    if (!ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.ohosScreenCaptureWindowFilter, nakedTreatment,
+                                   trackConstraints.ohosScreenCaptureWindowFilter, errorMessage)) {
+        return false;
+    }
+
+    if (!ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.ohosScreenCaptureAudioFilter, nakedTreatment,
+                                   trackConstraints.ohosScreenCaptureAudioFilter, errorMessage)) {
+        return false;
+    }
+
+    if (!ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.ohosScreenCaptureSkipPrivacyMode, nakedTreatment,
+                                   trackConstraints.ohosScreenCaptureSkipPrivacyMode, errorMessage)) {
+        return false;
+    }
+
+    ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.ohosScreenCaptureAutoRotation, nakedTreatment, trackConstraints.ohosScreenCaptureAutoRotation);
+
+    return true;
+}
+
+
+bool ffiValidateAndCopyConstraintSet(CJ_MediaTrackConstraintSet cjMediaTrackConstraintSet, NakedValueDisposition nakedTreatment, MediaTrackConstraintSet& trackConstraints, std::string& errorMessage){
+    ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.width, nakedTreatment, trackConstraints.width);
+    ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.height, nakedTreatment, trackConstraints.width); 
+
+    if (!ffiValidateAndCopyConstraintSetExtension(cjMediaTrackConstraintSet, nakedTreatment, trackConstraints, errorMessage)){
+        return false;
+    }
+    return true;
+}
+
+
 }

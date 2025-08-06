@@ -6,6 +6,7 @@
 
 #include "ffi_exception.h"
 #include "ffi_media_stream_track.h"
+#include "ffi_define_struct.h"
 
 namespace webrtc {
 
@@ -33,9 +34,9 @@ class PeerConnectionFactoryWrapper;
             void AddTrack(int64_t mst);
             void RemoveTrack(int64_t mst);
             int64_t GetTrackById(char* trackId);
-            int64_t* GetTracks();
-            int64_t* GetAudioTracks();
-            int64_t* GetVideoTracks();
+            CJ_ReturnArray GetTracks();
+            CJ_ReturnArray GetAudioTracks();
+            CJ_ReturnArray GetVideoTracks();
             // Napi::Value ToJson(const Napi::CallbackInfo& info);
     };
 }

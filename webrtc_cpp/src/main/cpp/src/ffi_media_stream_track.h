@@ -1,6 +1,7 @@
 #ifndef WEBRTC_FFI_MEDIA_STREAM_TRACK_H
 #define WEBRTC_FFI_MEDIA_STREAM_TRACK_H
 
+#include <cstdint>
 #include <memory>
 #include <set>
 #include <mutex>
@@ -12,6 +13,7 @@
 
 #include "peer_connection_factory.h"
 #include "logging/ohos_log.h"
+#include "ffi_define_struct.h"
 
 namespace webrtc {
 class peerConnectionFactoryWrapper;
@@ -28,6 +30,9 @@ public:
     void RemoveVideoSink(rtc::VideoSinkInterface<VideoFrame>* sink);
     void AddVideoSink(rtc::VideoSinkInterface<VideoFrame>* sink);
     
+    CJ_ffiMediaStreamTrackJson ToJson();
+    int64_t GetSource();
+    
     rtc::scoped_refptr<MediaStreamTrackInterface> Get() const
     {
         return track_;
@@ -38,7 +43,10 @@ protected:
 private:
     std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
     rtc::scoped_refptr<MediaStreamTrackInterface> track_;
-
+    rtc::scoped_refptr<OhosLocalAudioSource> audiosource_;
+    rtc::scoped_refptr<OhosVideoTrackSource> videosource_;
+    rtc::scoped_refptr<OhosLocalAudioSource>* audiosource_ptr_ = nullptr;
+    rtc::scoped_refptr<OhosVideoTrackSource>* videosource_ptr_ = nullptr;
     std::mutex sinksMutex_;
     std::set<rtc::VideoSinkInterface<VideoFrame>*> videoSinks_;
 };

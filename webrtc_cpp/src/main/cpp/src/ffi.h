@@ -13,6 +13,9 @@
 #include "xcomponent/render/plugin_render.h"
 #include "xcomponent/manager/plugin_manager.h"
 
+#include "ffi_define_struct.h"
+#include "ffi_media_devices.h"
+
 using namespace NativeXComponentSample;
 
 extern "C" {
@@ -40,6 +43,34 @@ extern "C" {
     void ffi_DestroySurface(int64_t surfaceId); 
     bool ffi_GetXComponentHasDraw(int64_t surfaceId);
     bool ffi_XComponentHasChangeColor(int64_t surfaceId);    
+
+    // webrtc::MediaDevices
+    int64_t ffi_webrtc_mediaDevices_create();
+    void ffi_webrtc_mediaDevices_getDisplayMedia(int64_t mediaDevicesPtr, 
+                                                  CJ_TO_CPP_DisplayMediaStreamOptions video, 
+                                                  CJ_TO_CPP_DisplayMediaStreamOptions audio, 
+                                                  CJ_TO_CPP_DisplayMediaStreamOptions systemAudio, 
+                                                    int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack));
+
+    void ffi_webrtc_mediaDevices_getUserMedia(int64_t mediaDevicesPtr, 
+                                               CJ_TO_CPP_DisplayMediaStreamOptions video, 
+                                               CJ_TO_CPP_DisplayMediaStreamOptions audio, 
+                                                    int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack));
+
+    CJ_ReturnEnumerateDevicesInfo ffi_webrtc_mediaDevices_enumerateDevices(int64_t mediaDevicesPtr);
+    int64_t ffi_webrtc_mediaDevices_getSupportedConstraints(int64_t mediaDevicesPtr);
+    
+    // webrtc::FFIMediaStream
+    void ffi_webrtc_FFIMediaStream_AddTrack(int64_t FFIMediaStreamPtr, int64_t mst);
+    void ffi_webrtc_FFIMediaStream_RemoveTrack(int64_t FFIMediaStreamPtr, int64_t mst);
+    int64_t ffi_webrtc_FFIMediaStream_GetTrackById(int64_t FFIMediaStreamPtr, char* trackId);
+    CJ_ReturnArray ffi_webrtc_FFIMediaStream_GetTracks(int64_t FFIMediaStreamPtr);
+    CJ_ReturnArray ffi_webrtc_FFIMediaStream_GetAudioTracks(int64_t FFIMediaStreamPtr);
+    CJ_ReturnArray ffi_webrtc_FFIMediaStream_GetVideoTracks(int64_t FFIMediaStreamPtr);
+    
+    // webrtc::ffiMediaStreamTrack
+    CJ_ffiMediaStreamTrackJson ffi_webrtc_ffiMediaStreamTrack_ToJson(int64_t ffiMediaStreamTrackPtr);
+    int64_t ffi_webrtc_ffiMediaStreamTrack_GetSource(int64_t ffiMediaStreamTrackPtr);
 }
 
 

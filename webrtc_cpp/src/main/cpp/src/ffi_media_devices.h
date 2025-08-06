@@ -17,6 +17,7 @@
 #include "camera/camera_capturer.h"
 #include "audio_device/audio_device_info.h"
 #include "audio_device/audio_device_enumerator.h"
+#include "ffi_define_struct.h"
 
 struct FFI_videoGetDisplayMedia {
     int32_t width;
@@ -24,69 +25,37 @@ struct FFI_videoGetDisplayMedia {
     char* cj_ohosScreenCaptureAudioFilter;
 };
 
-typedef struct {
-    int64_t width;
-    int64_t height;
-    double aspectRatio;
-    double frameRate;
-    char* facingMode;
-    char* resizeMode;
-    int64_t sampleRate;
-    int64_t sampleSize;
-    bool echoCancellation;
-    bool autoGainControl;
-    bool noiseSuppression;
-    double latency;
-    int64_t channelCount;
-    char* deviceId;
-    char* groupId;
-    char* ohosScreenCaptureMode;
-    int64_t ohosScreenCaptureDisplayId;
-    char* ohosScreenCaptureMissionId;
-    char* ohosScreenCaptureWindowFilter;
-    char* ohosScreenCaptureAudioFilter;
-    char* ohosScreenCaptureSkipPrivacyMode;
-    bool ohosScreenCaptureAutoRotation;
-} CJ_MediaTrackConstraintSet;
-
-typedef struct {
-    const char* deviceId;
-    const char* groupId;
-    const char* label;
-    const char* kind;
-} EnumerateDevicesInfo;
-
-
-typedef struct {
-    const char* name;
-    const bool isSupported;
-} SupportedConstraints;
-
 namespace webrtc {
 
-    class MediaDevices  {
+    class FFIMediaDevices  {
         public:
-            MediaDevices() {
+            FFIMediaDevices() {
                 factory_ = PeerConnectionFactoryWrapper::GetDefault();
                 
                 
             }
-            ~MediaDevices () {
+            ~FFIMediaDevices () {
                 delete ffiUserMediaStream_;
                 delete ffiDisplayMediaStream_;
             }
-            EnumerateDevicesInfo* enumerateDevices(); // return MediaDeviceInfo[]
+            CJ_ReturnEnumerateDevicesInfo enumerateDevices(); // return MediaDeviceInfo[]
             int64_t getSupportedConstraints(); // return MediaTrackSupportedConstraints*
-            void getUserMedia(FFI_videoGetDisplayMedia video, bool audio, int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack)); // return MediaStream*
+            void getUserMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video, 
+                              CJ_TO_CPP_DisplayMediaStreamOptions* audio, 
+                              int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack)); 
             
     
-            void getDisplayMedia(bool video, bool audio, bool systemAudio, int64_t id,  
-                                            void (*pe)(int64_t that, int64_t localVideoTrack));
-            void getDisplayMedia(CJ_MediaTrackConstraintSet video, CJ_MediaTrackConstraintSet audio, CJ_MediaTrackConstraintSet systemAudio, int64_t that,  
-                                            void (*pe)(int64_t that, int64_t localVideoTrack));            
-            void getDisplayMedia(MediaTrackConstraints video, MediaTrackConstraints audio, MediaTrackConstraints systemAudio, int64_t that,  
+            void getDisplayMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video, 
+                                 CJ_TO_CPP_DisplayMediaStreamOptions* audio, 
+                                 CJ_TO_CPP_DisplayMediaStreamOptions* systemAudio, 
+                                 int64_t id,  
+                                void (*pe)(int64_t that, int64_t localVideoTrack));
+          
+        private:
+            void getUserMedia(MediaTrackConstraints video, MediaTrackConstraints audio, int64_t id, 
+                              void (*pe)(int64_t that, int64_t localVideoTrack)); 
+            void getDisplayMedia(MediaTrackConstraints video, MediaTrackConstraints audio, MediaTrackConstraints systemAudio, int64_t id,  
                                             void (*pe)(int64_t that, int64_t localVideoTrack));// return MediaStream*
-            
         protected:
             rtc::scoped_refptr<AudioTrackInterface> CreateAudioTrack(std::string* errorMessage);
             rtc::scoped_refptr<AudioTrackInterface> CreateSystemAudioTrack(std::shared_ptr<SystemAudioReceiver> systemAudioReceiver, std::string* errorMessage);

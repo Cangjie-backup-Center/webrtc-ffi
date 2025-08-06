@@ -1,5 +1,7 @@
 #include "ffi.h"
 
+#include <cstdint>
+
 int64_t ffi_newNativeVideoRenderer(int64_t surfaceId) {
     webrtc::ffiNativeVideoRenderer* ffiNVR = new webrtc::ffiNativeVideoRenderer();
     ffiNVR->ffiNativeVideoRendererInit(surfaceId);
@@ -109,3 +111,66 @@ bool ffi_GetXComponentHasDraw(int64_t surfaceId) {
 bool ffi_XComponentHasChangeColor(int64_t surfaceId) {
     return PluginManager::GetXComponentHasChangeColor(surfaceId);
 }
+
+
+int64_t ffi_webrtc_mediaDevices_create() {
+    webrtc::FFIMediaDevices* s = new webrtc::FFIMediaDevices();
+    return (int64_t)s;
+}
+
+void ffi_webrtc_mediaDevices_getDisplayMedia(int64_t mediaDevicesPtr, 
+                                                  CJ_TO_CPP_DisplayMediaStreamOptions video, 
+                                                  CJ_TO_CPP_DisplayMediaStreamOptions audio, 
+                                                  CJ_TO_CPP_DisplayMediaStreamOptions systemAudio, 
+                                                    int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack)){
+    ((webrtc::FFIMediaDevices*)mediaDevicesPtr)->getDisplayMedia(&video, &audio, &systemAudio, id, pe);
+}
+
+void ffi_webrtc_mediaDevices_getUserMedia(int64_t mediaDevicesPtr, 
+                                           CJ_TO_CPP_DisplayMediaStreamOptions video, 
+                                           CJ_TO_CPP_DisplayMediaStreamOptions audio, 
+                                            int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack)){
+    ((webrtc::FFIMediaDevices*)mediaDevicesPtr)->getUserMedia(&video, &audio, id, pe);
+}
+
+CJ_ReturnEnumerateDevicesInfo ffi_webrtc_mediaDevices_enumerateDevices(int64_t mediaDevicesPtr){
+    return ((webrtc::FFIMediaDevices*)mediaDevicesPtr)->enumerateDevices();
+}
+
+int64_t ffi_webrtc_mediaDevices_getSupportedConstraints(int64_t mediaDevicesPtr){
+    return ((webrtc::FFIMediaDevices*)mediaDevicesPtr)->getSupportedConstraints();
+}
+
+void ffi_webrtc_FFIMediaStream_AddTrack(int64_t FFIMediaStreamPtr, int64_t mst){
+    ((webrtc::FFIMediaStream*)FFIMediaStreamPtr)->AddTrack(mst);
+}
+
+void ffi_webrtc_FFIMediaStream_RemoveTrack(int64_t FFIMediaStreamPtr, int64_t mst){
+    ((webrtc::FFIMediaStream*)FFIMediaStreamPtr)->RemoveTrack(mst);
+}
+
+int64_t ffi_webrtc_FFIMediaStream_GetTrackById(int64_t FFIMediaStreamPtr, char* trackId){
+    return ((webrtc::FFIMediaStream*)FFIMediaStreamPtr)->GetTrackById(trackId);
+}
+
+CJ_ReturnArray ffi_webrtc_FFIMediaStream_GetTracks(int64_t FFIMediaStreamPtr){
+    return ((webrtc::FFIMediaStream*)FFIMediaStreamPtr)->GetTracks();
+}
+
+CJ_ReturnArray ffi_webrtc_FFIMediaStream_GetAudioTracks(int64_t FFIMediaStreamPtr){
+    return ((webrtc::FFIMediaStream*)FFIMediaStreamPtr)->GetAudioTracks();
+}
+
+CJ_ReturnArray ffi_webrtc_FFIMediaStream_GetVideoTracks(int64_t FFIMediaStreamPtr){
+    return ((webrtc::FFIMediaStream*)FFIMediaStreamPtr)->GetVideoTracks();
+}
+
+CJ_ffiMediaStreamTrackJson ffi_webrtc_ffiMediaStreamTrack_ToJson(int64_t ffiMediaStreamTrackPtr){
+    return ((webrtc::ffiMediaStreamTrack*)ffiMediaStreamTrackPtr)->ToJson();
+}
+
+int64_t ffi_webrtc_ffiMediaStreamTrack_GetSource(int64_t ffiMediaStreamTrackPtr){
+    return ((webrtc::ffiMediaStreamTrack*)ffiMediaStreamTrackPtr)->GetSource();
+}
+
+

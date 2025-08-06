@@ -82,7 +82,7 @@ int64_t webrtc::FFIMediaStream::GetTrackById(char* str){
     RTC_LOG(LS_INFO) << "No track with id: " << trackId;
 }
 
-int64_t* webrtc::FFIMediaStream::GetTracks() {
+CJ_ReturnArray webrtc::FFIMediaStream::GetTracks() {
     auto audioTracks = stream_->GetAudioTracks();
     auto videoTracks = stream_->GetVideoTracks();
 
@@ -93,21 +93,20 @@ int64_t* webrtc::FFIMediaStream::GetTracks() {
     for (uint32_t i = 0; i < videoTracks.size(); i++) {
         result[audioTracks.size() + i] = reinterpret_cast<int64_t>(videoTracks[i].get());
     }
-
-    return result;
+    return (CJ_ReturnArray){result, (int64_t)(audioTracks.size() + videoTracks.size())};
 }
 
 
-int64_t* webrtc::FFIMediaStream::GetAudioTracks(){
+CJ_ReturnArray webrtc::FFIMediaStream::GetAudioTracks(){
     auto audioTracks = stream_->GetAudioTracks();
     int64_t* result = new int64_t[audioTracks.size()];  
     for (uint32_t i = 0; i < audioTracks.size(); i++) {
         result[i] = reinterpret_cast<int64_t>(audioTracks[i].get());
     }
-    return result;
+    return (CJ_ReturnArray){result, (int64_t)(audioTracks.size())};
 }
 
-int64_t* webrtc::FFIMediaStream::GetVideoTracks(){
+CJ_ReturnArray webrtc::FFIMediaStream::GetVideoTracks(){
     auto videoTracks = stream_->GetVideoTracks();
 
     int64_t* result = new int64_t[videoTracks.size()];  
@@ -115,6 +114,6 @@ int64_t* webrtc::FFIMediaStream::GetVideoTracks(){
         result[i] = reinterpret_cast<int64_t>(videoTracks[i].get());
     }
 
-    return result;
+    return (CJ_ReturnArray){result, (int64_t)(videoTracks.size())};
 }
 

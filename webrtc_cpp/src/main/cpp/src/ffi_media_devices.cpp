@@ -1,20 +1,21 @@
 #include "ffi_media_devices.h"
+#include <cstdint>
 
 using namespace webrtc;
 
 typedef struct {
-    MediaDevices* md;
+    FFIMediaDevices* md;
     int64_t id;
 } CallbackData;
 
 
-EnumerateDevicesInfo* MediaDevices::enumerateDevices() {
+CJ_ReturnEnumerateDevicesInfo FFIMediaDevices::enumerateDevices() {
     cameraDevices_ = CameraEnumerator::GetDevices();
     audioDevices_ = AudioDeviceEnumerator::GetDevices();
   
-    EnumerateDevicesInfo* result = new EnumerateDevicesInfo[cameraDevices_.size() + audioDevices_.size()];
+    CJ_EnumerateDevicesInfo* result = new CJ_EnumerateDevicesInfo[cameraDevices_.size() + audioDevices_.size()];
     for (uint32_t index = 0; index < cameraDevices_.size(); index++) {
-        EnumerateDevicesInfo ed;
+        CJ_EnumerateDevicesInfo ed;
         ed.deviceId = (const char*)cameraDevices_[index].deviceId.c_str();
         ed.groupId = (const char*)cameraDevices_[index].groupId.c_str();
         ed.label = (const char*)cameraDevices_[index].label.c_str();
@@ -23,7 +24,7 @@ EnumerateDevicesInfo* MediaDevices::enumerateDevices() {
     }
     
     for (uint32_t index = 0; index < audioDevices_.size(); index++) {
-        EnumerateDevicesInfo ed;
+        CJ_EnumerateDevicesInfo ed;
         ed.deviceId = (const char*)audioDevices_[index].deviceId.c_str();
         ed.groupId = (const char*)audioDevices_[index].groupId.c_str();
         ed.label = (const char*)audioDevices_[index].label.c_str();
@@ -36,15 +37,15 @@ EnumerateDevicesInfo* MediaDevices::enumerateDevices() {
         }
         result[cameraDevices_.size() + index] = ed;
     }
-    return result;
+    return (CJ_ReturnEnumerateDevicesInfo){result, (int64_t)(cameraDevices_.size() + audioDevices_.size())};
 } 
 
 
-int64_t MediaDevices::getSupportedConstraints() {
-    std::vector<SupportedConstraints>* list = new std::vector<SupportedConstraints>();
+int64_t FFIMediaDevices::getSupportedConstraints() {
+    std::vector<CJ_SupportedConstraints>* list = new std::vector<CJ_SupportedConstraints>();
     
 #define CANGJIE_SET_ATTRIBUTE(name)   \
-    list->push_back(SupportedConstraints{name, true});
+    list->push_back(CJ_SupportedConstraints{name, true});
 
     CANGJIE_SET_ATTRIBUTE("width");
     CANGJIE_SET_ATTRIBUTE("height");
@@ -65,9 +66,59 @@ int64_t MediaDevices::getSupportedConstraints() {
     return (int64_t)list;  // TODO 资源释放?? 
 }
 
-void MediaDevices::getUserMedia(FFI_videoGetDisplayMedia video, bool audio, int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack)) {
-//    audioConstraints_ = std::move(audio);
-//    videoConstraints_ = std::move(video);
+void FFIMediaDevices::getUserMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video, 
+                                   CJ_TO_CPP_DisplayMediaStreamOptions* audio, 
+                                   int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack)) {
+    MediaTrackConstraints audio_;
+    MediaTrackConstraints video_;
+    if (video->isBool) {
+        if (video->boolean) {
+            MediaTrackConstraints constraints;
+            constraints.Initialize();
+            video_ = constraints;
+        } else {
+            video_ = MediaTrackConstraints();
+        }
+    } else {
+        std::string errorMessage;
+        MediaTrackConstraintSet basic;
+        if (!ffiValidateAndCopyConstraintSet(video->obj,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
+            LOGI("Failed to parse track constraints: ", errorMessage.c_str());
+            video_ = MediaTrackConstraints();
+        }
+        std::vector<MediaTrackConstraintSet> advanced;
+        MediaTrackConstraints constraints;
+        constraints.Initialize(basic, advanced);
+        video_ = constraints;
+    }
+
+    if (video->isBool) {
+        if (audio->boolean) {
+            MediaTrackConstraints constraints;
+            constraints.Initialize();
+            audio_ = constraints;
+        } else {
+            audio_ = MediaTrackConstraints();
+        }
+    } else { 
+        std::string errorMessage;
+        MediaTrackConstraintSet basic;
+        if (!ffiValidateAndCopyConstraintSet(audio->obj,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
+            LOGI("Failed to parse track constraints: ", errorMessage.c_str());
+            audio_ = MediaTrackConstraints();
+        }
+        std::vector<MediaTrackConstraintSet> advanced;
+        MediaTrackConstraints constraints;
+        constraints.Initialize(basic, advanced);
+        audio_ = constraints;
+    }
+    getUserMedia(video_, audio_, id, pe);
+}
+
+
+void FFIMediaDevices::getUserMedia(MediaTrackConstraints video, MediaTrackConstraints audio, int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack)) {
+    audioConstraints_ = std::move(audio);
+    videoConstraints_ = std::move(video);
     user_media_stream_ = factory_->GetFactory()->CreateLocalMediaStream(rtc::CreateRandomUuid());
     if (!user_media_stream_) {
         CANGJIE_THROW("Failed to create media stream");
@@ -94,11 +145,11 @@ void MediaDevices::getUserMedia(FFI_videoGetDisplayMedia video, bool audio, int6
             return;
         }
     }
-    
+    cj_func_call_back2_ = pe;
     Cangjie_CallBack(new CallbackData{this, id},
         [](uv_work_t *work) {
             CallbackData* t = static_cast<CallbackData *>(work->data);
-            MediaDevices* that = t->md;
+            FFIMediaDevices* that = t->md;
             that->ffiUserMediaStream_ = new FFIMediaStream(that->factory_, that->user_media_stream_);
             if(that->cj_func_call_back2_) {
                 that->cj_func_call_back2_(t->id, (int64_t)that->ffiUserMediaStream_);
@@ -112,44 +163,78 @@ void MediaDevices::getUserMedia(FFI_videoGetDisplayMedia video, bool audio, int6
 }
 
 
-void MediaDevices::getDisplayMedia(bool video, bool audio, bool systemAudio, int64_t id,  
-                                void (*pe)(int64_t that, int64_t localVideoTrack)){
+void FFIMediaDevices::getDisplayMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video, 
+                                      CJ_TO_CPP_DisplayMediaStreamOptions* audio, 
+                                      CJ_TO_CPP_DisplayMediaStreamOptions* systemAudio, 
+                                      int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack)){
     MediaTrackConstraints audio_;
     MediaTrackConstraints systemAudio_;
     MediaTrackConstraints video_;
-    if (video) {
+    if (video->isBool) {
+        if (video->boolean) {
+            MediaTrackConstraints constraints;
+            constraints.Initialize();
+            video_ = constraints;
+        } else {
+            video_ = MediaTrackConstraints();
+        }
+    } else {
+        std::string errorMessage;
+        MediaTrackConstraintSet basic;
+        if (!ffiValidateAndCopyConstraintSet(video->obj,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
+            LOGI("Failed to parse track constraints: ", errorMessage.c_str());
+            video_ = MediaTrackConstraints();
+        }
+        std::vector<MediaTrackConstraintSet> advanced;
         MediaTrackConstraints constraints;
-        constraints.Initialize();
+        constraints.Initialize(basic, advanced);
         video_ = constraints;
-    } else {
-        video_ = MediaTrackConstraints();
     }
-    
-    if (audio) {
+    if (audio->isBool) {
+        if (audio->boolean) {
+            MediaTrackConstraints constraints;
+            constraints.Initialize();
+            audio_ = constraints;
+        } else {
+            audio_ = MediaTrackConstraints();
+        }
+    } else {
+        std::string errorMessage;
+        MediaTrackConstraintSet basic;
+        if (!ffiValidateAndCopyConstraintSet(audio->obj,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
+            LOGI("Failed to parse track constraints: ", errorMessage.c_str());
+            audio_ = MediaTrackConstraints();
+        }
+        std::vector<MediaTrackConstraintSet> advanced;
         MediaTrackConstraints constraints;
-        constraints.Initialize();
+        constraints.Initialize(basic, advanced);
         audio_ = constraints;
-    } else {
-        audio_ = MediaTrackConstraints();
     }
-    
-    if (systemAudio) {
-        MediaTrackConstraints constraints;
-        constraints.Initialize();
-        systemAudio_ = constraints;
+    if (systemAudio->isBool) {
+        if (systemAudio->boolean) {
+            MediaTrackConstraints constraints;
+            constraints.Initialize();
+            systemAudio_ = constraints;
+        } else {
+            systemAudio_ = MediaTrackConstraints();
+        }
     } else {
-        systemAudio_ = MediaTrackConstraints();
+        std::string errorMessage;
+        MediaTrackConstraintSet basic;
+        if (!ffiValidateAndCopyConstraintSet(systemAudio->obj,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
+            LOGI("Failed to parse track constraints: ", errorMessage.c_str());
+            systemAudio_ = MediaTrackConstraints();
+        }
+        std::vector<MediaTrackConstraintSet> advanced;
+        MediaTrackConstraints constraints;
+        constraints.Initialize(basic, advanced);
+        systemAudio_ = constraints;
     }
     getDisplayMedia(video_, audio_, systemAudio_, id, pe);
 }
 
 
-void MediaDevices::getDisplayMedia(CJ_MediaTrackConstraintSet video, CJ_MediaTrackConstraintSet audio, CJ_MediaTrackConstraintSet systemAudio, int64_t that,  
-                                            void (*pe)(int64_t that, int64_t localVideoTrack)){
-    
-}
-
-void MediaDevices::getDisplayMedia(MediaTrackConstraints video, MediaTrackConstraints audio, MediaTrackConstraints systemAudio, int64_t id,  
+void FFIMediaDevices::getDisplayMedia(MediaTrackConstraints video, MediaTrackConstraints audio, MediaTrackConstraints systemAudio, int64_t id,  
                                             void (*pe)(int64_t that, int64_t localVideoTrack)){
 
     audioConstraints_ = std::move(audio);
@@ -187,11 +272,11 @@ void MediaDevices::getDisplayMedia(MediaTrackConstraints video, MediaTrackConstr
         }
     }
     
-    cj_func_call_back1_ = pe;
+    cj_func_call_back1_ = pe; // cangjie func
     Cangjie_CallBack(new CallbackData{this, id},
                      [](uv_work_t *work) {
         CallbackData* t = static_cast<CallbackData *>(work->data);
-        MediaDevices* that = t->md;
+        FFIMediaDevices* that = t->md;
         that->ffiDisplayMediaStream_ = new FFIMediaStream(that->factory_, that->display_media_stream_);
         if(that->cj_func_call_back1_) {
             that->cj_func_call_back1_(t->id, (int64_t)that->ffiDisplayMediaStream_); // call cangjie func 
@@ -204,7 +289,7 @@ void MediaDevices::getDisplayMedia(MediaTrackConstraints video, MediaTrackConstr
 }
 
 // DisplayMedia
-rtc::scoped_refptr<VideoTrackInterface> MediaDevices::CreateVideoTrack1(
+rtc::scoped_refptr<VideoTrackInterface> FFIMediaDevices::CreateVideoTrack1(
     std::shared_ptr<SystemAudioReceiver> systemAudioReceiver, std::string* errorMessage)
 {
     ScreenCaptureOptions options;
@@ -238,7 +323,7 @@ rtc::scoped_refptr<VideoTrackInterface> MediaDevices::CreateVideoTrack1(
     return videoTrack;
 }
 
-rtc::scoped_refptr<VideoTrackInterface> MediaDevices::CreateVideoTrack2(std::string* errorMessage)
+rtc::scoped_refptr<VideoTrackInterface> FFIMediaDevices::CreateVideoTrack2(std::string* errorMessage)
 {
     auto cameraDevices = CameraEnumerator::GetDevices();
 
@@ -286,7 +371,7 @@ rtc::scoped_refptr<VideoTrackInterface> MediaDevices::CreateVideoTrack2(std::str
     return videoTrack;
 }
 
-rtc::scoped_refptr<AudioTrackInterface> MediaDevices::CreateAudioTrack(std::string* errorMessage)
+rtc::scoped_refptr<AudioTrackInterface> FFIMediaDevices::CreateAudioTrack(std::string* errorMessage)
 {
     cricket::AudioOptions options;
     CopyConstraintsIntoAudioOptions(audioConstraints_, options);
@@ -309,7 +394,7 @@ rtc::scoped_refptr<AudioTrackInterface> MediaDevices::CreateAudioTrack(std::stri
     return audioTrack;
 }
 
-rtc::scoped_refptr<AudioTrackInterface> MediaDevices::CreateSystemAudioTrack(
+rtc::scoped_refptr<AudioTrackInterface> FFIMediaDevices::CreateSystemAudioTrack(
      std::shared_ptr<SystemAudioReceiver> systemAudioReceiver, std::string* errorMessage)
 {
     cricket::AudioOptions options;

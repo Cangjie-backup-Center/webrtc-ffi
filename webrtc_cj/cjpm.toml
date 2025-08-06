@@ -1,10 +1,10 @@
 [ffi]
   [ffi.c]
     [ffi.c.webrtc_cpp]
-      path = "./libs/${ABI}"
+      path = "./libs/arm64_v8a"
 
 [package]
-  compile-option = "--dy-std --cfg=\"${COMPILE_CONDITION}\""
+  compile-option = "--dy-std "
   name = "webrtc_cj"
   description = "CangjieUI Application"
   output-type = "dynamic"

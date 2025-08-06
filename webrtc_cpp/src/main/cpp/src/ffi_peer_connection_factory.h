@@ -17,6 +17,7 @@
 #include "rtc_base/socket_server.h"
 #include "video/video_track_source.h"
 #include "hilog/log.h"
+#include "ffi_define_struct.h"
 
 #define OHOS_LOG_DOMAIN 0xD001234
 
@@ -111,6 +112,11 @@ void ffiValidateAndCopyConstraint(double ffiCreateVideoSourceDouble, NakedValueD
 void ffiCopyLongConstraint(double value,NakedValueDisposition nakedTreatment, LongConstraint& constraint);
 bool ffiValidateAndCopyStringConstraint(char* ffiCreateVideoSourceChar, NakedValueDisposition nakedTreatment, StringConstraint& constraint,std::string& errorMessage);
 bool ffiValidateStringConstraint(char* ffiCreateVideoSourceChar, std::string& errorMessage);
+
+bool ffiValidateAndCopyConstraintSetExtension(CJ_MediaTrackConstraintSet cjMediaTrackConstraintSet, NakedValueDisposition nakedTreatment, MediaTrackConstraintSet& trackConstraints, std::string& errorMessage);
+bool ffiValidateAndCopyConstraintSet(CJ_MediaTrackConstraintSet cjMediaTrackConstraintSet, NakedValueDisposition nakedTreatment, MediaTrackConstraintSet& trackConstraints, std::string& errorMessage);
+void ffiValidateAndCopyConstraint(bool ffiCreateVideoSourceBool, NakedValueDisposition nakedTreatment, BooleanConstraint& constraint);
+void ffiValidateAndCopyBooleanConstraint(bool ffiCreateVideoSourceBool, NakedValueDisposition nakedTreatment, BooleanConstraint& constraint);
 
 }
 
