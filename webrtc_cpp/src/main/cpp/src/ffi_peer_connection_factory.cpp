@@ -177,10 +177,26 @@ int64_t ffiPeerConnectionFactory::ffiCreateVideoTrack(std::string ffi_videoId_st
     return 0;
 }
 
+bool ffiPeerConnectionFactory::StartAecDump(int fd, int max_size_bytes){
+    
+    FILE* file = fdopen(fd, "wb");
+    if (!file) {
+        close(fd);
+        return false;
+    }
+
+    return GetFactory()->StartAecDump(file, max_size_bytes);
+}
+
 void ffiPeerConnectionFactory::StopAecDump(){
    GetFactory()->StopAecDump();
    return ;
 }
+
+void ffiPeerConnectionFactory::SetDefault(ffiPeerConnectionFactory* pcf){
+    PeerConnectionFactoryWrapper::SetDefault(pcf->GetWrapper());
+}
+
 
 void ffiVideoReceiveParameters(ffiCreateVideoSourceParameters createVideosSource,MediaTrackConstraints& video){
     std::string errorMessage;

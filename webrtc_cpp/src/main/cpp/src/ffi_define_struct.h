@@ -10,8 +10,8 @@
 #include <cstdint>
 
 typedef struct {
-    int64_t width;
-    int64_t height;
+    double width;
+    double height;
     double aspectRatio;
     double frameRate;
     char* facingMode;

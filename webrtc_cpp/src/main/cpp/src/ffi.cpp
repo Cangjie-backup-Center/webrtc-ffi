@@ -80,6 +80,16 @@ int64_t ffi_createVideoTrack(int64_t ffiPCF_int64 , char* ffi_videoId) {
     return ffiMST;
 }
 
+void ffi_SetDefault(int64_t ffiPCF_int64) {
+    webrtc::ffiPeerConnectionFactory* ffiPCF_ptr = (webrtc::ffiPeerConnectionFactory*)ffiPCF_int64;
+    webrtc::ffiPeerConnectionFactory::SetDefault(ffiPCF_ptr);
+}
+
+bool ffi_StartAecDump(int64_t ffiPCF_int64, int fd, int max_size_bytes) {
+    webrtc::ffiPeerConnectionFactory* ffiPCF_ptr = (webrtc::ffiPeerConnectionFactory*)ffiPCF_int64;
+    return ffiPCF_ptr->StartAecDump(fd, max_size_bytes);
+}
+
 void ffi_StopAecDump(int64_t ffiPCF_int64) {
     webrtc::ffiPeerConnectionFactory* ffiPCF_ptr = (webrtc::ffiPeerConnectionFactory*)ffiPCF_int64;
     ffiPCF_ptr->StopAecDump();

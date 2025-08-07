@@ -60,30 +60,30 @@ public struct CJ_ReturnArray {
 
 @C // see ffi_define_struct.h
 public struct CJ_MediaTrackConstraintSet{
-    public let width: Int64
-    public let height: Int64
-    public let aspectRatio: Float64
-    public let frameRate: Float64
-    public let facingMode: CString
-    public let resizeMode: CString
-    public let sampleRate: Int64
-    public let sampleSize: Int64
-    public let echoCancellation: Bool
-    public let autoGainControl: Bool
-    public let noiseSuppression: Bool
-    public let latency: Float64
-    public let channelCount: Int64
-    public let deviceId: CString
-    public let groupId: CString
-    public let ohosScreenCaptureMode: CString
-    public let ohosScreenCaptureDisplayId: Int64
-    public let ohosScreenCaptureMissionId: CString
-    public let ohosScreenCaptureWindowFilter: CString
-    public let ohosScreenCaptureAudioFilter: CString
-    public let ohosScreenCaptureSkipPrivacyMode: CString
-    public let ohosScreenCaptureAutoRotation: Bool
+    public var width: Float64
+    public var height: Float64
+    public var aspectRatio: Float64
+    public var frameRate: Float64
+    public var facingMode: CString
+    public var resizeMode: CString
+    public var sampleRate: Int64
+    public var sampleSize: Int64
+    public var echoCancellation: Bool
+    public var autoGainControl: Bool
+    public var noiseSuppression: Bool
+    public var latency: Float64
+    public var channelCount: Int64
+    public var deviceId: CString
+    public var groupId: CString
+    public var ohosScreenCaptureMode: CString
+    public var ohosScreenCaptureDisplayId: Int64
+    public var ohosScreenCaptureMissionId: Int64
+    public var ohosScreenCaptureWindowFilter: CString
+    public var ohosScreenCaptureAudioFilter: CString
+    public var ohosScreenCaptureSkipPrivacyMode: CString
+    public var ohosScreenCaptureAutoRotation: Bool
 
-    public init(width!: Int64 = 0, height!: Int64 = 0, aspectRatio!: Float64 = 0.0, frameRate!: Float64 = 0.0,
+    public init(width!: Float64 = 0.0, height!: Float64 = 0.0, aspectRatio!: Float64 = 0.0, frameRate!: Float64 = 0.0,
         facingMode!: String = "",
         resizeMode!: String = "",
         sampleRate!: Int64 = 0,
@@ -97,7 +97,7 @@ public struct CJ_MediaTrackConstraintSet{
         groupId!: String = "",
         ohosScreenCaptureMode!: String = "",
         ohosScreenCaptureDisplayId!: Int64 = 0,
-        ohosScreenCaptureMissionId!: String = "",
+        ohosScreenCaptureMissionId!: Int64 = 0,
         ohosScreenCaptureWindowFilter!: String = "",
         ohosScreenCaptureAudioFilter!: String = "",
         ohosScreenCaptureSkipPrivacyMode!: String = "",
@@ -119,7 +119,7 @@ public struct CJ_MediaTrackConstraintSet{
         this.groupId = unsafe {LibC.mallocCString(groupId)}
         this.ohosScreenCaptureMode = unsafe {LibC.mallocCString(ohosScreenCaptureMode)}
         this.ohosScreenCaptureDisplayId = ohosScreenCaptureDisplayId
-        this.ohosScreenCaptureMissionId = unsafe {LibC.mallocCString(ohosScreenCaptureMissionId)}
+        this.ohosScreenCaptureMissionId = ohosScreenCaptureMissionId
         this.ohosScreenCaptureWindowFilter = unsafe {LibC.mallocCString(ohosScreenCaptureWindowFilter)}
         this.ohosScreenCaptureAudioFilter = unsafe {LibC.mallocCString(ohosScreenCaptureAudioFilter)}
         this.ohosScreenCaptureSkipPrivacyMode = unsafe {LibC.mallocCString(ohosScreenCaptureSkipPrivacyMode)}

@@ -34,6 +34,8 @@ extern "C" {
     int64_t ffi_createAudioTrack(int64_t ffiPCF_int64 , char* ffi_audioId);
     int64_t ffi_createVideoSource(int64_t ffiPCF_int64 , ffiCreateVideoSourceParameters fficvsp);
     int64_t ffi_createVideoTrack(int64_t ffiPCF_int64 , char* ffi_videoId);
+    void ffi_SetDefault(int64_t ffiPCF_int64);
+    bool ffi_StartAecDump(int64_t ffiPCF_int64, int fd, int max_size_bytes);
     void ffi_StopAecDump(int64_t ffiPCF_int64);
 
     void ffi_SetSurfaceId(int64_t surfaceId);

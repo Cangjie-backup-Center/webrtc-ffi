@@ -18,6 +18,7 @@ import std.sync.*
 import std.random.Random
 import kit.AbilityKit.*
 import ohos.concurrency.launch
+import ohos.file_fs.*
 
 let Index_WebRTC_TAG: String = "[Index]"
 // 用于测试的信令服务器
@@ -50,9 +51,13 @@ class EntryView {
     private var localAudioSource: AudioSource = AudioSource()
     private var localVideoSource: VideoSource = VideoSource()
     private var localAudioTrack: AudioTrack = AudioTrack()
-    private var localVideoTrack: VideoTrack = VideoTrack()
+    private var localCameraVideoTrack: VideoTrack = VideoTrack()
+    private var retVideoTrack:Array<MediaStreamTrack> = Array<MediaStreamTrack>()
     @State var adm: AudioDeviceModule = AudioDeviceModule()
     @State var pcf: PeerConnectionFactory = PeerConnectionFactory()
+    private var mediaDevices: MediaDevices = MediaDevices()
+    private var displayMediaStream: MediaStream = MediaStream(-1)
+
 
     func build() {
         Column() {
@@ -225,6 +230,10 @@ class EntryView {
     func createPeerConnectionFactory(callback: (pcfID:Int64) -> Unit): Future<Unit> {
         spawn {
             callback(cj_newPeerConnectionFactory(this.adm.getID() , cj_newHardwareVideoEncoderFactory() , cj_newHardwareVideoDecoderFactory()))
+            cj_SetDefault(this.pcf)
+            let filesDir = getContext().filesDir
+            let file = FileFs.open("${filesDir}/test.txt", mode: (READ_WRITE.mode | CREATE.mode))
+            this.pcf.startAecDump(file.fd, -1)
         }
     }
 
@@ -240,7 +249,7 @@ class EntryView {
                 this.localAudioTrack.createAudioTrackID(this.pcf, audioChar)
             }
 
-            if (this.localVideoTrack.getID() == 0) {
+            if (this.localCameraVideoTrack.getID() == 0) {
                 var ffiCVSP:FFICreateVideoSourceParameters = FFICreateVideoSourceParameters()
                 ffiCVSP.width = 1280.0
                 ffiCVSP.height = 720.0
@@ -249,19 +258,46 @@ class EntryView {
                 this.localVideoSource.createVideoSourceID(this.pcf, ffiCVSP)
 
                 let videoChar: CString = unsafe {LibC.mallocCString("video")}
-                this.localVideoTrack.createVideoTrackID(this.pcf, videoChar)
+                this.localCameraVideoTrack.createVideoTrackID(this.pcf, videoChar)
 
                 this.mXComponentController1.newNativeVideoRenderer()
-                this.mXComponentController1.setVideoTrack(this.localVideoTrack.getID())
+                this.mXComponentController1.setVideoTrack(this.localCameraVideoTrack)
                 this.mXComponentController1.setMirror(true)
                 this.mXComponentController1.setScalingMode(ScalingMode().aspectFit)
             }
         }
     }
 
+      func prepareDisplayMedia(): Unit {
+        if (this.displayMediaStream.getID() == 0) {
+            var captureVideo: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(CJ_MediaTrackConstraintSet(width: 720.0,height: 1280.0,ohosScreenCaptureAudioFilter: "current-app"))
+            var captureAudio: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(true)
+            var captureohosSystemAudio: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(true)
+            let that = this
+
+            mediaDevices.getDisplayMedia(captureVideo, captureAudio, captureohosSystemAudio, {displayMediaStream =>
+                that.displayMediaStream = displayMediaStream
+                that.retVideoTrack = that.displayMediaStream.getVideoTracks()
+                that.mXComponentController1.setVideoTrack(that.retVideoTrack[0])
+                that.mXComponentController1.setScalingMode(ScalingMode().aspectFit)
+                })
+        }
+//              let audioTracks = this.displayMediaStream.getAudioTracks()
+//              if (audioTracks.size > 0) {
+//                this.localAudioTrack = audioTracks[0]
+//                AppLog.info("${Index_WebRTC_TAG} audioTrack: ${this.localAudioTrack}")
+//              }
+//              if (audioTracks.size > 1) {
+//                this.localAudioTrack2 = audioTracks[1]
+//                AppLog.info("${Index_WebRTC_TAG} audioTrack2: ${this.localAudioTrack2}")
+//              }
+    }
+
     func createPeerConnection():Future<Unit> {
         spawn {
-            prepareLocalMedia().get()
+//            prepareLocalMedia().get()
+            prepareDisplayMedia()
         }
+
     }
 }

@@ -34,8 +34,12 @@ public class VideoRenderController <: XComponentController {
         renderer = cj_newNativeVideoRenderer(Int64.parse(mySurfaceId))
     }
 
-    public func setVideoTrack(ffiMST : Int64) {
-        cj_setVideoTrack(renderer, ffiMST)
+    public func setVideoTrack(mst : VideoTrack): Unit {
+        cj_setVideoTrack(renderer, mst.getID())
+    }
+
+    public func setVideoTrack(mst : MediaStreamTrack): Unit {
+        cj_setVideoTrack(renderer, mst.getID())
     }
 
     public func setMirror(mirrorVerticallyBool: Bool) {

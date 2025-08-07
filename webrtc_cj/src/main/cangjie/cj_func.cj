@@ -48,6 +48,10 @@ public class PeerConnectionFactory <: WebrtcClass {
     public func createPeerConnectionFactoryID(adm: AudioDeviceModule) {
         this.ID = cj_newPeerConnectionFactory(adm.ID, cj_newHardwareVideoEncoderFactory() , cj_newHardwareVideoDecoderFactory())
     }
+
+    public func startAecDump(fd: Int32, max_size_bytes: Int32): Bool {
+        return cj_StartAecDump(this.getID(), fd, max_size_bytes)
+    }
 }
 
 public class AudioSource <: WebrtcClass {
@@ -166,30 +170,32 @@ public class MediaDevices <: WebrtcClass {
 }
 
 foreign {
-    func ffi_newNativeVideoRenderer(surfaceId : Int64) : Int64
-    func ffi_setVideoTrack(ffiNVR : Int64, surfaceId : Int64) : Unit
-    func ffi_setMirror(ffiNVR : Int64, mirrorBool : Bool) : Unit
-    func ffi_setMirrorVertically(ffiNVR : Int64, mirrorVerticallyBool : Bool) : Unit
-    func ffi_setScalingMode(ffiNVR : Int64 , scalingMode : Int32) : Unit
-    func ffi_release(ffiNVR : Int64) : Unit
-    
-    func ffi_newAudioDeviceModule(useStereoInput : Bool, useStereoOutput : Bool) : Int64
-    func ffi_newHardwareVideoEncoderFactory() : Int64
-    func ffi_newHardwareVideoDecoderFactory() : Int64
-    func ffi_newPeerConnectionFactory(ffiADM_int64 : Int64, ffiHVEF_int64 : Int64 , ffiHVDF_int64 : Int64) : Int64
-    func ffi_createAudioSource(ffiPCF_int64 : Int64, ffiao : FFIAudioOptions) : Int64
-    func ffi_createAudioTrack(ffiPCF_int64 : Int64, ffi_audioId : CString) : Int64
-    func ffi_createVideoSource(ffiPCF_int64 : Int64, ffiCVSP : FFICreateVideoSourceParameters) : Int64
-    func ffi_createVideoTrack(ffiPCF_int64 : Int64, ffi_videoId : CString) : Int64
-    func ffi_StopAecDump(ffiPCF_int64 : Int64) : Unit
+    func ffi_newNativeVideoRenderer(surfaceId: Int64): Int64
+    func ffi_setVideoTrack(ffiNVR: Int64, surfaceId: Int64): Unit
+    func ffi_setMirror(ffiNVR: Int64, mirrorBool: Bool): Unit
+    func ffi_setMirrorVertically(ffiNVR: Int64, mirrorVerticallyBool: Bool): Unit
+    func ffi_setScalingMode(ffiNVR: Int64 , scalingMode: Int32): Unit
+    func ffi_release(ffiNVR: Int64): Unit
 
-    func ffi_SetSurfaceId(surfaceId : Int64) : Unit
-    func ffi_ChangeSurface(surfaceId : Int64, width : Float64, height : Float64) : Unit
-    func ffi_DrawPattern(surfaceId : Int64) :Unit
-    func ffi_ChangeColor(surfaceId : Int64) : Unit
-    func ffi_DestroySurface(surfaceId : Int64) : Unit 
-    func ffi_GetXComponentHasDraw(surfaceId : Int64) : Bool;
-    func ffi_XComponentHasChangeColor(surfaceId : Int64) : Bool;
+    func ffi_newAudioDeviceModule(useStereoInput: Bool, useStereoOutput: Bool): Int64
+    func ffi_newHardwareVideoEncoderFactory(): Int64
+    func ffi_newHardwareVideoDecoderFactory(): Int64
+    func ffi_newPeerConnectionFactory(ffiADM_int64: Int64, ffiHVEF_int64: Int64 , ffiHVDF_int64: Int64): Int64
+    func ffi_createAudioSource(ffiPCF_int64: Int64, ffiao: FFIAudioOptions): Int64
+    func ffi_createAudioTrack(ffiPCF_int64: Int64, ffi_audioId: CString): Int64
+    func ffi_createVideoSource(ffiPCF_int64: Int64, ffiCVSP: FFICreateVideoSourceParameters): Int64
+    func ffi_createVideoTrack(ffiPCF_int64: Int64, ffi_videoId: CString): Int64
+    func ffi_SetDefault(ffiPCF_int64: Int64): Unit
+    func ffi_StartAecDump(ffiPCF_int64: Int64, fd: Int32, max_size_bytes: Int32): Bool
+    func ffi_StopAecDump(ffiPCF_int64: Int64): Unit
+
+    func ffi_SetSurfaceId(surfaceId: Int64): Unit
+    func ffi_ChangeSurface(surfaceId: Int64, width: Float64, height: Float64): Unit
+    func ffi_DrawPattern(surfaceId: Int64):Unit
+    func ffi_ChangeColor(surfaceId: Int64): Unit
+    func ffi_DestroySurface(surfaceId: Int64): Unit
+    func ffi_GetXComponentHasDraw(surfaceId: Int64): Bool;
+    func ffi_XComponentHasChangeColor(surfaceId: Int64): Bool;
 
     // webrtc::MediaDevices
     func ffi_webrtc_mediaDevices_create(): Int64
@@ -295,6 +301,18 @@ private func cj_createVideoSource(pcfID: Int64, cjCVSP: FFICreateVideoSourcePara
 private func cj_createVideoTrack(pcfID: Int64, tag: CString): Int64 {
     unsafe {
         return ffi_createVideoTrack(pcfID, tag)
+    }
+}
+
+public func cj_SetDefault(pcfID: PeerConnectionFactory) {
+    unsafe {
+        ffi_SetDefault(pcfID.getID())
+    }
+}
+
+private func cj_StartAecDump(pcfID: Int64, fd: Int32, max_size_bytes: Int32): Bool {
+    unsafe {
+        return ffi_StartAecDump(pcfID, fd, max_size_bytes)
     }
 }
 

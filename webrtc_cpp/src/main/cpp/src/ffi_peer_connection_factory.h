@@ -72,6 +72,14 @@ public:
     int64_t ffiCreateVideoSource(ffiCreateVideoSourceParameters ffi_videoSource);
     int64_t ffiCreateVideoTrack(std::string ffi_videoId_str);
 
+    std::shared_ptr<PeerConnectionFactoryWrapper> GetWrapper() const
+    {
+        return wrapper_;
+    }
+
+
+    static void SetDefault(ffiPeerConnectionFactory* pcf);
+    bool StartAecDump(int fd, int max_size_bytes);
     void StopAecDump();
 
     rtc::scoped_refptr<OhosLocalAudioSource>* audioSourcePtr_;
@@ -80,6 +88,7 @@ public:
     rtc::scoped_refptr<VideoTrackInterface>* videoTrackPtr_;
 
     ffiMediaStreamTrack* ffiMST_;
+
     std::shared_ptr<PeerConnectionFactoryWrapper> GetPeerConnectionFactoryWrapper () const {
         return wrapper_;
     }
