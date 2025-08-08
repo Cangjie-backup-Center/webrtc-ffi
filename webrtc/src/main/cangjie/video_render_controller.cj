@@ -38,6 +38,10 @@ public class VideoRenderController <: XComponentController {
         cj_setVideoTrack(renderer, mst.getID())
     }
 
+     public func setVideoTrack(mst : MediaStreamTrack): Unit {
+        cj_setVideoTrack(renderer, mst.getID())
+    }
+
     public func setMirror(mirrorVerticallyBool: Bool): Unit {
         cj_setMirror(renderer, mirrorVerticallyBool)
     }
