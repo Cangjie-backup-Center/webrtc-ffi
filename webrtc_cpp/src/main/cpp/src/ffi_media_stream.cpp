@@ -88,10 +88,13 @@ CJ_ReturnArray webrtc::FFIMediaStream::GetTracks() {
 
     int64_t* result = new int64_t[audioTracks.size() + videoTracks.size()];  
     for (uint32_t i = 0; i < audioTracks.size(); i++) {
-        result[i] = reinterpret_cast<int64_t>(audioTracks[i].get());
+        audioMediaStreamTrackPtr = new ffiMediaStreamTrack(factory_, audioTracks[i]);
+        result[i] = reinterpret_cast<int64_t>(audioMediaStreamTrackPtr);    
     }
+
     for (uint32_t i = 0; i < videoTracks.size(); i++) {
-        result[audioTracks.size() + i] = reinterpret_cast<int64_t>(videoTracks[i].get());
+        videoMediaStreamTrackPtr = new ffiMediaStreamTrack(factory_, videoTracks[i]);
+        result[audioTracks.size() + i] = reinterpret_cast<int64_t>(videoMediaStreamTrackPtr);
     }
     return (CJ_ReturnArray){result, (int64_t)(audioTracks.size() + videoTracks.size())};
 }
@@ -101,7 +104,8 @@ CJ_ReturnArray webrtc::FFIMediaStream::GetAudioTracks(){
     auto audioTracks = stream_->GetAudioTracks();
     int64_t* result = new int64_t[audioTracks.size()];  
     for (uint32_t i = 0; i < audioTracks.size(); i++) {
-        result[i] = reinterpret_cast<int64_t>(audioTracks[i].get());
+        audioMediaStreamTrackPtr = new ffiMediaStreamTrack(factory_, audioTracks[i]);
+        result[i] = reinterpret_cast<int64_t>(audioMediaStreamTrackPtr);
     }
     return (CJ_ReturnArray){result, (int64_t)(audioTracks.size())};
 }
@@ -111,7 +115,8 @@ CJ_ReturnArray webrtc::FFIMediaStream::GetVideoTracks(){
 
     int64_t* result = new int64_t[videoTracks.size()];  
     for (uint32_t i = 0; i < videoTracks.size(); i++) {
-        result[i] = reinterpret_cast<int64_t>(videoTracks[i].get());
+        videoMediaStreamTrackPtr = new ffiMediaStreamTrack(factory_, videoTracks[i]);
+        result[i] = reinterpret_cast<int64_t>(videoMediaStreamTrackPtr);
     }
 
     return (CJ_ReturnArray){result, (int64_t)(videoTracks.size())};

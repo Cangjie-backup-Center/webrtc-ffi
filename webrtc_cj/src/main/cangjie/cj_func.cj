@@ -304,9 +304,9 @@ private func cj_createVideoTrack(pcfID: Int64, tag: CString): Int64 {
     }
 }
 
-public func cj_SetDefault(pcfID: PeerConnectionFactory) {
+public func cj_SetDefault(pcfID: Int64) {
     unsafe {
-        ffi_SetDefault(pcfID.getID())
+        ffi_SetDefault(pcfID)
     }
 }
 

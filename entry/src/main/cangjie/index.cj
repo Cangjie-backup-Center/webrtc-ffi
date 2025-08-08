@@ -229,11 +229,8 @@ class EntryView {
 
     func createPeerConnectionFactory(callback: (pcfID:Int64) -> Unit): Future<Unit> {
         spawn {
-            callback(cj_newPeerConnectionFactory(this.adm.getID() , cj_newHardwareVideoEncoderFactory() , cj_newHardwareVideoDecoderFactory()))
-            cj_SetDefault(this.pcf)
-            let filesDir = getContext().filesDir
-            let file = FileFs.open("${filesDir}/test.txt", mode: (READ_WRITE.mode | CREATE.mode))
-            this.pcf.startAecDump(file.fd, -1)
+            let ret: Int64 = cj_newPeerConnectionFactory(this.adm.getID() , cj_newHardwareVideoEncoderFactory() , cj_newHardwareVideoDecoderFactory())
+            callback(ret)
         }
     }
 
@@ -282,15 +279,6 @@ class EntryView {
                 that.mXComponentController1.setScalingMode(ScalingMode().aspectFit)
                 })
         }
-//              let audioTracks = this.displayMediaStream.getAudioTracks()
-//              if (audioTracks.size > 0) {
-//                this.localAudioTrack = audioTracks[0]
-//                AppLog.info("${Index_WebRTC_TAG} audioTrack: ${this.localAudioTrack}")
-//              }
-//              if (audioTracks.size > 1) {
-//                this.localAudioTrack2 = audioTracks[1]
-//                AppLog.info("${Index_WebRTC_TAG} audioTrack2: ${this.localAudioTrack2}")
-//              }
     }
 
     func createPeerConnection():Future<Unit> {

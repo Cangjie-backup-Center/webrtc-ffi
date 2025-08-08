@@ -209,7 +209,9 @@ void ffiVideoReceiveParameters(ffiCreateVideoSourceParameters createVideosSource
 }
 
 bool ffiValidateAndCopyConstraint(char* ffiCreateVideoSourceChar, NakedValueDisposition nakedTreatment, StringConstraint& constraint,std::string& errorMessage){
-    if(NapiMediaConstraints::IsConstraintSupported(constraint.GetName())){
+    std::string ffiCreateVideoSourceString(ffiCreateVideoSourceChar);
+
+    if(ffiCreateVideoSourceString.compare("") && NapiMediaConstraints::IsConstraintSupported(constraint.GetName())){
         if(!ffiValidateAndCopyStringConstraint(ffiCreateVideoSourceChar,nakedTreatment,constraint,errorMessage)){
             return false;
         }
@@ -218,7 +220,7 @@ bool ffiValidateAndCopyConstraint(char* ffiCreateVideoSourceChar, NakedValueDisp
 }
 
 void ffiValidateAndCopyConstraint(double ffiCreateVideoSourceDouble, NakedValueDisposition nakedTreatment, LongConstraint& constraint){
-    if(NapiMediaConstraints::IsConstraintSupported(constraint.GetName())){
+    if(ffiCreateVideoSourceDouble != 0 && NapiMediaConstraints::IsConstraintSupported(constraint.GetName())){
         ffiCopyLongConstraint(ffiCreateVideoSourceDouble,nakedTreatment,constraint);
     }
 }

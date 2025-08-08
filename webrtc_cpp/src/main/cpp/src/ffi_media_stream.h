@@ -18,6 +18,10 @@ class PeerConnectionFactoryWrapper;
             std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
             rtc::scoped_refptr<MediaStreamInterface> stream_;
             std::unique_ptr<MediaStreamObserver> observer_;
+
+            ffiMediaStreamTrack* audioMediaStreamTrackPtr = nullptr;
+            ffiMediaStreamTrack* videoMediaStreamTrackPtr = nullptr;
+
         public:
             FFIMediaStream(std::shared_ptr<PeerConnectionFactoryWrapper> factory, rtc::scoped_refptr<MediaStreamInterface> stream) {
                 factory_ = factory;
@@ -25,9 +29,17 @@ class PeerConnectionFactoryWrapper;
                 observer_ = nullptr;
             }
 
-            // Napi::Value GetId(const Napi::CallbackInfo& info);
-            // Napi::Value GetActive(const Napi::CallbackInfo& info);
-    
+            ~FFIMediaStream() {
+                if (audioMediaStreamTrackPtr != nullptr) {
+                    delete audioMediaStreamTrackPtr;
+                    audioMediaStreamTrackPtr = nullptr;
+                }
+                if (videoMediaStreamTrackPtr != nullptr) {
+                    delete videoMediaStreamTrackPtr;
+                    videoMediaStreamTrackPtr = nullptr;
+                }
+            }
+
             rtc::scoped_refptr<AudioTrackInterface> atif_;
             rtc::scoped_refptr<VideoTrackInterface> vtif_;
     

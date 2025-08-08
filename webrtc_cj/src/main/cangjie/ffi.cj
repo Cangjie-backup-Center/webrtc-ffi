@@ -77,7 +77,7 @@ public struct CJ_MediaTrackConstraintSet{
     public var groupId: CString
     public var ohosScreenCaptureMode: CString
     public var ohosScreenCaptureDisplayId: Int64
-    public var ohosScreenCaptureMissionId: Int64
+    public var ohosScreenCaptureMissionId: CString
     public var ohosScreenCaptureWindowFilter: CString
     public var ohosScreenCaptureAudioFilter: CString
     public var ohosScreenCaptureSkipPrivacyMode: CString
@@ -97,7 +97,7 @@ public struct CJ_MediaTrackConstraintSet{
         groupId!: String = "",
         ohosScreenCaptureMode!: String = "",
         ohosScreenCaptureDisplayId!: Int64 = 0,
-        ohosScreenCaptureMissionId!: Int64 = 0,
+        ohosScreenCaptureMissionId!: String = "",
         ohosScreenCaptureWindowFilter!: String = "",
         ohosScreenCaptureAudioFilter!: String = "",
         ohosScreenCaptureSkipPrivacyMode!: String = "",
@@ -119,7 +119,7 @@ public struct CJ_MediaTrackConstraintSet{
         this.groupId = unsafe {LibC.mallocCString(groupId)}
         this.ohosScreenCaptureMode = unsafe {LibC.mallocCString(ohosScreenCaptureMode)}
         this.ohosScreenCaptureDisplayId = ohosScreenCaptureDisplayId
-        this.ohosScreenCaptureMissionId = ohosScreenCaptureMissionId
+        this.ohosScreenCaptureMissionId = unsafe {LibC.mallocCString(ohosScreenCaptureMissionId)}
         this.ohosScreenCaptureWindowFilter = unsafe {LibC.mallocCString(ohosScreenCaptureWindowFilter)}
         this.ohosScreenCaptureAudioFilter = unsafe {LibC.mallocCString(ohosScreenCaptureAudioFilter)}
         this.ohosScreenCaptureSkipPrivacyMode = unsafe {LibC.mallocCString(ohosScreenCaptureSkipPrivacyMode)}
