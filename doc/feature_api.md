@@ -79,7 +79,107 @@ public struct ScalingMode {
 }
 ```
 
-### 1.5 webrtc 提供 全局函数
+### 1.5 webrtc 提供 CJ_MediaTrackConstraintSet和CJ_TO_CPP_DisplayMediaStreamOptions
+
+```cangjie
+// 该结构体中保存有桌面共享时video的各项参数，结构体不单独使用而是搭配CJ_TO_CPP_DisplayMediaStreamOptions使用
+
+public struct CJ_MediaTrackConstraintSet{
+    public var width: Float64
+    public var height: Float64
+    public var aspectRatio: Float64
+    public var frameRate: Float64
+    public var facingMode: CString
+    public var resizeMode: CString
+    public var sampleRate: Int64
+    public var sampleSize: Int64
+    public var echoCancellation: Bool
+    public var autoGainControl: Bool
+    public var noiseSuppression: Bool
+    public var latency: Float64
+    public var channelCount: Int64
+    public var deviceId: CString
+    public var groupId: CString
+    public var ohosScreenCaptureMode: CString
+    public var ohosScreenCaptureDisplayId: Int64
+    public var ohosScreenCaptureMissionId: CString
+    public var ohosScreenCaptureWindowFilter: CString
+    public var ohosScreenCaptureAudioFilter: CString
+    public var ohosScreenCaptureSkipPrivacyMode: CString
+    public var ohosScreenCaptureAutoRotation: Bool
+
+    public init(width!: Float64 = 0.0, height!: Float64 = 0.0, aspectRatio!: Float64 = 0.0, frameRate!: Float64 = 0.0,
+        facingMode!: String = "",
+        resizeMode!: String = "",
+        sampleRate!: Int64 = 0,
+        sampleSize!: Int64 = 0,
+        echoCancellation!: Bool = false,
+        autoGainControl!: Bool = false,
+        noiseSuppression!: Bool = false,
+        latency!: Float64 = 0.0,
+        channelCount!: Int64 = 0,
+        deviceId!: String = "",
+        groupId!: String = "",
+        ohosScreenCaptureMode!: String = "",
+        ohosScreenCaptureDisplayId!: Int64 = 0,
+        ohosScreenCaptureMissionId!: String = "",
+        ohosScreenCaptureWindowFilter!: String = "",
+        ohosScreenCaptureAudioFilter!: String = "",
+        ohosScreenCaptureSkipPrivacyMode!: String = "",
+        ohosScreenCaptureAutoRotation!: Bool = false) {
+        this.width = width
+        this.height = height
+        this.aspectRatio = aspectRatio
+        this.frameRate = frameRate
+        this.facingMode = unsafe {LibC.mallocCString(facingMode)}
+        this.resizeMode = unsafe {LibC.mallocCString(resizeMode)}
+        this.sampleRate = sampleRate
+        this.sampleSize = sampleSize
+        this.echoCancellation = echoCancellation
+        this.autoGainControl = autoGainControl
+        this.noiseSuppression = noiseSuppression
+        this.latency = latency
+        this.channelCount = channelCount
+        this.deviceId = unsafe {LibC.mallocCString(deviceId)}
+        this.groupId = unsafe {LibC.mallocCString(groupId)}
+        this.ohosScreenCaptureMode = unsafe {LibC.mallocCString(ohosScreenCaptureMode)}
+        this.ohosScreenCaptureDisplayId = ohosScreenCaptureDisplayId
+        this.ohosScreenCaptureMissionId = unsafe {LibC.mallocCString(ohosScreenCaptureMissionId)}
+        this.ohosScreenCaptureWindowFilter = unsafe {LibC.mallocCString(ohosScreenCaptureWindowFilter)}
+        this.ohosScreenCaptureAudioFilter = unsafe {LibC.mallocCString(ohosScreenCaptureAudioFilter)}
+        this.ohosScreenCaptureSkipPrivacyMode = unsafe {LibC.mallocCString(ohosScreenCaptureSkipPrivacyMode)}
+        this.ohosScreenCaptureAutoRotation = ohosScreenCaptureAutoRotation
+    }
+}
+```
+
+```cangjie
+// 根据自己需要构建CJ_MediaTrackConstraintSet
+public struct CJ_TO_CPP_DisplayMediaStreamOptions {
+    let obj: CJ_MediaTrackConstraintSet
+    let boolean: Bool
+    let isBool: Bool
+    public init(mtc: CJ_MediaTrackConstraintSet) {
+        this.obj = mtc
+        this.boolean = false
+        this.isBool = false
+    }
+    public init(boolean: Bool) {
+        this.obj = unsafe {zeroValue<CJ_MediaTrackConstraintSet>()}
+        this.boolean = boolean
+        this.isBool = true
+    }
+    public init() {
+        this.obj = unsafe {zeroValue<CJ_MediaTrackConstraintSet>()}
+        this.boolean = true
+        this.isBool = true
+    }
+}
+```
+
+
+
+### 1.6 webrtc 提供 全局函数
 
 ```cangjie
 	/*
@@ -156,6 +256,54 @@ public struct ScalingMode {
      */
     public func cj_newHardwareVideoDecoderFactory() : Int64
 
+
+	/*
+	* MediaDevices类用以管理共享屏幕功能
+	* getDisplayMedia 用以传入共享屏幕所需要的参数
+	*/
+	public class MediaDevices <: WebrtcClass {
+    private let randomid = WebRtcGlobal.getCurrentId()
+    var call: Option<(mediaStream: MediaStream) -> Unit> = None
+    public init() {
+        this.ID = cj_webrtc_mediaDevices_create()
+        WebRtcGlobal.map.add(this.randomid, this)
+    }
+
+    public func getDisplayMedia(video: CJ_TO_CPP_DisplayMediaStreamOptions,
+                                audio:CJ_TO_CPP_DisplayMediaStreamOptions,
+                                systemAudio:CJ_TO_CPP_DisplayMediaStreamOptions, callback: (mediaStream: MediaStream) -> Unit): Unit {
+        this.call = callback
+        let f : CFunc<(that: Int64, localVideoTrack: Int64) -> Unit> = {id: Int64, localVideoTrack: Int64 =>
+            let that: MediaDevices =  WebRtcGlobal.map.get(id) ?? return
+            let track = MediaStream(localVideoTrack)
+            if (let Some(v) <- that.call) {
+                v(track)
+            }
+        }
+        cj_webrtc_mediaDevices_getDisplayMedia(this.ID, video, audio,systemAudio, this.randomid, f)
+    }
+}
+    
+    /*
+    * MediaStream 用以管理共享屏幕功能返回的音、频流
+    * getAudioTracks 获取音频流
+    * getVideoTracks 获取视频流
+    */
+    
+    public class MediaStream <: WebrtcClass {
+    public init(id: Int64) {
+    	this.ID = id
+    }
+
+    public func getAudioTracks(): Array<MediaStreamTrack> {
+        return cj_getAudioTracks(this.ID)
+    }
+
+    public func getVideoTracks(): Array<MediaStreamTrack> {
+        return cj_getVideoTracks(this.ID)
+    }
+
+}
     
             
 ```
