@@ -274,9 +274,10 @@ class EntryView {
             mediaDevices.getDisplayMedia(captureVideo, captureAudio, captureohosSystemAudio, {displayMediaStream =>
                 that.displayMediaStream = displayMediaStream
                 that.retVideoTrack = that.displayMediaStream.getVideoTracks()
+                that.mXComponentController1.newNativeVideoRenderer()
                 that.mXComponentController1.setVideoTrack(that.retVideoTrack[0])
                 that.mXComponentController1.setScalingMode(ScalingMode().aspectFit)
-                })
+            })
         }
     }
 
