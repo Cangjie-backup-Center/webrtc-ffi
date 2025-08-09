@@ -9,6 +9,11 @@
 
 #include <cstdint>
 
+enum class FFIRTCSignalingState {CLOSED, HAVE_LOCAL_OFFER, HAVE_LOCAL_PRANSWER, HAVE_REMOTE_OFFER, HAVE_REMOTE_PRANSWER, STABLE};
+enum class FFIRTCIceGatheringState {NEW, GATHERING, COMPLETE};
+enum class FFIRTCIceConnectionState {CHECKING, CLOSED, COMPLETED, CONNECTED, DISCONNECTED, FAILED, NEW};
+enum class FFIRTCPeerConnectionState {CLOSED, CONNECTED, CONNECTING, DISCONNECTED, FAILED, NEW};
+
 typedef struct {
     double width;
     double height;
@@ -72,5 +77,56 @@ typedef struct {
     int64_t* ptr;
     int64_t size;
 } CJ_ReturnArray;
+
+typedef struct {
+    char* urls;
+    int64_t urls_size;
+    char* username;
+    int64_t username_size;
+    char* credential;
+    int64_t credential_size;
+} CJ_RTCIceServer;
+
+typedef struct {
+    int64_t expires;
+    char* credential;
+} CJ_RTCDtlsFingerprint;
+
+
+typedef struct {
+    int64_t expires;
+//    CJ_RTCDtlsFingerprint* credential;
+} CJ_RTCCertificate;
+
+typedef struct {
+    CJ_RTCIceServer* iceServers;
+    int64_t iceServers_size;
+    char* iceTransportPolicy;
+    int64_t iceTransportPolicy_size;
+    char* bundlePolicy;
+    int64_t bundlePolicy_size;
+    char* rtcpMuxPolicy;
+    int64_t rtcpMuxPolicy_size;
+    CJ_RTCCertificate* certificates;
+    int64_t certificates_size;
+    int64_t iceCandidatePoolSize;
+} CJ_RTCConfiguration;
+
+typedef struct {
+    char* sdp;
+    int64_t sdp_size;
+    char* RTCSdpType;
+    int64_t RTCSdpType_size;
+    bool undefined = true;  // 如果 true , 其他值就无效了
+} cj_RTCSessionDescription;
+
+typedef struct {
+    int64_t maxChannels;
+    int64_t maxMessageSize;
+    char* RTCSctpTransportState;
+    int64_t RTCSctpTransportState_size;
+    int64_t RTCDtlsTransport_ptr; // rtc::scoped_refptr<SctpTransportInterface>
+    bool undefined = true;  // 如果 true , 其他值就无效了
+} cj_RTCSctpTransport;
 
 #endif //WEBRTC4CJ_FFI_DEFINE_STRUCT_H

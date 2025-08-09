@@ -18,6 +18,7 @@
 #include "video/video_track_source.h"
 #include "hilog/log.h"
 #include "ffi_define_struct.h"
+#include "ffi_peer_connection.h"
 
 #define OHOS_LOG_DOMAIN 0xD001234
 
@@ -56,7 +57,12 @@ public:
     ffiPeerConnectionFactory(ffiAudioDeviceModule* ffiADM,
                         ffiHardwareVideoEncoderFactory* ffiHVEF,
                         ffiHardwareVideoDecoderFactory* ffiHVDF);
-    ~ffiPeerConnectionFactory();
+    ~ffiPeerConnectionFactory() {
+        if (ffipc_) {
+            delete ffipc_;
+            ffipc_ = nullptr;
+        }
+    }
 
     void copyVauleCreateAudioSource(ffiAudioOptions ffi_audioOptions);
     void copyVauleCreateAudioTrack(std::string ffi_id);
@@ -67,6 +73,7 @@ public:
     rtc::scoped_refptr<OhosVideoTrackSource> getVideoSource();
     rtc::scoped_refptr<VideoTrackInterface> getVideoTrack();
 
+    int64_t ffiCreatePeerConnection(CJ_RTCConfiguration config);
     int64_t ffiCreateAudioSource(ffiAudioOptions ffi_audioOptions);
     int64_t ffiCreateAudioTrack(std::string ffi_audioId_str);
     int64_t ffiCreateVideoSource(ffiCreateVideoSourceParameters ffi_videoSource);
@@ -86,7 +93,9 @@ public:
     rtc::scoped_refptr<AudioTrackInterface>* audioTrackPtr_;
     rtc::scoped_refptr<OhosVideoTrackSource>* videoSourcePtr_;
     rtc::scoped_refptr<VideoTrackInterface>* videoTrackPtr_;
-
+    rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> pcFactory_;
+    //rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>
+    ffiPeerConnection* ffipc_ = nullptr;
     ffiMediaStreamTrack* ffiMST_;
 
     std::shared_ptr<PeerConnectionFactoryWrapper> GetPeerConnectionFactoryWrapper () const {

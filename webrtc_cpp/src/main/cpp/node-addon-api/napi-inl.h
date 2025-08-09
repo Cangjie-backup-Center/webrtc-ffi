@@ -5745,7 +5745,7 @@ inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
                                                   ResourceString resourceName,
                                                   size_t maxQueueSize,
                                                   size_t initialThreadCount) {
-  return New(
+  return ThreadSafeFunction::New(
       env, callback, Object(), resourceName, maxQueueSize, initialThreadCount);
 }
 

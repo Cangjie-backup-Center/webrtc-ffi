@@ -105,6 +105,13 @@ rtc::scoped_refptr<VideoTrackInterface> ffiPeerConnectionFactory::getVideoTrack(
     return videoTrack_;
 }
 
+int64_t ffiPeerConnectionFactory::ffiCreatePeerConnection(CJ_RTCConfiguration config){
+    
+    ffipc_ = new ffiPeerConnection(config, pcFactory_);
+    
+    return 0;
+}
+
 int64_t ffiPeerConnectionFactory::ffiCreateAudioSource(ffiAudioOptions ffi_audioOptions){
     copyVauleCreateAudioSource(ffi_audioOptions);
     cricket::AudioOptions options;

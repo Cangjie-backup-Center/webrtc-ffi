@@ -22,11 +22,7 @@ public class Webrtc4cjFFIException <: Exception {
     }
 
     public override func toString(): String {
-        if (message == "") {
-            return "Webrtc4cjFFIException"
-        } else {
-            return "Webrtc4cjFFIException: ${message}"
-        }
+        return "Webrtc4cjFFIException: ${message}"
     }
 }
 

@@ -20,7 +20,7 @@
 #include <atomic>
 #include <mutex>
 
-#include "napi.h"
+//#include "napi.h"
 
 #include "api/data_channel_interface.h"
 

@@ -1309,6 +1309,8 @@ Napi::Value NapiPeerConnection::ToJson(const Napi::CallbackInfo& info)
     return json;
 }
 
+
+// see 创建证书 
 Napi::Value NapiPeerConnection::GenerateCertificate(const Napi::CallbackInfo& info)
 {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
