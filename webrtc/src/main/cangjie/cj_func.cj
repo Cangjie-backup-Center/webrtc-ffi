@@ -87,11 +87,6 @@ class WebRtcGlobal {
     }
 }
 
-@C
-func MediaDevicesCallBack(that: Int64, localVideoTrack: Int64): Unit {
-
-}
-
 public class MediaStreamTrack <: WebrtcClass {
     public init(id: Int64) {
         unsafe {
@@ -102,59 +97,34 @@ public class MediaStreamTrack <: WebrtcClass {
 
 public class MediaStream <: WebrtcClass {
     public init(id: Int64) {
-        unsafe {
-            this.ID = id
-        }
+        this.ID = id
     }
 
     public func getTracks(): Array<MediaStreamTrack> {
-        unsafe {
-            let ret:CJ_ReturnArray = ffi_webrtc_FFIMediaStream_GetTracks(this.ID)
-            let arr = Array<MediaStreamTrack>(ret.size, repeat: unsafe {zeroValue<MediaStreamTrack>()})
-            for (i in 0..ret.size) {
-                arr[i] = MediaStreamTrack(ret.ptr.read(i))
-            }
-            return arr
-        }
+        return cj_getTracks(this.ID)
     }
 
     public func getAudioTracks(): Array<MediaStreamTrack> {
-        unsafe {
-            let ret:CJ_ReturnArray = ffi_webrtc_FFIMediaStream_GetAudioTracks(this.ID)
-            let arr = Array<MediaStreamTrack>(ret.size, repeat: unsafe {zeroValue<MediaStreamTrack>()})
-            for (i in 0..ret.size) {
-                arr[i] = MediaStreamTrack(ret.ptr.read(i))
-            }
-            return arr
-        }
+        return cj_getAudioTracks(this.ID)
     }
 
     public func getVideoTracks(): Array<MediaStreamTrack> {
-        unsafe {
-            let ret:CJ_ReturnArray = ffi_webrtc_FFIMediaStream_GetVideoTracks(this.ID)
-            let arr = Array<MediaStreamTrack>(ret.size, repeat: unsafe {zeroValue<MediaStreamTrack>()})
-            for (i in 0..ret.size) {
-                arr[i] = MediaStreamTrack(ret.ptr.read(i))
-            }
-            return arr
-        }
+        return cj_getVideoTracks(this.ID)
     }
 }
-
 
 public class MediaDevices <: WebrtcClass {
     private let randomid = WebRtcGlobal.getCurrentId()
     var call: Option<(mediaStream: MediaStream) -> Unit> = None
     public init() {
-        unsafe {
-            this.ID = ffi_webrtc_mediaDevices_create()
-        }
+        this.ID = cj_webrtc_mediaDevices_create()
         WebRtcGlobal.map.add(this.randomid, this)
     }
 
     public func getDisplayMedia(video: CJ_TO_CPP_DisplayMediaStreamOptions,
                                 audio:CJ_TO_CPP_DisplayMediaStreamOptions,
-                                systemAudio:CJ_TO_CPP_DisplayMediaStreamOptions, callback: (mediaStream: MediaStream) -> Unit): Unit {
+                                systemAudio:CJ_TO_CPP_DisplayMediaStreamOptions, callback: (mediaStream: MediaStream) -> Unit): Unit
+    {
         this.call = callback
         let f : CFunc<(that: Int64, localVideoTrack: Int64) -> Unit> = {id: Int64, localVideoTrack: Int64 =>
             let that: MediaDevices =  WebRtcGlobal.map.get(id) ?? return
@@ -163,9 +133,7 @@ public class MediaDevices <: WebrtcClass {
                 v(track)
             }
         }
-        unsafe {
-            ffi_webrtc_mediaDevices_getDisplayMedia(this.ID, video, audio,systemAudio, this.randomid, f)
-        }
+        cj_webrtc_mediaDevices_getDisplayMedia(this.ID, video, audio,systemAudio, this.randomid, f)
     }
 }
 
@@ -363,3 +331,53 @@ public func cj_XComponentHasChangeColor(surfaceId: Int64): Bool {
         return ffi_XComponentHasChangeColor(surfaceId)
     }
 }
+
+private func cj_webrtc_mediaDevices_create(): Int64 {
+    unsafe {
+        return ffi_webrtc_mediaDevices_create()
+    }
+}
+
+private func cj_webrtc_mediaDevices_getDisplayMedia(mediaDevicesPtr: Int64, video: CJ_TO_CPP_DisplayMediaStreamOptions,
+                                                        audio:CJ_TO_CPP_DisplayMediaStreamOptions,
+                                                        systemAudio:CJ_TO_CPP_DisplayMediaStreamOptions,
+                                                        id: Int64, pe: CFunc<(that: Int64, localVideoTrack: Int64) -> Unit>): Int64
+{
+    unsafe {
+        return ffi_webrtc_mediaDevices_getDisplayMedia(mediaDevicesPtr, video, audio, systemAudio, id, pe)
+    }
+}
+
+private func cj_getTracks(ID: Int64): Array<MediaStreamTrack> {
+    unsafe {
+        let ret:CJ_ReturnArray = ffi_webrtc_FFIMediaStream_GetTracks(ID)
+        let arr = Array<MediaStreamTrack>(ret.size, repeat: unsafe {zeroValue<MediaStreamTrack>()})
+        for (i in 0..ret.size) {
+            arr[i] = MediaStreamTrack(ret.ptr.read(i))
+        }
+        return arr
+    }
+}
+
+private func cj_getAudioTracks(ID: Int64): Array<MediaStreamTrack> {
+    unsafe {
+        let ret:CJ_ReturnArray = ffi_webrtc_FFIMediaStream_GetAudioTracks(ID)
+        let arr = Array<MediaStreamTrack>(ret.size, repeat: unsafe {zeroValue<MediaStreamTrack>()})
+        for (i in 0..ret.size) {
+            arr[i] = MediaStreamTrack(ret.ptr.read(i))
+        }
+        return arr
+    }
+}
+
+private func cj_getVideoTracks(ID: Int64): Array<MediaStreamTrack> {
+    unsafe {
+        let ret:CJ_ReturnArray = ffi_webrtc_FFIMediaStream_GetVideoTracks(ID)
+        let arr = Array<MediaStreamTrack>(ret.size, repeat: unsafe {zeroValue<MediaStreamTrack>()})
+        for (i in 0..ret.size) {
+            arr[i] = MediaStreamTrack(ret.ptr.read(i))
+        }
+        return arr
+    }
+}
+

@@ -37,5 +37,5 @@
 
 [ffi]
   [ffi.c]
-    [ffi.c.webrtc_cpp]
+    [ffi.c.ohos_webrtc]
       path = "./libs/${ABI}"
