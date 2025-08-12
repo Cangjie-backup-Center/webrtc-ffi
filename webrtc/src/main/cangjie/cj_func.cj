@@ -4,6 +4,10 @@
 
 package webrtc
 
+import std.collection.concurrent.ConcurrentHashMap
+import std.sync.*
+import std.ast.Expr
+
 @C
 public struct FFIAudioOptions{
     public var echo_cancellation: Bool = false
@@ -44,6 +48,10 @@ public class PeerConnectionFactory <: WebrtcClass {
     public func createPeerConnectionFactoryID(adm: AudioDeviceModule) {
         this.ID = cj_newPeerConnectionFactory(adm.ID, cj_newHardwareVideoEncoderFactory() , cj_newHardwareVideoDecoderFactory())
     }
+
+    public func startAecDump(fd: Int32, max_size_bytes: Int32): Bool {
+        return cj_StartAecDump(this.getID(), fd, max_size_bytes)
+    }
 }
 
 public class AudioSource <: WebrtcClass {
@@ -70,31 +78,114 @@ public class VideoTrack <: WebrtcClass {
     }
 }
 
+class WebRtcGlobal {
+    public static let map: ConcurrentHashMap<Int64, MediaDevices> = ConcurrentHashMap<Int64, MediaDevices>()
+    public static var currentID: AtomicInt64 = AtomicInt64(0)
+
+    public static func getCurrentId(): Int64 {
+        return currentID.fetchAdd(1)
+    }
+}
+
+public class MediaStreamTrack <: WebrtcClass {
+    public init(id: Int64) {
+        unsafe {
+            this.ID = id
+        }
+    }
+}
+
+public class MediaStream <: WebrtcClass {
+    public init(id: Int64) {
+        this.ID = id
+    }
+
+    public func getTracks(): Array<MediaStreamTrack> {
+        return cj_getTracks(this.ID)
+    }
+
+    public func getAudioTracks(): Array<MediaStreamTrack> {
+        return cj_getAudioTracks(this.ID)
+    }
+
+    public func getVideoTracks(): Array<MediaStreamTrack> {
+        return cj_getVideoTracks(this.ID)
+    }
+}
+
+public class MediaDevices <: WebrtcClass {
+    private let randomid = WebRtcGlobal.getCurrentId()
+    var call: Option<(mediaStream: MediaStream) -> Unit> = None
+    public init() {
+        this.ID = cj_webrtc_mediaDevices_create()
+        WebRtcGlobal.map.add(this.randomid, this)
+    }
+
+    public func getDisplayMedia(video: CJ_TO_CPP_DisplayMediaStreamOptions,
+                                audio:CJ_TO_CPP_DisplayMediaStreamOptions,
+                                systemAudio:CJ_TO_CPP_DisplayMediaStreamOptions, callback: (mediaStream: MediaStream) -> Unit): Unit
+    {
+        this.call = callback
+        let f : CFunc<(that: Int64, localVideoTrack: Int64) -> Unit> = {id: Int64, localVideoTrack: Int64 =>
+            let that: MediaDevices =  WebRtcGlobal.map.get(id) ?? return
+            let track = MediaStream(localVideoTrack)
+            if (let Some(v) <- that.call) {
+                v(track)
+            }
+        }
+        cj_webrtc_mediaDevices_getDisplayMedia(this.ID, video, audio,systemAudio, this.randomid, f)
+    }
+}
+
 foreign {
     func ffi_newNativeVideoRenderer(surfaceId: Int64): Int64
-    func ffi_setVideoTrack(nvrID: Int64, surfaceId: Int64): Unit
-    func ffi_setMirror(nvrID: Int64, mirrorBool: Bool): Unit
-    func ffi_setMirrorVertically(nvrID: Int64, mirrorVerticallyBool: Bool): Unit
-    func ffi_setScalingMode(nvrID: Int64 , scalingMode: Int32): Unit
-    func ffi_release(nvrID: Int64): Unit
-    
+    func ffi_setVideoTrack(ffiNVR: Int64, surfaceId: Int64): Unit
+    func ffi_setMirror(ffiNVR: Int64, mirrorBool: Bool): Unit
+    func ffi_setMirrorVertically(ffiNVR: Int64, mirrorVerticallyBool: Bool): Unit
+    func ffi_setScalingMode(ffiNVR: Int64 , scalingMode: Int32): Unit
+    func ffi_release(ffiNVR: Int64): Unit
+
     func ffi_newAudioDeviceModule(useStereoInput: Bool, useStereoOutput: Bool): Int64
     func ffi_newHardwareVideoEncoderFactory(): Int64
     func ffi_newHardwareVideoDecoderFactory(): Int64
-    func ffi_newPeerConnectionFactory(admID: Int64, hvefID: Int64, hvdfID: Int64): Int64
-    func ffi_createAudioSource(pcfID: Int64, ffiao: FFIAudioOptions): Int64
-    func ffi_createAudioTrack(pcfID: Int64, tag: CString): Int64
-    func ffi_createVideoSource(pcfID: Int64, ffiCVSP: FFICreateVideoSourceParameters): Int64
-    func ffi_createVideoTrack(pcfID: Int64, tag: CString): Int64
-    func ffi_StopAecDump(pcfID: Int64): Unit
+    func ffi_newPeerConnectionFactory(ffiADM_int64: Int64, ffiHVEF_int64: Int64 , ffiHVDF_int64: Int64): Int64
+    func ffi_createAudioSource(ffiPCF_int64: Int64, ffiao: FFIAudioOptions): Int64
+    func ffi_createAudioTrack(ffiPCF_int64: Int64, ffi_audioId: CString): Int64
+    func ffi_createVideoSource(ffiPCF_int64: Int64, ffiCVSP: FFICreateVideoSourceParameters): Int64
+    func ffi_createVideoTrack(ffiPCF_int64: Int64, ffi_videoId: CString): Int64
+    func ffi_SetDefault(ffiPCF_int64: Int64): Unit
+    func ffi_StartAecDump(ffiPCF_int64: Int64, fd: Int32, max_size_bytes: Int32): Bool
+    func ffi_StopAecDump(ffiPCF_int64: Int64): Unit
 
     func ffi_SetSurfaceId(surfaceId: Int64): Unit
     func ffi_ChangeSurface(surfaceId: Int64, width: Float64, height: Float64): Unit
     func ffi_DrawPattern(surfaceId: Int64):Unit
     func ffi_ChangeColor(surfaceId: Int64): Unit
-    func ffi_DestroySurface(surfaceId: Int64): Unit 
+    func ffi_DestroySurface(surfaceId: Int64): Unit
     func ffi_GetXComponentHasDraw(surfaceId: Int64): Bool;
-    func ffi_XComponentHasChangeColor(surfaceId: Int64): Bool;    
+    func ffi_XComponentHasChangeColor(surfaceId: Int64): Bool;
+
+    // webrtc::MediaDevices
+    func ffi_webrtc_mediaDevices_create(): Int64
+    func ffi_webrtc_mediaDevices_getDisplayMedia(mediaDevicesPtr: Int64, video: CJ_TO_CPP_DisplayMediaStreamOptions,
+                                                        audio:CJ_TO_CPP_DisplayMediaStreamOptions,
+                                                        systemAudio:CJ_TO_CPP_DisplayMediaStreamOptions,
+                                                        id: Int64, pe: CFunc<(that: Int64, localVideoTrack: Int64) -> Unit>): Int64
+    func ffi_webrtc_mediaDevices_getUserMedia(mediaDevicesPtr: Int64, video: CJ_TO_CPP_DisplayMediaStreamOptions,
+                                                        audio:CJ_TO_CPP_DisplayMediaStreamOptions,
+                                                        id: Int64, pe: CFunc<(that: Int64, localVideoTrack: Int64) -> Unit>): Int64
+    func ffi_webrtc_mediaDevices_enumerateDevices(mediaDevicesPtr: Int64): CJ_ReturnEnumerateDevicesInfo
+    func ffi_webrtc_mediaDevices_getSupportedConstraints(mediaDevicesPtr: Int64): Int64
+    // webrtc::FFIMediaStream
+    func ffi_webrtc_FFIMediaStream_AddTrack(FFIMediaStreamPtr: Int64,mst: Int64): Unit
+    func ffi_webrtc_FFIMediaStream_RemoveTrack(FFIMediaStreamPtr: Int64,mst: Int64): Unit
+    func ffi_webrtc_FFIMediaStream_GetTrackById(FFIMediaStreamPtr: Int64,trackId: CString): Int64
+    func ffi_webrtc_FFIMediaStream_GetTracks(FFIMediaStreamPtr: Int64): CJ_ReturnArray
+    func ffi_webrtc_FFIMediaStream_GetAudioTracks(FFIMediaStreamPtr: Int64): CJ_ReturnArray
+    func ffi_webrtc_FFIMediaStream_GetVideoTracks(FFIMediaStreamPtr: Int64): CJ_ReturnArray
+    // webrtc::ffiMediaStreamTrack
+    func ffi_webrtc_ffiMediaStreamTrack_ToJson(ffiMediaStreamTrackPtr: Int64): CJ_ffiMediaStreamTrackJson
+    func ffi_webrtc_ffiMediaStreamTrack_GetSource(ffiMediaStreamTrackPtr: Int64): Int64
 }
 
 public func cj_newNativeVideoRenderer(surfaceId: Int64): Int64 {
@@ -174,10 +265,22 @@ private func cj_createVideoSource(pcfID: Int64, cjCVSP: FFICreateVideoSourcePara
         return ffi_createVideoSource(pcfID, cjCVSP)
     }
 }
- 
+
 private func cj_createVideoTrack(pcfID: Int64, tag: CString): Int64 {
     unsafe {
         return ffi_createVideoTrack(pcfID, tag)
+    }
+}
+
+public func cj_SetDefault(pcfID: Int64) {
+    unsafe {
+        ffi_SetDefault(pcfID)
+    }
+}
+
+private func cj_StartAecDump(pcfID: Int64, fd: Int32, max_size_bytes: Int32): Bool {
+    unsafe {
+        return ffi_StartAecDump(pcfID, fd, max_size_bytes)
     }
 }
 
@@ -228,3 +331,53 @@ public func cj_XComponentHasChangeColor(surfaceId: Int64): Bool {
         return ffi_XComponentHasChangeColor(surfaceId)
     }
 }
+
+private func cj_webrtc_mediaDevices_create(): Int64 {
+    unsafe {
+        return ffi_webrtc_mediaDevices_create()
+    }
+}
+
+private func cj_webrtc_mediaDevices_getDisplayMedia(mediaDevicesPtr: Int64, video: CJ_TO_CPP_DisplayMediaStreamOptions,
+                                                        audio:CJ_TO_CPP_DisplayMediaStreamOptions,
+                                                        systemAudio:CJ_TO_CPP_DisplayMediaStreamOptions,
+                                                        id: Int64, pe: CFunc<(that: Int64, localVideoTrack: Int64) -> Unit>): Int64
+{
+    unsafe {
+        return ffi_webrtc_mediaDevices_getDisplayMedia(mediaDevicesPtr, video, audio, systemAudio, id, pe)
+    }
+}
+
+private func cj_getTracks(ID: Int64): Array<MediaStreamTrack> {
+    unsafe {
+        let ret:CJ_ReturnArray = ffi_webrtc_FFIMediaStream_GetTracks(ID)
+        let arr = Array<MediaStreamTrack>(ret.size, repeat: unsafe {zeroValue<MediaStreamTrack>()})
+        for (i in 0..ret.size) {
+            arr[i] = MediaStreamTrack(ret.ptr.read(i))
+        }
+        return arr
+    }
+}
+
+private func cj_getAudioTracks(ID: Int64): Array<MediaStreamTrack> {
+    unsafe {
+        let ret:CJ_ReturnArray = ffi_webrtc_FFIMediaStream_GetAudioTracks(ID)
+        let arr = Array<MediaStreamTrack>(ret.size, repeat: unsafe {zeroValue<MediaStreamTrack>()})
+        for (i in 0..ret.size) {
+            arr[i] = MediaStreamTrack(ret.ptr.read(i))
+        }
+        return arr
+    }
+}
+
+private func cj_getVideoTracks(ID: Int64): Array<MediaStreamTrack> {
+    unsafe {
+        let ret:CJ_ReturnArray = ffi_webrtc_FFIMediaStream_GetVideoTracks(ID)
+        let arr = Array<MediaStreamTrack>(ret.size, repeat: unsafe {zeroValue<MediaStreamTrack>()})
+        for (i in 0..ret.size) {
+            arr[i] = MediaStreamTrack(ret.ptr.read(i))
+        }
+        return arr
+    }
+}
+
