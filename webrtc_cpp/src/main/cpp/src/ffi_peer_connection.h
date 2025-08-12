@@ -11,15 +11,16 @@
 #include "ffi_define_struct.h"
 #include <cstdint>
 
-bool CangjieToNativeConfiguration(
-    const CJ_RTCConfiguration& jsConfiguration, webrtc::PeerConnectionInterface::RTCConfiguration& configuration);
-
-bool CangjieToNativeIceServer(CJ_RTCIceServer cjrs, webrtc::PeerConnectionInterface::IceServer& iceServer); // TODO
-rtc::RTCCertificate* CangjieToNativeCertificate(CJ_RTCCertificate cjrc); // TODO
 
 namespace webrtc {
 class PeerConnectionFactoryWrapper;
 
+bool CangjieToNativeConfiguration(
+    const CJ_RTCConfiguration& jsConfiguration, webrtc::PeerConnectionInterface::RTCConfiguration& configuration);
+
+bool CangjieToNativeIceServer(CJ_RTCIceServer cjrs, webrtc::PeerConnectionInterface::IceServer& iceServer); // TODO
+
+rtc::RTCCertificate* CangjieToNativeCertificate(CJ_RTCCertificate cjrc); // TODO
 
 
 
@@ -133,7 +134,6 @@ public:
 
 };
 
-rtc::scoped_refptr<rtc::RTCCertificate> ffiPeerConnection::certificate_ = rtc::scoped_refptr<rtc::RTCCertificate>();
 }
 
 #endif //WEBRTC4CJ_FFI_PEER_CONNECTION_H

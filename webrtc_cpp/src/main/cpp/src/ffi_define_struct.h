@@ -81,7 +81,7 @@ typedef struct {
 } CJ_ReturnArray;
 
 typedef struct {
-    char* urls;
+    char** urls;
     int64_t urls_size;
     char* username;
     int64_t username_size;

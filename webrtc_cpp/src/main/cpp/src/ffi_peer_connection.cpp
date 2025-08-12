@@ -9,6 +9,7 @@
 #include "ffi_exception.h"
 #include "peer_connection_factory.h"
 #include <cstdint>
+#include <string>
 #include "rtc_base/rtc_certificate_generator.h"
 
 const char kEnumIceTransportPolicyAll[] = "all";
@@ -18,28 +19,30 @@ const char kEnumBundlePolicyMaxBundle[] = "max-bundle";
 const char kEnumBundlePolicyMaxCompact[] = "max-compat";
 const char kEnumRtcpMuxPolicyRequire[] = "require";
 
-using namespace webrtc;
+namespace webrtc{
+rtc::scoped_refptr<rtc::RTCCertificate> ffiPeerConnection::certificate_ = rtc::scoped_refptr<rtc::RTCCertificate>();
 
 bool CangjieToNativeIceServer(CJ_RTCIceServer cjrs, webrtc::PeerConnectionInterface::IceServer& iceServer){
     if (cjrs.urls_size) {
-        for (int64_t i = 0; i < cjrs.urls_size; i++) {
-            iceServer.urls.emplace_back(cjrs.urls[i]);
-        }
+        // for (int64_t i = 0; i < cjrs.urls_size; i++) {
+            // std::string tmp(cjrs.urls);
+            // iceServer.urls.push_back(tmp);
+        // }
     } else {
         RTC_LOG(LS_WARNING) << "urls is not string nor array";
     }
-//    if (cjrs.username_size) {
-//        std::string username(cjrs.username, cjrs.username_size);
-//        iceServer.username = username;
-//    } else {
-//        RTC_LOG(LS_WARNING) << "username is not string";
-//    }
-//    if (cjrs.credential_size) {
-//        std::string password(cjrs.credential, cjrs.credential_size);
-//        iceServer.password = password;
-//    } else {
-//        RTC_LOG(LS_WARNING) << "credential is not string";
-//    }
+    if (cjrs.username_size) {
+        std::string username(cjrs.username, cjrs.username_size);
+        iceServer.username = username;
+    } else {
+        RTC_LOG(LS_WARNING) << "username is not string";
+    }
+    if (cjrs.credential_size) {
+        std::string password(cjrs.credential, cjrs.credential_size);
+        iceServer.password = password;
+    } else {
+        RTC_LOG(LS_WARNING) << "credential is not string";
+    }
     return true;
 }
 
@@ -47,7 +50,7 @@ bool CangjieToNativeConfiguration(
     const CJ_RTCConfiguration& cjConfiguration, PeerConnectionInterface::RTCConfiguration& configuration){
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
     if (cjConfiguration.iceServers_size) {
-        for (int64_t i = 0; i<cjConfiguration.iceServers_size; i++) {
+        for (int64_t i = 0; i < cjConfiguration.iceServers_size; i++) {
             CJ_RTCIceServer cjrs = cjConfiguration.iceServers[i];
             PeerConnectionInterface::IceServer iceServer;
             CangjieToNativeIceServer(cjrs, iceServer);
@@ -88,8 +91,8 @@ bool CangjieToNativeConfiguration(
     if (cjConfiguration.certificates_size) {
         for (int64_t i = 0; i<cjConfiguration.certificates_size; i++) {
             CJ_RTCCertificate cjrc = cjConfiguration.certificates[i];
-            rtc::RTCCertificate* certificate = CangjieToNativeCertificate(cjrc);  // TODO 
-            configuration.certificates.push_back(rtc::scoped_refptr<rtc::RTCCertificate>(certificate));
+//            rtc::RTCCertificate* certificate = CangjieToNativeCertificate(cjrc);  // TODO 
+//            configuration.certificates.push_back(rtc::scoped_refptr<rtc::RTCCertificate>(certificate));
         }
     }
     
@@ -433,6 +436,8 @@ typedef struct {
 //    
 //}
 
+
+}
 
 
 
