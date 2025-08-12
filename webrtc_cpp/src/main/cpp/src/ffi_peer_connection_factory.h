@@ -57,12 +57,7 @@ public:
     ffiPeerConnectionFactory(ffiAudioDeviceModule* ffiADM,
                         ffiHardwareVideoEncoderFactory* ffiHVEF,
                         ffiHardwareVideoDecoderFactory* ffiHVDF);
-    ~ffiPeerConnectionFactory() {
-        if (ffipc_) {
-            delete ffipc_;
-            ffipc_ = nullptr;
-        }
-    }
+    ~ffiPeerConnectionFactory();
 
     void copyVauleCreateAudioSource(ffiAudioOptions ffi_audioOptions);
     void copyVauleCreateAudioTrack(std::string ffi_id);

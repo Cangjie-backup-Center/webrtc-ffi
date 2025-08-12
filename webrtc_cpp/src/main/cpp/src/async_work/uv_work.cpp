@@ -15,29 +15,3 @@ void Cangjie_CallBack(void* data, void (*calculate_fib)(uv_work_t* req), void (*
     uv_queue_work(loop, req, calculate_fib, after_calculate);
 }
 
-uv_loop_t custom_loop;
-uv_async_t async_handle;
-
-void async_cb(uv_async_t* handle) {
-    printf("Async callback in loop thread\n");
-}
-
-void* loop_thread(void* arg) {
-    uv_run(&custom_loop, UV_RUN_DEFAULT);
-    return NULL;
-}
-
-int main() {
-    uv_loop_init(&custom_loop);
-    uv_async_init(&custom_loop, &async_handle, async_cb);
-
-    pthread_t thread;
-    pthread_create(&thread, NULL, loop_thread, NULL);
-
-    // 主线程触发异步事件
-    uv_async_send(&async_handle);
-
-    pthread_join(thread, NULL);
-    uv_loop_close(&custom_loop);
-    return 0;
-}

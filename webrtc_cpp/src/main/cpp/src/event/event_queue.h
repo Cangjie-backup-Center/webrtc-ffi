@@ -47,6 +47,11 @@ public:
         return event;
     }
 
+protected:
+    bool Empty() {
+        return events_.empty();
+    }
+    
 private:
     std::queue<std::unique_ptr<Event<T>>> events_;
     std::mutex mutex_;

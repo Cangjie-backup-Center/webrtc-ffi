@@ -28,18 +28,18 @@ bool CangjieToNativeIceServer(CJ_RTCIceServer cjrs, webrtc::PeerConnectionInterf
     } else {
         RTC_LOG(LS_WARNING) << "urls is not string nor array";
     }
-    if (cjrs.username_size) {
-        std::string username(cjrs.username, cjrs.username_size);
-        iceServer.username = username;
-    } else {
-        RTC_LOG(LS_WARNING) << "username is not string";
-    }
-    if (cjrs.credential_size) {
-        std::string password(cjrs.credential, cjrs.credential_size);
-        iceServer.password = password;
-    } else {
-        RTC_LOG(LS_WARNING) << "credential is not string";
-    }
+//    if (cjrs.username_size) {
+//        std::string username(cjrs.username, cjrs.username_size);
+//        iceServer.username = username;
+//    } else {
+//        RTC_LOG(LS_WARNING) << "username is not string";
+//    }
+//    if (cjrs.credential_size) {
+//        std::string password(cjrs.credential, cjrs.credential_size);
+//        iceServer.password = password;
+//    } else {
+//        RTC_LOG(LS_WARNING) << "credential is not string";
+//    }
     return true;
 }
 
@@ -375,10 +375,23 @@ void ffiPeerConnection::OnStandardizedIceConnectionChange(PeerConnectionInterfac
 void ffiPeerConnection::OnConnectionChange(PeerConnectionInterface::PeerConnectionState newState) {}
 void ffiPeerConnection::OnIceConnectionReceivingChange(bool receiving) {}
 void ffiPeerConnection::OnIceGatheringChange(PeerConnectionInterface::IceGatheringState newState) {}
-void ffiPeerConnection::OnIceSelectedCandidatePairChanged(const cricket::CandidatePairChangeEvent& event) {}
-void ffiPeerConnection::OnAddStream(rtc::scoped_refptr<MediaStreamInterface> stream) {}
-void ffiPeerConnection::OnRemoveStream(rtc::scoped_refptr<MediaStreamInterface> stream) {}
-void ffiPeerConnection::OnDataChannel(rtc::scoped_refptr<DataChannelInterface> channel) {}
+void ffiPeerConnection::OnIceSelectedCandidatePairChanged(const cricket::CandidatePairChangeEvent& event) {
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+}
+void ffiPeerConnection::OnAddStream(rtc::scoped_refptr<MediaStreamInterface> stream) {
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+}
+void ffiPeerConnection::OnRemoveStream(rtc::scoped_refptr<MediaStreamInterface> stream) {
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+}
+void ffiPeerConnection::OnDataChannel(rtc::scoped_refptr<DataChannelInterface> channel) {
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+    if (!channel) {
+        RTC_LOG(LS_ERROR) << "The channel is nullptr";
+        return;
+    }
+    
+}
 void ffiPeerConnection::OnRenegotiationNeeded() {}
 void ffiPeerConnection::OnNegotiationNeededEvent(uint32_t eventId) {}
 void ffiPeerConnection::OnAddTrack(
@@ -394,6 +407,8 @@ void ffiPeerConnection::SetOnTrack(void (*pe)(int64_t that, int64_t localVideoTr
 }
 
 void ffiPeerConnection::OnRemoveTrack(rtc::scoped_refptr<RtpReceiverInterface> receiver) {}
+
+
 
 /*
 typedef struct {

@@ -65,12 +65,22 @@ ffiPeerConnectionFactory::ffiPeerConnectionFactory(
     adm, std::move(videoEncoderFactory), std::move(videoDecoderFactory), audioProcessing);
 }
 
+template <typename T>
+void releasePtr(T* ffipc_) {
+    if (ffipc_) {
+        delete ffipc_;
+        ffipc_ = nullptr;
+    }
+}
+
+
 ffiPeerConnectionFactory::~ffiPeerConnectionFactory(){
-    delete audioSourcePtr_;
-    delete audioTrackPtr_;
-    delete videoSourcePtr_;
-    delete videoTrackPtr_;
-    delete ffiMST_;
+    releasePtr(ffipc_);
+    audioSourcePtr_->release();
+    audioTrackPtr_->release();
+    videoSourcePtr_->release();
+    videoTrackPtr_->release();
+    releasePtr(ffiMST_);
 }
 
 void ffiPeerConnectionFactory::copyVauleCreateAudioSource(ffiAudioOptions ffi_audioOptions){

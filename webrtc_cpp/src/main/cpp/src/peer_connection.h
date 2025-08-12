@@ -95,6 +95,7 @@ protected:
     void OnConnectionChange(PeerConnectionInterface::PeerConnectionState newState) override;
     void OnIceConnectionReceivingChange(bool receiving) override;
     void OnIceGatheringChange(PeerConnectionInterface::IceGatheringState newState) override;
+    
     void OnIceSelectedCandidatePairChanged(const cricket::CandidatePairChangeEvent& event) override;
     void OnAddStream(rtc::scoped_refptr<MediaStreamInterface> stream) override;
     void OnRemoveStream(rtc::scoped_refptr<MediaStreamInterface> stream) override;

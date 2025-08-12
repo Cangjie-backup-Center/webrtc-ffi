@@ -13,6 +13,8 @@ enum class FFIRTCSignalingState {CLOSED, HAVE_LOCAL_OFFER, HAVE_LOCAL_PRANSWER, 
 enum class FFIRTCIceGatheringState {NEW, GATHERING, COMPLETE};
 enum class FFIRTCIceConnectionState {CHECKING, CLOSED, COMPLETED, CONNECTED, DISCONNECTED, FAILED, NEW};
 enum class FFIRTCPeerConnectionState {CLOSED, CONNECTED, CONNECTING, DISCONNECTED, FAILED, NEW};
+enum class FFIDataChannelState {CLOSED, CLOSING, CONNECTING, OPEN};
+enum class FFIBinaryType {BLOB, ARRAYBUFFER};
 
 typedef struct {
     double width;
