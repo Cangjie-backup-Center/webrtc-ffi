@@ -4,10 +4,11 @@
 package webrtc_cj
 
 
-foreign func set_cj_func_call_OnDataChannel_(id: Int64, fn: CFunc<(that: Int64, ptr: Int64) -> Unit>): Unit
-foreign func set_cj_func_call_OnSignalingChange_(id: Int64, fn: CFunc<(that: Int64, ptr: CJ_Event) -> Unit>): Unit
-foreign func set_cj_func_call_OnIceCandidateError_(id: Int64, fn: CFunc<(that: Int64, ptr: CJ_RTCPeerConnectionIceErrorEvent) -> Unit>): Unit
-foreign func set_cj_func_call_onTrack_(id: Int64, fn: CFunc<(that: Int64, ptr: CJ_RTCTrackEvent) -> Unit>): Unit
+foreign func set_peerConnection_class_key(cpp_ptr: Int64, id: Int64): Unit
+foreign func set_cj_func_call_OnDataChannel_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: Int64) -> Unit>): Unit
+foreign func set_cj_func_call_OnSignalingChange_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
+foreign func set_cj_func_call_OnIceCandidateError_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_RTCPeerConnectionIceErrorEvent) -> Unit>): Unit
+foreign func set_cj_func_call_onTrack_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_RTCTrackEvent) -> Unit>): Unit
 
 
 
@@ -28,6 +29,7 @@ public class ffiPeerConnection <: WebrtcClass {
     public init(id: Int64) {
         super(id, this)
         unsafe {
+            set_peerConnection_class_key(this.ID, this.randomid)
             set_cj_func_call_OnDataChannel_(this.ID, cj_func_call_OnDataChannel_)
             set_cj_func_call_OnSignalingChange_(this.ID, cj_func_call_OnSignalingChange_)
             set_cj_func_call_OnIceCandidateError_(this.ID, cj_func_call_OnIceCandidateError_)

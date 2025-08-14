@@ -1,6 +1,7 @@
 #ifndef WEBRTC_FFI_H_
 #define WEBRTC_FFI_H_
 
+#include <cstdint>
 #include <memory>
 
 #include "render/ffi_native_video_renderer.h"
@@ -8,6 +9,7 @@
 #include "ffi_video_encoder_factory.h"
 #include "ffi_video_decoder_factory.h"
 #include "ffi_peer_connection_factory.h"
+#include "ffi_peer_connection.h"
 #include "xcomponent/common/common.h"
 #include "xcomponent/render/egl_core.h"
 #include "xcomponent/render/plugin_render.h"
@@ -73,6 +75,16 @@ extern "C" {
     // webrtc::ffiMediaStreamTrack
     CJ_ffiMediaStreamTrackJson ffi_webrtc_ffiMediaStreamTrack_ToJson(int64_t ffiMediaStreamTrackPtr);
     int64_t ffi_webrtc_ffiMediaStreamTrack_GetSource(int64_t ffiMediaStreamTrackPtr);
+
+    // peerConnection
+    /*
+    foreign func set_cj_func_call_OnDataChannel_(cpp_ptr: Int64, id: Int64, fn: CFunc<(id: Int64, ptr: Int64) -> Unit>): Unit
+    foreign func set_cj_func_call_OnSignalingChange_(cpp_ptr: Int64, id: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
+    foreign func set_cj_func_call_OnIceCandidateError_(cpp_ptr: Int64, id: Int64, fn: CFunc<(id: Int64, ptr: CJ_RTCPeerConnectionIceErrorEvent) -> Unit>): Unit
+    foreign func set_cj_func_call_onTrack_(cpp_ptr: Int64, id: Int64, fn: CFunc<(id: Int64, ptr: CJ_RTCTrackEvent) -> Unit>): Unit
+    */
+    void set_cj_func_call_OnDataChannel_(int64_t cpp_ptr, void (*pe)(int64_t id, int64_t ptr));
+    void set_peerConnection_class_key(int64_t cpp_ptr, int64_t classKey);  // 设置到对应的cpp类中仓颉类的randomid. 
 }
 
 

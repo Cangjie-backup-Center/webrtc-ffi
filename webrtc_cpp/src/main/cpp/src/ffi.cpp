@@ -184,3 +184,11 @@ int64_t ffi_webrtc_ffiMediaStreamTrack_GetSource(int64_t ffiMediaStreamTrackPtr)
 }
 
 
+void set_cj_func_call_OnDataChannel_(int64_t cpp_ptr, void (*pe)(int64_t id, int64_t ptr)) {
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnDataChannel(pe);
+    return;
+}
+
+void set_peerConnection_class_key(int64_t cpp_ptr, int64_t classKey){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->cj_class_key = classKey;
+}

@@ -78,6 +78,11 @@ public:
     void SetOnSignalingChange(void (*pe)(int64_t id, CJ_Event ptr)) ;
     void SetOnRenegotiationNeeded(void (*pe)(int64_t id, CJ_Event ptr)) ;
     void SetOnIceCandidateError(void (*pe)(int64_t id, CJ_RTCPeerConnectionIceErrorEvent ptr));
+    void SetOnStandardizedIceConnectionChange(void (*pe)(int64_t id, CJ_Event ptr));
+    void SetOnConnectionChange(void (*pe)(int64_t id, CJ_Event ptr));
+    void SetOnIceGatheringChange(void (*pe)(int64_t id, CJ_Event ptr));
+    int64_t cj_class_key = 0;
+
 private:
     std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
     rtc::scoped_refptr<PeerConnectionInterface> pc_;
@@ -89,6 +94,9 @@ private:
     void (*cj_func_call_OnSignalingChange_)(int64_t id, CJ_Event ptr) = nullptr;
     void (*cj_func_call_OnDataChannel_)(int64_t id, int64_t ptr) = nullptr;
     void (*cj_func_call_OnRenegotiationNeeded_)(int64_t id, CJ_Event ptr) = nullptr;
+    void (*cj_func_call_OnStandardizedIceConnectionChange_)(int64_t id, CJ_Event ptr) = nullptr;
+    void (*cj_func_call_OnConnectionChange_)(int64_t id, CJ_Event ptr) = nullptr;
+    void (*cj_func_call_OnIceGatheringChange_)(int64_t id, CJ_Event ptr) = nullptr;
 
 public:
     static int64_t GenerateCertificate(std::string keyname);
