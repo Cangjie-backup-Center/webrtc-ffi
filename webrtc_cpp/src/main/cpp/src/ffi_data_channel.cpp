@@ -105,9 +105,25 @@ namespace webrtc {
         RTC_LOG(LS_VERBOSE) << __FUNCTION__;
     
         auto state = dataChannel_->state();
-//        this->PushEvent([](auto state) {
-//            
-//        });
+        this->Dispatch(CallbackEvent<ffiDataChannelObserverTemp>::Create(
+            [state](ffiDataChannelObserverTemp& target) {
+                RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+                static std::map<DataChannelInterface::DataState, std::string> STATE_EVENT_MAP = {
+                    {DataChannelInterface::kOpen, "open"},
+                    {DataChannelInterface::kClosing, "closing"},
+                    {DataChannelInterface::kClosed, "close"},
+                };
+                if (state == DataChannelInterface::kOpen) {
+                    auto curState = target.dataChannel_->state();
+                    if (curState == DataChannelInterface::kClosing || curState == DataChannelInterface::kClosed) {
+                        // abort, see https://www.w3.org/TR/webrtc/#announcing-a-data-channel-as-open.
+                        return;
+                    }
+                }
+                auto eventType = STATE_EVENT_MAP[state];
+//                target.cj_func_OnStateChange_(target.cj_class_id_, );
+            }
+        ));
     }
     
     void ffiDataChannelObserverTemp::OnMessage(const DataBuffer& buffer)

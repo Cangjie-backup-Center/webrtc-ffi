@@ -51,13 +51,13 @@ ffiPeerConnectionFactory::ffiPeerConnectionFactory(
 
     videoEncoderFactory = createHardwareVideoEncoderFactory(ffiHVEF);
     if (videoEncoderFactory == nullptr){
-        OH_LOG_Print(LOG_APP, LOG_ERROR, OHOS_LOG_DOMAIN,"webrtc", "videoEncoderFactory create fail");
+        LOGI("videoEncoderFactory create fail");
         return ;
     }
     
     videoDecoderFactory = createHardwareVideoDecoderFactory(ffiHVDF);
     if (videoDecoderFactory == nullptr){
-        OH_LOG_Print(LOG_APP, LOG_ERROR, OHOS_LOG_DOMAIN,"webrtc", "videoDecoderFactory create fail");
+        LOGI("videoDecoderFactory create fail");
         return ;
     }
 
@@ -117,7 +117,7 @@ rtc::scoped_refptr<VideoTrackInterface> ffiPeerConnectionFactory::getVideoTrack(
 
 int64_t ffiPeerConnectionFactory::ffiCreatePeerConnection(CJ_RTCConfiguration config){
     
-    ffipc_ = new ffiPeerConnection(config, pcFactory_);
+    ffipc_ = new ffiPeerConnection(config, wrapper_);
     
     return 0;
 }
@@ -165,7 +165,7 @@ int64_t ffiPeerConnectionFactory::ffiCreateVideoSource(ffiCreateVideoSourceParam
                                 video, kDefaultWidth, kDefaultHeight, kDefaultFrameRate,
                                 selectedSetting, failedConstraintName))
     {
-        OH_LOG_Print(LOG_APP, LOG_ERROR, OHOS_LOG_DOMAIN,"webrtc", "SelectSettingsForVideo fail");
+        LOGI("SelectSettingsForVideo fail");
         return 0;
     }
 

@@ -16,7 +16,7 @@
 #include "ffi_define_struct.h"
 
 namespace webrtc {
-class peerConnectionFactoryWrapper;
+class PeerConnectionFactoryWrapper;
 
 class ffiMediaStreamTrack {
 public:
