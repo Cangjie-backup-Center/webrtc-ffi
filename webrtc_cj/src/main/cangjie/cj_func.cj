@@ -34,6 +34,11 @@ sealed abstract class WebrtcClass {
         WebRtcGlobal.OBJECT_POOL.add(id, that)
     }
 
+//   TODO 释放资源
+//    ~init() {
+//
+//    }
+
     public func getID(): Int64{
         return ID
     }

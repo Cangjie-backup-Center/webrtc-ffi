@@ -100,19 +100,23 @@ namespace webrtc {
         cj_func_OnStateChange_ = pe;
     }
 
+    void ffiDataChannelObserverTemp::SetOnopen(void (*pe)(int64_t id, CJ_Event ptr)){
+        cj_func_call_Onopen_ = pe;
+    }
+    void ffiDataChannelObserverTemp::SetOnclose(void (*pe)(int64_t id, CJ_Event ptr)){
+        cj_func_call_Onclose_ = pe;
+    }
+    void ffiDataChannelObserverTemp::SetOnclosing(void (*pe)(int64_t id, CJ_Event ptr)){
+        cj_func_call_Onclosing_ = pe;
+    }
     void ffiDataChannelObserverTemp::OnStateChange()
     {
         RTC_LOG(LS_VERBOSE) << __FUNCTION__;
     
         auto state = dataChannel_->state();
         this->Dispatch(CallbackEvent<ffiDataChannelObserverTemp>::Create(
-            [state](ffiDataChannelObserverTemp& target) {
+            [this, state](ffiDataChannelObserverTemp& target) {
                 RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-                static std::map<DataChannelInterface::DataState, std::string> STATE_EVENT_MAP = {
-                    {DataChannelInterface::kOpen, "open"},
-                    {DataChannelInterface::kClosing, "closing"},
-                    {DataChannelInterface::kClosed, "close"},
-                };
                 if (state == DataChannelInterface::kOpen) {
                     auto curState = target.dataChannel_->state();
                     if (curState == DataChannelInterface::kClosing || curState == DataChannelInterface::kClosed) {
@@ -120,17 +124,61 @@ namespace webrtc {
                         return;
                     }
                 }
-                auto eventType = STATE_EVENT_MAP[state];
-//                target.cj_func_OnStateChange_(target.cj_class_id_, );
+                switch (state) {
+                    case DataChannelInterface::kOpen: // onopen
+                        if(cj_func_call_Onopen_) {
+                            cj_func_call_Onopen_(cj_class_key, CJ_Event{type: "open"});
+                        }
+                        break;
+                    case DataChannelInterface::kClosing: // onopen
+                        if(cj_func_call_Onclosing_) {
+                            cj_func_call_Onclosing_(cj_class_key, CJ_Event{type: "closing"});
+                        }
+                        break;
+                    case DataChannelInterface::kClosed: // onopen
+                        if(cj_func_call_Onclose_) {
+                            cj_func_call_Onclose_(cj_class_key, CJ_Event{type: "close"});
+                        }
+                        this->Stop();
+                        break;
+                }
             }
         ));
     }
     
+    void ffiDataChannelObserverTemp::SetOnMessage(void (*pe)(int64_t id, CJ_MessageEvent ptr)) {
+        cj_func_call_OnMessage_ = pe;
+    }
     void ffiDataChannelObserverTemp::OnMessage(const DataBuffer& buffer)
     {
         RTC_LOG(LS_VERBOSE) << __FUNCTION__;
-    
-        
+        Dispatch(CallbackEvent<ffiDataChannelObserverTemp>::Create(
+            [this, buffer](ffiDataChannelObserverTemp& target) {
+                RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+                if (buffer.binary) {
+                    auto externalData = new rtc::CopyOnWriteBuffer(buffer.data);
+                    if (cj_func_call_OnMessage_) {
+                        cj_func_call_OnMessage_(cj_class_key, CJ_MessageEvent{
+                            type: "message",
+                            data_arr: externalData->MutableData(),
+                            data_arr_size: (int64_t)externalData->size(),
+                            binary: true,
+                            data_str: nullptr
+                        });
+                    }
+                } else {
+                    // Should be a UTF-8 string
+                    if (cj_func_call_OnMessage_) {
+                        cj_func_call_OnMessage_(cj_class_key, CJ_MessageEvent{
+                            type: "message",
+                            data_arr: nullptr,
+                            data_arr_size: -1,
+                            binary: false,
+                            data_str: reinterpret_cast<const char*>(buffer.data.data())
+                        });
+                    }
+                }
+        }));
     }
     
     void ffiDataChannelObserverTemp::OnBufferedAmountChange(uint64_t sentDataSize)

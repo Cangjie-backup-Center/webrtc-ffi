@@ -15,7 +15,6 @@
 #include "media_track_constraints.h"
 #include "media_source.h"
 #include "media_stream_track.h"
-#include "peer_connection.h"
 #include "audio_device/ohos_audio_device_module.h"
 #include "audio_device/ohos_local_audio_source.h"
 #include "camera/camera_enumerator.h"

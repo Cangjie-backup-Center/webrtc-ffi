@@ -5,15 +5,22 @@ package webrtc_cj
 
 foreign func setThrowCangjieException(f: CFunc<(CString) -> Unit>): Unit
 
-@C //see ffi_exception.h
-func throwCJ(str: CString):Unit {
-    throw Webrtc4cjFFIException(str.toString())
+public class Webrtc4cjException <: Exception {
+    public init(message: String) {
+        super(message)
+    }
+
+    public override func toString(): String {
+        return "Webrtc4cjFFIException: ${message}"
+    }
 }
 
 public class Webrtc4cjFFIException <: Exception {
     static init () {
         unsafe {
-            setThrowCangjieException(throwCJ)
+            setThrowCangjieException({str: CString => //see ffi_exception.h
+                throw Webrtc4cjFFIException(str.toString())
+            })
         }
     }
 

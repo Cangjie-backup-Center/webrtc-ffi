@@ -85,6 +85,10 @@ extern "C" {
     */
     void set_cj_func_call_OnDataChannel_(int64_t cpp_ptr, void (*pe)(int64_t id, int64_t ptr));
     void set_peerConnection_class_key(int64_t cpp_ptr, int64_t classKey);  // 设置到对应的cpp类中仓颉类的randomid. 
+
+    // dataConnection
+    void set_dataConnection_class_key(int64_t cpp_ptr, int64_t classKey);  // 设置到对应的cpp类中仓颉类的randomid.
+
 }
 
 

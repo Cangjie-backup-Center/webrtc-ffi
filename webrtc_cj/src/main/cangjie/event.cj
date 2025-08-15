@@ -31,11 +31,11 @@ struct CJ_RTCTrackEvent {
 
 public class RTCTrackEvent {
     public RTCTrackEvent(
-        let TYPE: String,
-        let streams: Array<Int64>,
-        let MediaStreamTrack_ptr: Int64,
-        let RtpReceiver_ptr: Int64,
-        let RtpTransceiver_ptr: Int64
+        public let TYPE: String,
+        public let streams: Array<Int64>,
+        public let MediaStreamTrack_ptr: Int64,
+        public let RtpReceiver_ptr: Int64,
+        public let RtpTransceiver_ptr: Int64
     ) {}
 }
 
@@ -51,12 +51,34 @@ struct CJ_RTCPeerConnectionIceErrorEvent {
 
 public class RTCPeerConnectionIceErrorEvent {
     public RTCPeerConnectionIceErrorEvent(
-        let TYPE: String,
-        let address: String,
-        let port: Int64,
-        let url: String,
-        let errorCode: Int64,
-        let errorText: String
+        public let TYPE: String,
+        public let address: String,
+        public let port: Int64,
+        public let url: String,
+        public let errorCode: Int64,
+        public let errorText: String
+    ) {}
+}
+
+
+@C
+struct CJ_MessageEvent {
+    let TYPE: CString = unsafe {zeroValue<CString>()}
+    let data_arr: CPointer<UInt8>= unsafe {zeroValue<CPointer<UInt8>>()}
+    let data_arr_size: Int64= unsafe {zeroValue<Int64>()}
+    let binary: Bool= unsafe {zeroValue<Bool>()}
+    let data_str: CString= unsafe {zeroValue<CString>()}
+}
+
+public enum MessageEventData {
+    | STRING(String)
+    | ARRAY_BUFFER(Array<UInt8>)
+}
+
+public class MessageEvent {
+    public MessageEvent(
+        public let TYPE: String,
+        public let data: MessageEventData
     ) {}
 }
 

@@ -8,7 +8,6 @@
 #include "pc/media_stream_observer.h"
 
 #include "ffi_exception.h"
-#include "peer_connection.h"
 #include "async_work/uv_work.h"
 #include "screen_capture/screen_capturer.h"
 #include "screen_capture/system_audio_receiver.h"

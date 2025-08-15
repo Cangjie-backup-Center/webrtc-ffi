@@ -27,27 +27,29 @@ public class VideoRenderController <: XComponentController {
 
     protected override func onSurfaceChanged(surfaceId: String, rect: SurfaceRect) {
         // 在onSurfaceChanged中调用ChangeSurface绘制内容
-        cj_ChangeSurface(Int64.parse(surfaceId), 1134.0, 1002.0)
+        unsafe {
+            ffi_ChangeSurface(Int64.parse(surfaceId), 1134.0, 1002.0)
+        }
     }
 
     public func newNativeVideoRenderer(): Unit {
-        renderer = cj_newNativeVideoRenderer(Int64.parse(mySurfaceId))
+        renderer = unsafe {ffi_newNativeVideoRenderer(Int64.parse(mySurfaceId))}
     }
 
     public func setVideoTrack(mst : VideoTrack): Unit {
-        cj_setVideoTrack(renderer, mst.getID())
+        unsafe {ffi_setVideoTrack(renderer, mst.getID())}
     }
 
     public func setVideoTrack(mst : MediaStreamTrack): Unit {
-        cj_setVideoTrack(renderer, mst.getID())
+        unsafe {ffi_setVideoTrack(renderer, mst.getID())}
     }
 
     public func setMirror(mirrorVerticallyBool: Bool) {
-        cj_setMirror(renderer, mirrorVerticallyBool)
+        unsafe  {ffi_setMirror(renderer, mirrorVerticallyBool)}
     }
 
     public func setScalingMode(scalingMode : Int32) {
-        cj_setScalingMode(renderer, scalingMode)
+        unsafe {ffi_setScalingMode(renderer, scalingMode)}
     }
 
    protected override func onSurfaceDestroyed(surfaceId: String) {

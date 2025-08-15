@@ -9,14 +9,6 @@
 
 #include <cstdint>
 
-#define CONST_STRING_TO_CHAR(obj)                       \
-    do {                                                \
-        auto new_obj = std::make_unique<char[]>(obj.size() + 1);  \
-        std::strncpy(new_obj, obj.c_str(), obj.size());      \  
-        return new_obj.get();                                 \  
-    } while (0) 
-
-
 enum class FFIRTCErrorDetailType {
     DATA_CHANNEL_FAILURE,
     DTLS_FAILURE,
@@ -228,6 +220,36 @@ typedef struct {
     const char *errorText;
 } CJ_RTCPeerConnectionIceErrorEvent;
 
+typedef struct {
+    const char *type;
+    const uint8_t *data_arr;
+    int64_t data_arr_size;
+    const bool binary;
+    const char *data_str;
+} CJ_MessageEvent;
 
+typedef struct {
+    int32_t sdpMLineIndex;
+    char* sdpMid;
+    char* candidate;
+    char* foundation;
+    char* component;
+    int32_t priority;
+    char* address;
+    char* protocol;
+    uint16_t port;
+    char* tcpType;
+    char* relatedAddress;
+    uint16_t relatedPort;
+    char* usernameFragment;
+    char* type;
+    char* adapterType;
+    char* serverUrl;
+} CJToCppCandidateObject;
+
+typedef struct {
+    const char* type;
+    CJToCppCandidateObject* candidate;
+} CJ_OnIceCandidateEvent;
 
 #endif // WEBRTC4CJ_FFI_DEFINE_STRUCT_H

@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <string>
 #include "rtc_base/rtc_certificate_generator.h"
+#include "ffi_ice_candidate.h"
 
 const char kEnumIceTransportPolicyAll[] = "all";
 const char kEnumIceTransportPolicyRelay[] = "relay";
@@ -366,6 +367,11 @@ cj_RTCSessionDescription ffiPeerConnection::GetPendingRemoteDescription(){
     return *desc;
 }
 
+void ffiPeerConnection::SetOnIceCandidate(void (*pe)(int64_t id, CJ_OnIceCandidateEvent ptr)) {
+    this->cj_func_call_OnIceCandidate_ = pe;
+}
+
+
 void ffiPeerConnection::OnIceCandidate(const IceCandidateInterface* candidate) {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 
@@ -384,18 +390,20 @@ void ffiPeerConnection::OnIceCandidate(const IceCandidateInterface* candidate) {
     auto sdpMLineIndex = candidate->sdp_mline_index();
     auto can = candidate->candidate();
     
-//    Dispatch(
-//        CallbackEvent<ffiPeerConnection>::Create([this, sdp, sdpMid, sdpMLineIndex, can](ffiPeerConnection& target) {
-//            RTC_DCHECK_EQ(this, &target);
-//
-//            auto env = target.Env();
-//            Napi::HandleScope scope(env);
-//            auto jsEvent = Object::New(env);
-//            jsEvent.Set("type", String::New(env, kEventIceCandidate));
-//            jsEvent.Set("candidate", NativeToJsCandidate(env, sdpMid, sdpMLineIndex, sdp, can));
-//            target.MakeCallback(kEventIceCandidate, {jsEvent});
-//        })); // TODO 
+    Dispatch(
+        CallbackEvent<ffiPeerConnection>::Create([this, sdp, sdpMid, sdpMLineIndex, can](ffiPeerConnection& target) {
+            RTC_DCHECK_EQ(this, &target);
+            if (cj_func_call_OnIceCandidate_) {
+                this->cj_func_call_OnIceCandidate_(
+                    this->cj_class_key, CJ_OnIceCandidateEvent{
+                        type : "icecandidate",
+                        candidate: (CJToCppCandidate(sdpMid, sdpMLineIndex, sdp, can)).value()
+                });
+            }
+        })
+    );
 }
+
 void ffiPeerConnection::SetOnIceCandidateError(void (*pe)(int64_t id, CJ_RTCPeerConnectionIceErrorEvent ptr)){
     this->cj_func_call_OnIceCandidateError_= pe;
 }

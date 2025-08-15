@@ -81,6 +81,7 @@ public:
     void SetOnStandardizedIceConnectionChange(void (*pe)(int64_t id, CJ_Event ptr));
     void SetOnConnectionChange(void (*pe)(int64_t id, CJ_Event ptr));
     void SetOnIceGatheringChange(void (*pe)(int64_t id, CJ_Event ptr));
+    void SetOnIceCandidate(void (*pe)(int64_t id, CJ_OnIceCandidateEvent ptr));
     int64_t cj_class_key = 0;
 
 private:
@@ -97,6 +98,7 @@ private:
     void (*cj_func_call_OnStandardizedIceConnectionChange_)(int64_t id, CJ_Event ptr) = nullptr;
     void (*cj_func_call_OnConnectionChange_)(int64_t id, CJ_Event ptr) = nullptr;
     void (*cj_func_call_OnIceGatheringChange_)(int64_t id, CJ_Event ptr) = nullptr;
+    void (*cj_func_call_OnIceCandidate_)(int64_t id, CJ_OnIceCandidateEvent ptr) = nullptr;
 
 public:
     static int64_t GenerateCertificate(std::string keyname);

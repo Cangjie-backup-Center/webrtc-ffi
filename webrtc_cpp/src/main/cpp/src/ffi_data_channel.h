@@ -38,6 +38,12 @@ public:
     FFIBinaryType GetBinaryType();
     void SetBinaryType(FFIBinaryType value);
 // readonly
+    int64_t cj_class_key = 0;
+
+    void SetOnopen(void (*pe)(int64_t id, CJ_Event ptr));
+    void SetOnclose(void (*pe)(int64_t id, CJ_Event ptr));
+    void SetOnclosing(void (*pe)(int64_t id, CJ_Event ptr));
+    void SetOnMessage(void (*pe)(int64_t id, CJ_MessageEvent ptr));
     
 protected:
     void SetCJClassID(int64_t id);
@@ -47,6 +53,12 @@ protected:
     void OnBufferedAmountChange(uint64_t sentDataSize) override;
 
 private:
+    
+    void (*cj_func_call_Onopen_)(int64_t id, CJ_Event ptr) = nullptr;
+    void (*cj_func_call_Onclose_)(int64_t id, CJ_Event ptr) = nullptr;
+    void (*cj_func_call_Onclosing_)(int64_t id, CJ_Event ptr) = nullptr;
+    void (*cj_func_call_OnMessage_)(int64_t id, CJ_MessageEvent ptr) = nullptr;
+    
     rtc::scoped_refptr<DataChannelInterface> dataChannel_{};
     
     FFIBinaryType binaryType_ = FFIBinaryType::BLOB;
