@@ -5,4 +5,6 @@
 // please include "napi/native_api.h".
 
 #include "ffi_rtp_transceiver.h"
+#include "ffi_exception.h"
+
 

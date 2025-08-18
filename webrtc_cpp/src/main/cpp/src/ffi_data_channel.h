@@ -6,22 +6,22 @@
 
 #ifndef WEBRTC4CJ_FFI_DATA_CHANNEL_H
 #define WEBRTC4CJ_FFI_DATA_CHANNEL_H
-#include <cstdint>
-#include "ffi_define_struct.h"
 #include "api/data_channel_interface.h"
 #include "event/ffi_event_target.h"
+#include "ffi_cj_class.h"
+#include "ffi_define_struct.h"
+#include <cstdint>
 
 namespace webrtc {
 
-class ffiDataChannelObserverTemp : public FFIEventTarget<ffiDataChannelObserverTemp>, public DataChannelObserver {
+class ffiDataChannelObserverTemp : public FFIEventTarget<ffiDataChannelObserverTemp>,
+                                   public DataChannelObserver,
+                                   public CJ_CLASS_BASE::FFICangjieClassID {
 public:
     explicit ffiDataChannelObserverTemp(rtc::scoped_refptr<DataChannelInterface> dataChannel);
     ~ffiDataChannelObserverTemp() override;
 
-    rtc::scoped_refptr<DataChannelInterface> Get() const
-    {
-        return dataChannel_;
-    }
+    rtc::scoped_refptr<DataChannelInterface> Get() const { return dataChannel_; }
 
 // readonly
     std::string GetLabel();
@@ -38,37 +38,34 @@ public:
     FFIBinaryType GetBinaryType();
     void SetBinaryType(FFIBinaryType value);
 // readonly
-    int64_t cj_class_key = 0;
+//    int64_t cj_class_key = 0;
 
     void SetOnopen(void (*pe)(int64_t id, CJ_Event ptr));
     void SetOnclose(void (*pe)(int64_t id, CJ_Event ptr));
     void SetOnclosing(void (*pe)(int64_t id, CJ_Event ptr));
     void SetOnMessage(void (*pe)(int64_t id, CJ_MessageEvent ptr));
-    
+
 protected:
-    void SetCJClassID(int64_t id);
     void SetOnStateChange(void (*pe)(int64_t id, int64_t ptr));
     void OnStateChange() override;
-    void OnMessage(const DataBuffer& buffer) override;
+    void OnMessage(const DataBuffer &buffer) override;
     void OnBufferedAmountChange(uint64_t sentDataSize) override;
 
 private:
-    
     void (*cj_func_call_Onopen_)(int64_t id, CJ_Event ptr) = nullptr;
     void (*cj_func_call_Onclose_)(int64_t id, CJ_Event ptr) = nullptr;
     void (*cj_func_call_Onclosing_)(int64_t id, CJ_Event ptr) = nullptr;
     void (*cj_func_call_OnMessage_)(int64_t id, CJ_MessageEvent ptr) = nullptr;
-    
+
     rtc::scoped_refptr<DataChannelInterface> dataChannel_{};
-    
+
     FFIBinaryType binaryType_ = FFIBinaryType::BLOB;
     std::atomic<uint64_t> bufferedAmountLowThreshold_{0};
-    
+
     void (*cj_func_OnStateChange_)(int64_t id, int64_t ptr);
-    int64_t cj_class_id_;
 };
 
 
-}
+} // namespace webrtc
 
-#endif //WEBRTC4CJ_FFI_DATA_CHANNEL_H
+#endif // WEBRTC4CJ_FFI_DATA_CHANNEL_H

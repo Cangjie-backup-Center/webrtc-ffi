@@ -190,5 +190,6 @@ void set_cj_func_call_OnDataChannel_(int64_t cpp_ptr, void (*pe)(int64_t id, int
 }
 
 void set_peerConnection_class_key(int64_t cpp_ptr, int64_t classKey){
-    ((webrtc::ffiPeerConnection*)cpp_ptr)->cj_class_key = classKey;
+//    ((webrtc::ffiPeerConnection*)cpp_ptr)->cj_class_key = classKey;
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->SetCJClassID(classKey);
 }

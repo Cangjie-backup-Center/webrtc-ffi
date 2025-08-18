@@ -27,7 +27,7 @@ bool CangjieToNativeIceServer(CJ_RTCIceServer cjrs, webrtc::PeerConnectionInterf
 rtc::RTCCertificate* CangjieToNativeCertificate(CJ_RTCCertificate cjrc); // TODO
 
 
-class ffiPeerConnection : public FFIEventTarget<ffiPeerConnection>, public PeerConnectionObserver {
+class ffiPeerConnection : public FFIEventTarget<ffiPeerConnection>, public PeerConnectionObserver, public CJ_CLASS_BASE::FFICangjieClassID {
     
 public:
     
@@ -82,7 +82,7 @@ public:
     void SetOnConnectionChange(void (*pe)(int64_t id, CJ_Event ptr));
     void SetOnIceGatheringChange(void (*pe)(int64_t id, CJ_Event ptr));
     void SetOnIceCandidate(void (*pe)(int64_t id, CJ_OnIceCandidateEvent ptr));
-    int64_t cj_class_key = 0;
+//    int64_t cj_class_key = 0;
 
 private:
     std::shared_ptr<PeerConnectionFactoryWrapper> factory_;

@@ -9,6 +9,8 @@
 
 #include "api/rtp_receiver_interface.h"
 #include "api/peer_connection_interface.h"
+#include "ffi_exception.h"
+#include "ffi_rtp_sender.h"
 
 namespace webrtc {
 
@@ -19,39 +21,36 @@ public:
     static ffiRtpTransceiver* NewInstance(
         std::shared_ptr<PeerConnectionFactoryWrapper> factory, 
         rtc::scoped_refptr<PeerConnectionInterface> pc,
-        rtc::scoped_refptr<RtpTransceiverInterface> transceiver);  // TODO
+        rtc::scoped_refptr<RtpTransceiverInterface> transceiver) {
+        RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+        if (!factory || !pc || !transceiver) {
+            CANGJIE_THROW("Invalid argument");
+        }
+    } 
     
+    ffiRtpTransceiver(std::shared_ptr<PeerConnectionFactoryWrapper> factory, 
+        rtc::scoped_refptr<PeerConnectionInterface> pc,
+        rtc::scoped_refptr<RtpTransceiverInterface> transceiver){
+        RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+        factory_ = factory;
+        pc_ = pc;
+        rtpTransceiver_ = transceiver;
+    }
     ~ffiRtpTransceiver() ;
 
-    rtc::scoped_refptr<RtpTransceiverInterface> Get() const;
+    rtc::scoped_refptr<RtpTransceiverInterface> Get() const {
+        return rtpTransceiver_;
+    }
     
-    /*
-    // https://www.w3.org/TR/webrtc/#rtcrtptransceiver-interface
-export interface RTCRtpTransceiver {
-  readonly mid: string | null;
-  readonly sender: RTCRtpSender;
-  readonly receiver: RTCRtpReceiver;
-  direction: RTCRtpTransceiverDirection;
-  readonly currentDirection: RTCRtpTransceiverDirection | null;
 
-  stop(): void;
-  setCodecPreferences(codecs: RTCRtpCodec[]): void;
-}
-
-declare var RTCRtpTransceiver: {
-  prototype: RTCRtpTransceiver;
-  new(): RTCRtpTransceiver;
-};
-    */
-    void *GetMid(); // TODO  返回值需要重新定义
-    void *GetSender(); // TODO  返回值需要重新定义
-    void *GetReceiver(); // TODO  返回值需要重新定义
-    void *GetDirection(); // TODO  返回值需要重新定义
-    void SetDirection(); // TODO  参数需要重新定义
-    void *GetCurrentDirection(); // TODO  参数需要重新定义
+    std::string GetMid(); 
+    ffiRtpSender GetSender(); 
+    ffiRtpReceiver GetReceiver(); 
+    FFIRTCRtpTransceiverDirection GetDirection(); 
+    void SetDirection(FFIRTCRtpTransceiverDirection n); 
+    FFIRTCRtpTransceiverDirection GetCurrentDirection(); 
     void Stop(); 
-    void *SetCodecPreferences(); // TODO  参数需要重新定义
-    
+    void SetCodecPreferences(CJ_RTCRtpCodec codecs[]); 
 private:
     std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
     rtc::scoped_refptr<PeerConnectionInterface> pc_;

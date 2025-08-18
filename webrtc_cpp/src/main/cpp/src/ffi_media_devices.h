@@ -26,14 +26,14 @@ struct FFI_videoGetDisplayMedia {
 
 namespace webrtc {
 
-    class FFIMediaDevices  {
+    class FFIMediaDevices  : public CJ_CLASS_BASE::FFICangjieClassID {
         public:
             FFIMediaDevices() {
                 factory_ = PeerConnectionFactoryWrapper::GetDefault();
                 
                 
             }
-            ~FFIMediaDevices () {
+            ~FFIMediaDevices () override {
                 delete ffiUserMediaStream_;
                 delete ffiDisplayMediaStream_;
             }

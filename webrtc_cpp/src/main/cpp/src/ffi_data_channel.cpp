@@ -93,9 +93,6 @@ namespace webrtc {
         binaryType_ = value;
     }
 // readonly
-    void ffiDataChannelObserverTemp::SetCJClassID(int64_t id){
-        cj_class_id_ = id;
-    }
     void ffiDataChannelObserverTemp::SetOnStateChange(void (*pe)(int64_t id, int64_t ptr)){
         cj_func_OnStateChange_ = pe;
     }

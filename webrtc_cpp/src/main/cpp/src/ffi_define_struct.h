@@ -206,7 +206,7 @@ typedef struct {
     const char *type;
     int64_t *streams;
     int64_t streams_size;
-    int64_t MediaStreamTrack_ptr; // FFIMediaStream
+    int64_t MediaStreamTrack_ptr; // ffiMediaStreamTrack
     int64_t RtpReceiver_ptr;      // ffiRtpReceiver
     int64_t RtpTransceiver_ptr;   // ffiRtpTransceiver
 } CJ_RTCTrackEvent;
@@ -251,5 +251,26 @@ typedef struct {
     const char* type;
     CJToCppCandidateObject* candidate;
 } CJ_OnIceCandidateEvent;
+
+typedef struct {
+    bool active;
+    int64_t maxBitrate;
+    int64_t maxFramerate;
+    int64_t scaleResolutionDownBy;
+} CJ_RTCRtpEncodingParameters;
+
+typedef struct {
+    CJ_RTCRtpEncodingParameters* encodings;
+    int64_t encodings_size;
+    char* transactionId;
+} CJ_RTCRtpSendParameters;
+
+typedef struct {
+    char* mimeType;
+    int64_t clockRate;
+    int64_t channels;
+    char* sdpFmtpLine;
+} CJ_RTCRtpCodec;
+
 
 #endif // WEBRTC4CJ_FFI_DEFINE_STRUCT_H
