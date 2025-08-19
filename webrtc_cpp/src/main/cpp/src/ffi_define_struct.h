@@ -178,16 +178,16 @@ typedef struct {
     char *RTCSdpType;
     int64_t RTCSdpType_size;
     bool undefined = true; // 如果 true , 其他值就无效了
-} cj_RTCSessionDescription;
+} CJ_RTCSessionDescription;
 
-typedef struct {
-    int64_t maxChannels;
-    int64_t maxMessageSize;
-    char *RTCSctpTransportState;
-    int64_t RTCSctpTransportState_size;
-    int64_t RTCDtlsTransport_ptr; // rtc::scoped_refptr<SctpTransportInterface>
-    bool undefined = true;        // 如果 true , 其他值就无效了
-} cj_RTCSctpTransport;
+//typedef struct {
+//    int64_t maxChannels;
+//    int64_t maxMessageSize;
+//    char *RTCSctpTransportState;
+//    int64_t RTCSctpTransportState_size;
+//    int64_t RTCDtlsTransport_ptr; // rtc::scoped_refptr<SctpTransportInterface>
+//    bool undefined = true;        // 如果 true , 其他值就无效了
+//} cj_RTCSctpTransport;
 
 typedef struct {
     int64_t channel; // ffiDataChannelObserverTemp 指针地址

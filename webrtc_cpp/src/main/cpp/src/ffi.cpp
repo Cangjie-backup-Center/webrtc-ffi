@@ -1,4 +1,5 @@
 #include "ffi.h"
+#include "ffi_data_channel.h"
 
 #include <cstdint>
 
@@ -183,13 +184,120 @@ int64_t ffi_webrtc_ffiMediaStreamTrack_GetSource(int64_t ffiMediaStreamTrackPtr)
     return ((webrtc::ffiMediaStreamTrack*)ffiMediaStreamTrackPtr)->GetSource();
 }
 
-
-void set_cj_func_call_OnDataChannel_(int64_t cpp_ptr, void (*pe)(int64_t id, int64_t ptr)) {
-    ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnDataChannel(pe);
-    return;
-}
-
-void set_peerConnection_class_key(int64_t cpp_ptr, int64_t classKey){
-//    ((webrtc::ffiPeerConnection*)cpp_ptr)->cj_class_key = classKey;
+void peerConnection_set_class_key(int64_t cpp_ptr, int64_t classKey){
     ((webrtc::ffiPeerConnection*)cpp_ptr)->SetCJClassID(classKey);
 }
+
+void peerConnection_set_cj_func_call_OnDataChannel_(int64_t cpp_ptr, void (*pe)(int64_t id, int64_t ptr)) {
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnDataChannel(pe);
+}
+
+void peerConnection_set_cj_func_call_OnSignalingChange_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr)){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnSignalingChange(pe);
+}
+void peerConnection_set_cj_func_call_OnIceCandidateError_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_RTCPeerConnectionIceErrorEvent ptr)){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnIceCandidateError(pe);
+}
+void peerConnection_set_cj_func_call_onTrack_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_RTCTrackEvent ptr)){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnTrack(pe);
+}
+bool peerConnection_GetCanTrickleIceCandidates(int64_t cpp_ptr) {
+    return ((webrtc::ffiPeerConnection*)cpp_ptr)->GetCanTrickleIceCandidates();
+}
+int64_t peerConnection_GetSignalingState(int64_t cpp_ptr) {
+    return (int64_t)((webrtc::ffiPeerConnection*)cpp_ptr)->GetSignalingState();
+}
+int64_t peerConnection_GetIceGatheringState(int64_t cpp_ptr){
+    return (int64_t)((webrtc::ffiPeerConnection*)cpp_ptr)->GetIceGatheringState();
+}
+int64_t peerConnection_GetIceConnectionState(int64_t cpp_ptr){
+    return (int64_t)((webrtc::ffiPeerConnection*)cpp_ptr)->GetIceConnectionState();
+}
+int64_t peerConnection_GetConnectionState(int64_t cpp_ptr) {
+    return (int64_t)((webrtc::ffiPeerConnection*)cpp_ptr)->GetConnectionState();
+}
+
+CJ_RTCSessionDescription peerConnection_GetLocalDescription(int64_t cpp_ptr) {
+    return ((webrtc::ffiPeerConnection*)cpp_ptr)->GetLocalDescription();
+}
+CJ_RTCSessionDescription peerConnection_GetRemoteDescription(int64_t cpp_ptr) {
+    return ((webrtc::ffiPeerConnection*)cpp_ptr)->GetRemoteDescription();
+}
+CJ_RTCSessionDescription peerConnection_GetCurrentLocalDescription(int64_t cpp_ptr) {
+    return ((webrtc::ffiPeerConnection*)cpp_ptr)->GetCurrentLocalDescription();
+}
+CJ_RTCSessionDescription peerConnection_GetCurrentRemoteDescription(int64_t cpp_ptr) {
+    return ((webrtc::ffiPeerConnection*)cpp_ptr)->GetCurrentRemoteDescription();
+}
+CJ_RTCSessionDescription peerConnection_GetPendingLocalDescription(int64_t cpp_ptr) {
+    return ((webrtc::ffiPeerConnection*)cpp_ptr)->GetPendingLocalDescription();
+}
+CJ_RTCSessionDescription peerConnection_GetPendingRemoteDescription(int64_t cpp_ptr) {
+    return ((webrtc::ffiPeerConnection*)cpp_ptr)->GetPendingRemoteDescription();
+}
+int64_t peerConnection_GetSctp(int64_t cpp_ptr){
+    return ((webrtc::ffiPeerConnection*)cpp_ptr)->GetSctp();
+}
+
+int64_t peerConnection_static_GenerateCertificate(char* keyname){
+    return webrtc::ffiPeerConnection::GenerateCertificate(keyname);
+}
+
+// dataConnection
+void dataConnection_set_class_key(int64_t cpp_ptr, int64_t classKey){
+    ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->SetCJClassID(classKey);
+}
+void dataConnection_set_cj_func_Onopen_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event event)){
+    ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->SetOnopen(pe);
+}
+void dataConnection_set_cj_func_Onclosing_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event event)){
+    ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->SetOnclosing(pe);
+}
+void dataConnection_set_cj_func_Onclose_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event event)){
+    ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->SetOnclose(pe);
+}
+void dataConnection_set_cj_func_Onmessage_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_MessageEvent event)){
+    ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->SetOnMessage(pe);
+}
+char * dataConnection_get_label_(int64_t cpp_ptr) {
+    return ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->GetLabel().data();
+}
+bool dataConnection_get_ordered_(int64_t cpp_ptr) {
+    return ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->GetOrdered();
+}
+int64_t dataConnection_get_maxPacketLifeTime_(int64_t cpp_ptr){
+    return ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->GetMaxPacketLifeTime();
+}
+int64_t dataConnection_get_maxRetransmits_(int64_t cpp_ptr) {
+    return ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->GetMaxRetransmits();
+}
+char* dataConnection_get_protocol_(int64_t cpp_ptr) {
+    return ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->GetProtocol().data();
+}
+bool dataConnection_get_negotiated_(int64_t cpp_ptr) {
+    return ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->GetNegotiated();
+}
+int64_t dataConnection_get_id_(int64_t cpp_ptr){
+    return ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->GetId();
+}
+int64_t dataConnection_get_readyState_(int64_t cpp_ptr){
+    return (int64_t)((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->GetReadyState();
+}
+int64_t dataConnection_get_bufferedAmount_(int64_t cpp_ptr){
+    return ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->GetBufferedAmount();
+}
+int64_t dataConnection_get_bufferedAmountLowThreshold_(int64_t cpp_ptr){
+    return ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->GetBufferedAmountLowThreshold();
+}
+void dataConnection_set_bufferedAmountLowThreshold_(int64_t cpp_ptr, int64_t value){
+    ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->SetBufferedAmountLowThreshold(value);
+}
+int64_t dataConnection_get_binaryType_(int64_t cpp_ptr){
+    return (int64_t)((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->GetBinaryType();
+    
+}
+void dataConnection_set_binaryType_(int64_t cpp_ptr, int64_t value){
+    return ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->SetBinaryType((enum FFIBinaryType)value);
+}
+
+

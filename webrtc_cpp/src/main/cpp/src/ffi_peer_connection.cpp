@@ -22,6 +22,52 @@ const char kEnumBundlePolicyMaxCompact[] = "max-compat";
 const char kEnumRtcpMuxPolicyRequire[] = "require";
 
 namespace webrtc{
+
+
+class FFICreateSdpObserver : public FFIEventTarget<FFICreateSdpObserver>, public CreateSessionDescriptionObserver {
+public:
+    FFICreateSdpObserver (ffiPeerConnection* pc, void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg))  {
+        cj_func_callback_ = pe;
+        pc_ = pc;
+    };
+    ~FFICreateSdpObserver() override {}
+    
+    ffiPeerConnection* pc_ = nullptr;
+    
+protected:
+    
+    void (*cj_func_callback_)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg) = nullptr;
+    
+    void OnSuccess(SessionDescriptionInterface* desc) override {
+        this->Dispatch(
+           CallbackEvent<FFICreateSdpObserver>::Create([this, desc](FFICreateSdpObserver& target) {
+                std::string sdp;
+                desc->ToString(&sdp);
+                RTC_DLOG(LS_VERBOSE) << "sdp: " << sdp;
+                std::string sdptype;
+                sdptype = webrtc::SdpTypeToString(desc->GetType());
+                this->cj_func_callback_(this->pc_->GetCJClassID(), true, CJ_RTCSessionDescription{
+                    sdp: sdp.data(),
+                    sdp_size: (int64_t)sdp.size(),
+                    RTCSdpType: sdptype.data(),
+                    RTCSdpType_size: (int64_t)sdptype.size(),
+                    undefined: false
+                }, "");
+            })
+        );
+    }
+    
+    void OnFailure(RTCError error) override {
+        this->Dispatch(
+            CallbackEvent<FFICreateSdpObserver>::Create([this, error](FFICreateSdpObserver& target) {
+                const char* message = error.message();
+                this->cj_func_callback_(this->pc_->GetCJClassID(), false, CJ_RTCSessionDescription(), message);
+            })
+        );
+    }
+};
+
+
 rtc::scoped_refptr<rtc::RTCCertificate> ffiPeerConnection::certificate_ = rtc::scoped_refptr<rtc::RTCCertificate>();
 
 bool CangjieToNativeIceServer(CJ_RTCIceServer cjrs, webrtc::PeerConnectionInterface::IceServer& iceServer){
@@ -223,7 +269,7 @@ FFIRTCPeerConnectionState ffiPeerConnection::GetConnectionState(){
     }
     CANGJIE_THROW("Invalid value");
 }
-cj_RTCSessionDescription ffiPeerConnection::GetLocalDescription(){
+CJ_RTCSessionDescription ffiPeerConnection::GetLocalDescription(){
     // It's only safe to operate on SessionDescriptionInterface on the signaling thread
     std::string sdp;
     std::string type;
@@ -235,7 +281,7 @@ cj_RTCSessionDescription ffiPeerConnection::GetLocalDescription(){
             }
         }
     });
-    cj_RTCSessionDescription* desc = new cj_RTCSessionDescription();  // TODO free
+    CJ_RTCSessionDescription* desc = new CJ_RTCSessionDescription();  // TODO free
     if (sdp.empty()) {
         return *desc;
     }
@@ -250,7 +296,7 @@ cj_RTCSessionDescription ffiPeerConnection::GetLocalDescription(){
     return *desc;
 }
 
-cj_RTCSessionDescription ffiPeerConnection::GetRemoteDescription(){
+CJ_RTCSessionDescription ffiPeerConnection::GetRemoteDescription(){
      // It's only safe to operate on SessionDescriptionInterface on the signaling thread
     std::string sdp;
     std::string type;
@@ -262,7 +308,7 @@ cj_RTCSessionDescription ffiPeerConnection::GetRemoteDescription(){
             }
         }
     });
-    cj_RTCSessionDescription* desc = new cj_RTCSessionDescription();
+    CJ_RTCSessionDescription* desc = new CJ_RTCSessionDescription();
     if (sdp.empty()) {
         return *desc;
     }
@@ -273,7 +319,7 @@ cj_RTCSessionDescription ffiPeerConnection::GetRemoteDescription(){
     desc->undefined = false;
     return *desc;
 }
-cj_RTCSessionDescription ffiPeerConnection::GetCurrentLocalDescription(){
+CJ_RTCSessionDescription ffiPeerConnection::GetCurrentLocalDescription(){
      // It's only safe to operate on SessionDescriptionInterface on the signaling thread
     std::string sdp;
     std::string type;
@@ -286,7 +332,7 @@ cj_RTCSessionDescription ffiPeerConnection::GetCurrentLocalDescription(){
         }
     });
 
-    cj_RTCSessionDescription* desc = new cj_RTCSessionDescription();
+    CJ_RTCSessionDescription* desc = new CJ_RTCSessionDescription();
     if (sdp.empty()) {
         return *desc;
     }
@@ -297,7 +343,7 @@ cj_RTCSessionDescription ffiPeerConnection::GetCurrentLocalDescription(){
     desc->undefined = false;
     return *desc;
 }
-cj_RTCSessionDescription ffiPeerConnection::GetCurrentRemoteDescription(){
+CJ_RTCSessionDescription ffiPeerConnection::GetCurrentRemoteDescription(){
     // It's only safe to operate on SessionDescriptionInterface on the signaling thread
     std::string sdp;
     std::string type;
@@ -309,7 +355,7 @@ cj_RTCSessionDescription ffiPeerConnection::GetCurrentRemoteDescription(){
             }
         }
     });
-    cj_RTCSessionDescription* desc = new cj_RTCSessionDescription();
+    CJ_RTCSessionDescription* desc = new CJ_RTCSessionDescription();
     if (sdp.empty()) {
         return *desc;
     }
@@ -320,7 +366,7 @@ cj_RTCSessionDescription ffiPeerConnection::GetCurrentRemoteDescription(){
     desc->undefined = false;
     return *desc;
 }
-cj_RTCSessionDescription ffiPeerConnection::GetPendingLocalDescription(){
+CJ_RTCSessionDescription ffiPeerConnection::GetPendingLocalDescription(){
     // It's only safe to operate on SessionDescriptionInterface on the signaling thread
     std::string sdp;
     std::string type;
@@ -332,7 +378,7 @@ cj_RTCSessionDescription ffiPeerConnection::GetPendingLocalDescription(){
             }
         }
     });
-    cj_RTCSessionDescription* desc = new cj_RTCSessionDescription();
+    CJ_RTCSessionDescription* desc = new CJ_RTCSessionDescription();
     if (sdp.empty()) {
         return *desc;
     }
@@ -343,7 +389,7 @@ cj_RTCSessionDescription ffiPeerConnection::GetPendingLocalDescription(){
     desc->undefined = false;
     return *desc;
 }
-cj_RTCSessionDescription ffiPeerConnection::GetPendingRemoteDescription(){
+CJ_RTCSessionDescription ffiPeerConnection::GetPendingRemoteDescription(){
     // It's only safe to operate on SessionDescriptionInterface on the signaling thread
     std::string sdp;
     std::string type;
@@ -355,7 +401,7 @@ cj_RTCSessionDescription ffiPeerConnection::GetPendingRemoteDescription(){
             }
         }
     });
-    cj_RTCSessionDescription* desc = new cj_RTCSessionDescription();
+    CJ_RTCSessionDescription* desc = new CJ_RTCSessionDescription();
     if (sdp.empty()) {
         return *desc;
     }
@@ -367,8 +413,41 @@ cj_RTCSessionDescription ffiPeerConnection::GetPendingRemoteDescription(){
     return *desc;
 }
 
+int64_t ffiPeerConnection::GetSctp(){
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+
+    if (!sctpTransportRef_) {
+        return (int64_t)sctpTransportRef_;
+    }
+
+    auto transport = pc_->GetSctpTransport();
+    if (!transport) {
+        return 0;  // TODO 判空
+    }
+
+    auto sctpTransport = ffiSctpTransport::NewInstance(factory_, transport);
+    sctpTransportRef_ = sctpTransport;
+
+    return (int64_t)sctpTransport;
+}
+
+void ffiPeerConnection::CreateOffer(bool iceRestart){
+    PeerConnectionInterface::RTCOfferAnswerOptions options;
+    options.ice_restart = iceRestart;
+    FFICreateSdpObserver* observer = new FFICreateSdpObserver(this->pc_, this->cj_func_call_CreateOffer_);
+    pc_->CreateOffer(observer, options);
+}
+
+
 void ffiPeerConnection::SetOnIceCandidate(void (*pe)(int64_t id, CJ_OnIceCandidateEvent ptr)) {
     this->cj_func_call_OnIceCandidate_ = pe;
+}
+
+void ffiPeerConnection::SetCallBackCreateOffer(void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg)) {
+    cj_func_call_CreateOffer_ = pe;
+}
+void ffiPeerConnection::SetCallBackCreateAnswer(void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg)) {
+    cj_func_call_CreateAnswer_ = pe;
 }
 
 

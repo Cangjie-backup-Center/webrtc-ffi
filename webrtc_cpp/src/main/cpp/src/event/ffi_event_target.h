@@ -23,7 +23,7 @@
 #include <thread>
 #include <future>
 #include "ffi_exception.h"
-#include "napi.h"
+//#include "napi.h"
 //#include "napi/native_api.h"
 
 #include "rtc_base/logging.h"

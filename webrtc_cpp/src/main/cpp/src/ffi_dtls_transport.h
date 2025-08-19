@@ -15,22 +15,25 @@
 
 namespace webrtc {
 
-class ffiPeerConnectionFactory;
+class PeerConnectionFactoryWrapper;
 class ffiIceTransport;
 
 class ffiDtlsTransport : public FFIEventTarget<ffiDtlsTransport>, public DtlsTransportObserverInterface {
 public:
-    static void Init(Napi::Env env, Napi::Object exports);
-
-    static ffiDtlsTransport NewInstance(
-        Napi::Env env, std::shared_ptr<ffiPeerConnectionFactory> factory,
-        rtc::scoped_refptr<DtlsTransportInterface> dtlsTransport);
+    static ffiDtlsTransport * NewInstance(
+        std::shared_ptr<PeerConnectionFactoryWrapper> factory,
+        rtc::scoped_refptr<DtlsTransportInterface> dtlsTransport) {
+        return new ffiDtlsTransport(factory, dtlsTransport);
+    }
+    
+     ffiDtlsTransport(
+        std::shared_ptr<PeerConnectionFactoryWrapper> factory,
+        rtc::scoped_refptr<DtlsTransportInterface> dtlsTransport) {
+        factory_ = factory;
+        dtlsTransport_ = dtlsTransport;
+    }
 
     ~ffiDtlsTransport();
-
-protected:
-
-    explicit ffiDtlsTransport(const Napi::CallbackInfo& info);
 
 public:
     /*
@@ -60,7 +63,7 @@ declare var RTCDtlsTransport: {
 
 private:
 
-    std::shared_ptr<ffiPeerConnectionFactory> factory_;
+    std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
     rtc::scoped_refptr<DtlsTransportInterface> dtlsTransport_;
 };
 

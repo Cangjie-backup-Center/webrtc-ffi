@@ -137,6 +137,15 @@ public struct CJ_SupportedConstraints {
 }
 
 @C
+public struct CJ_RTCSessionDescription {
+    public let sdp: CString = unsafe {zeroValue<CString>()}
+    public let sdp_size: Int64 = 0
+    public let RTCSdpType: CString = unsafe {zeroValue<CString>()}
+    public let RTCSdpType_size: Int64 = 0
+    public let undefined: Bool = true
+}
+
+@C
 public struct CJ_TO_CPP_DisplayMediaStreamOptions {
     let obj: CJ_MediaTrackConstraintSet
     let boolean: Bool
