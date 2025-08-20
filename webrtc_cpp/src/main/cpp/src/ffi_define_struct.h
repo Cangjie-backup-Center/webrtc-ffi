@@ -7,6 +7,7 @@
 #ifndef WEBRTC4CJ_FFI_DEFINE_STRUCT_H
 #define WEBRTC4CJ_FFI_DEFINE_STRUCT_H
 
+#include "api/rtp_parameters.h"
 #include <cstdint>
 
 enum class FFIRTCErrorDetailType {
@@ -260,9 +261,33 @@ typedef struct {
 } CJ_RTCRtpEncodingParameters;
 
 typedef struct {
+    int64_t clockRate;
+    int64_t channels;
+    char* mimeType;
+    char* sdpFmtpLine;
+    int64_t payloadType;
+} CJ_RTCRtpCodecParameters;
+
+typedef struct {
+    int64_t id;
+    char* uri;
+    bool encrypted;
+} CJ_RTCRtpHeaderExtensionParameters;
+
+typedef struct {
+    char* cname;
+    bool reducedSize;
+} CJ_RTCRtcpParameters;
+
+typedef struct {
+    CJ_RTCRtpCodecParameters* codecs;
+    int64_t codecs_size;
+    CJ_RTCRtpHeaderExtensionParameters* headerExtensions;
+    int64_t headerExtensions_size;
+    CJ_RTCRtcpParameters rtcp;
     CJ_RTCRtpEncodingParameters* encodings;
     int64_t encodings_size;
-    char* transactionId;
+    const char* transactionId;
 } CJ_RTCRtpSendParameters;
 
 typedef struct {
@@ -272,5 +297,63 @@ typedef struct {
     char* sdpFmtpLine;
 } CJ_RTCRtpCodec;
 
+/*namespace webrtc {
+
+struct RtpSendParametersUtils {
+    static void CJToNative(const CJ_RTCRtpSendParameters& cj, RtpParameters& native);
+    static void NativeToCj(const RtpParameters& native, CJ_RTCRtpSendParameters& cj);
+};
+struct RtpParametersUtils {
+    static void CJToNative(const CJ_RTCRtpSendParameters& cj, RtpParameters& native);
+    static void NativeToCj(const RtpParameters& native, CJ_RTCRtpSendParameters& cj);
+};
+
+//struct RtpReceiveParametersUtils {
+//    static void JsToNative(const Napi::Object& cj, RtpParameters& native);
+//    static void NativeToJs(const RtpParameters& native, Napi::Object& cj);
+//};
+//
+//struct RtpCapabilitiesUtils {
+//    static void JsToNative(const Napi::Object& cj, RtpCapabilities& native);
+//    static void NativeToJs(const RtpCapabilities& native, Napi::Object& cj);
+//};
+//
+//struct RtpCodecCapabilityUtils {
+//    static void JsToNative(const Napi::Object& cj, RtpCodecCapability& native);
+//    static void NativeToJs(const RtpCodecCapability& native, Napi::Object& cj);
+//};
+//
+struct RtpEncodingParametersUtils {
+    constexpr static char kAttributeNameSsrc[] = "ssrc";
+    static void CJToNative(const CJ_RTCRtpEncodingParameters& cj, RtpEncodingParameters& native);
+    static void NativeToCJ(const RtpEncodingParameters& native, CJ_RTCRtpEncodingParameters& cj);
+};
+
+void RtpSendParametersUtils::NativeToCj(const RtpParameters& native, CJ_RTCRtpSendParameters& ret) {
+    
+    CJ_RTCRtpEncodingParameters arr[native.encodings.size()];
+    
+    for (uint32_t i = 0; i < native.encodings.size(); i++) {
+        CJ_RTCRtpEncodingParameters t;
+        RtpEncodingParametersUtils::NativeToCJ(native.encodings[i], t);
+        arr[i] = t;
+    }
+    ret.encodings = arr;
+    ret.encodings_size = native.encodings.size();
+    ret.transactionId = native.transaction_id.data();
+    
+}
+
+void RtpParametersUtils::NativeToCj(const RtpParameters &native, CJ_RTCRtpSendParameters &cj) {
+    
+}
+
+
+void RtpEncodingParametersUtils::NativeToCJ(const RtpEncodingParameters &native, CJ_RTCRtpEncodingParameters &cj) {
+    
+}
+
+
+} // namespace webrtc*/
 
 #endif // WEBRTC4CJ_FFI_DEFINE_STRUCT_H

@@ -119,6 +119,15 @@ extern "C" {
     // sctp_transport
     void SctpTransport_set_class_key(int64_t cpp_ptr, int64_t classKey);
 
+
+    // ffiDtmfSender
+    void ffiDtmfSender_set_class_key(int64_t cpp_ptr, int64_t classKey);  // 设置到对应的cpp类中仓颉类的randomid.
+    bool ffiDtmfSender_GetCanInsertDTMF(int64_t cpp_ptr);
+    const char* ffiDtmfSender_GetToneBuffer(int64_t cpp_ptr); 
+    bool ffiDtmfSender_InsertDTMF(int64_t cpp_ptr, const char* tones, int64_t duration, int64_t interToneGap);
+    void ffiDtmfSender_set_OnToneChange(int64_t cpp_ptr, void (*pe)(int64_t id, const char* tone) ); 
+    
+    
 }
 
 

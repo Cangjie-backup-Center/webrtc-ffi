@@ -15,13 +15,15 @@
 #include "ffi_media_stream.h"
 #include "ffi_rtp_receiver.h"
 #include "peer_connection_interface.h"
+#include "ffi_dtls_transport.h"
+
 #include <cstdint>
 namespace webrtc {
 
 class PeerConnectionFactoryWrapper;
 
 
-class ffiRtpSender : public CJ_CLASS_BASE::FFICangjieClassID {
+class ffiRtpSender : public CJ_CLASS_BASE::FFICangjieClassID, public FFIEventTarget<ffiRtpSender>  {
     
 public:
     static ffiRtpSender * NewInstance(
@@ -39,12 +41,12 @@ public:
     rtc::scoped_refptr<RtpSenderInterface> Get() const {
         return rtpSender_;
     }
-
+//    static GetCapabilities  // TODO
 protected:
 
-    ffiMediaStreamTrack GetTrack();  // 对应仓颉class
-    ffiDtlsTransport GetTransport();// 对应仓颉class
-    ffiDtmfSender GetDtmf();// 对应仓颉class 
+    int64_t GetTrack();  // 对应仓颉class
+    int64_t GetTransport();// 对应仓颉class
+    int64_t GetDtmf();// 对应仓颉class 
     void SetParameters(CJ_RTCRtpSendParameters parameters, void (*pe)(int64_t cj_id, int64_t ptr)); // Promise
     CJ_RTCRtpSendParameters GetParameters();
     void ReplaceTrack(ffiMediaStreamTrack* track, void (*pe)(int64_t cj_id, int64_t ptr));  // Promise

@@ -10,9 +10,13 @@
 
 #include "dtmf_sender_interface.h"
 #include "event/ffi_event_target.h"
+#include "ffi_cj_class.h"
+#include <cstdint>
 namespace webrtc {
 
-class ffiDtmfSender : public FFIEventTarget<ffiDtmfSender>, public DtmfSenderObserverInterface {
+class ffiDtmfSender : public FFIEventTarget<ffiDtmfSender>, 
+                    public DtmfSenderObserverInterface ,
+                    public CJ_CLASS_BASE::FFICangjieClassID{
     
 public:
     
@@ -24,20 +28,15 @@ public:
         dtmfSender_ = dtmfSender;
     }
     
-    ~ffiDtmfSender() override;
+    ~ffiDtmfSender() {}
     
 public:
-    //     // JS
-    //    Napi::Value GetCanInsertDTMF(const Napi::CallbackInfo& info);
-    //    Napi::Value GetToneBuffer(const Napi::CallbackInfo& info);
-    //
-    //    Napi::Value GetEventHandler(const Napi::CallbackInfo& info);
-    //    void SetEventHandler(const Napi::CallbackInfo& info, const Napi::Value& value);
-    //
-    //    Napi::Value InsertDTMF(const Napi::CallbackInfo& info);
-    //    Napi::Value ToJson(const Napi::CallbackInfo& info);
-    
-    
+    bool GetCanInsertDTMF();
+    const char* GetToneBuffer();
+
+    bool InsertDTMF(const char* tones, int64_t duration, int64_t interToneGap);
+    void OnToneChange(const std::string& tone, const std::string& tone_buffer) override;
+    void (*cj_func_call_OnToneChange_)(int64_t id, const char* tone) = nullptr;
 private:
 
     rtc::scoped_refptr<DtmfSenderInterface> dtmfSender_;

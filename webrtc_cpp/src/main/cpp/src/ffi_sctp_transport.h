@@ -29,7 +29,7 @@ public:
         return  new ffiSctpTransport(factory, transport);
     }
 
-    ~ffiSctpTransport() override;
+    ~ffiSctpTransport() {}
 
     ffiSctpTransport(std::shared_ptr<PeerConnectionFactoryWrapper> factory, rtc::scoped_refptr<SctpTransportInterface> transport){
         factory_ = factory;

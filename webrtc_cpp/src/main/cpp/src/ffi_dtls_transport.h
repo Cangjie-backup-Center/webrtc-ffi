@@ -12,6 +12,7 @@
 
 #include "event/ffi_event_target.h"
 #include "ffi_define_struct.h"
+#include "ffi_sctp_transport.h"
 
 namespace webrtc {
 
@@ -33,7 +34,7 @@ public:
         dtlsTransport_ = dtlsTransport;
     }
 
-    ~ffiDtlsTransport();
+    ~ffiDtlsTransport() {}
 
 public:
     /*

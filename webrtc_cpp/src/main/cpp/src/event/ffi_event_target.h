@@ -65,6 +65,7 @@ public:
     
     void Dispatch(std::unique_ptr<Event<T>> event){
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+        if(this->stop) return;
         this->Enqueue(std::move(event));
         if (isRunning) {
             condition.notify_one();

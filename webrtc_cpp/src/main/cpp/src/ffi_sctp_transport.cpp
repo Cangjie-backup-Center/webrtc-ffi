@@ -37,7 +37,7 @@ FFIRTCSctpTransportState ffiSctpTransport::GetState() {
 }
 ffiDtlsTransport* ffiSctpTransport::GetTransport(){
     auto transport = sctpTransport_->Information().dtls_transport();
-    return ffiDtlsTransport::NewInstance(factory_, sctpTransport_) ;
+    return ffiDtlsTransport::NewInstance(factory_, transport) ;
 }
 
 void ffiSctpTransport::SetOnStateChange(void (*pe)(int64_t id, CJ_Event ptr)) {

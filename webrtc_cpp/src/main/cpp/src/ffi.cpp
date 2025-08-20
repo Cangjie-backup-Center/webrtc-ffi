@@ -49,7 +49,17 @@ int64_t ffi_newHardwareVideoDecoderFactory(){
     return (int64_t)ffiHVDF;
 }
 
-int64_t ffi_newPeerConnectionFactory(int64_t ffiADM_int64 , int64_t ffiHVEF_int64 , int64_t ffiHVDF_int64) {
+
+/*
+TODO 
+export interface PeerConnectionFactoryOptions {
+  adm?: AudioDeviceModule;
+  videoEncoderFactory?: VideoEncoderFactory;
+  videoDecoderFactory?: VideoDecoderFactory;
+  audioProcessing?: AudioProcessing;  // TODO 待确认需要如何传递参数
+}
+*/
+int64_t ffi_newPeerConnectionFactory(int64_t ffiADM_int64 , int64_t ffiHVEF_int64 , int64_t ffiHVDF_int64) {  // TODO 
     webrtc::ffiAudioDeviceModule* ffiADM_ptr = (webrtc::ffiAudioDeviceModule*)ffiADM_int64;
     webrtc::ffiHardwareVideoEncoderFactory* ffiHVEF_ptr = (webrtc::ffiHardwareVideoEncoderFactory*)ffiHVEF_int64;
     webrtc::ffiHardwareVideoDecoderFactory* ffiHVDF_ptr = (webrtc::ffiHardwareVideoDecoderFactory*)ffiHVDF_int64;
@@ -299,5 +309,26 @@ int64_t dataConnection_get_binaryType_(int64_t cpp_ptr){
 void dataConnection_set_binaryType_(int64_t cpp_ptr, int64_t value){
     return ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->SetBinaryType((enum FFIBinaryType)value);
 }
+
+void SctpTransport_set_class_key(int64_t cpp_ptr, int64_t classKey) {
+    ((webrtc::ffiSctpTransport*)cpp_ptr)->SetCJClassID(classKey);
+}
+
+// ffiDtmfSender
+void ffiDtmfSender_set_class_key(int64_t cpp_ptr, int64_t classKey) {
+    ((webrtc::ffiDtmfSender*)cpp_ptr)->SetCJClassID(classKey);
+}
+bool ffiDtmfSender_GetCanInsertDTMF(int64_t cpp_ptr) {
+    return ((webrtc::ffiDtmfSender*)cpp_ptr)->GetCanInsertDTMF();
+} 
+const char* ffiDtmfSender_GetToneBuffer(int64_t cpp_ptr){
+    return ((webrtc::ffiDtmfSender*)cpp_ptr)->GetToneBuffer();
+}
+bool ffiDtmfSender_InsertDTMF(int64_t cpp_ptr, const char* tones, int64_t duration, int64_t interToneGap) {
+    return ((webrtc::ffiDtmfSender*)cpp_ptr)->InsertDTMF(tones, duration,interToneGap );
+} 
+void ffiDtmfSender_set_OnToneChange(int64_t cpp_ptr, void (*pe)(int64_t id, const char* tone) ) {
+    ((webrtc::ffiDtmfSender*)cpp_ptr)->cj_func_call_OnToneChange_ = pe;
+}   
 
 

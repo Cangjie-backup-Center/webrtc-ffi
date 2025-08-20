@@ -33,6 +33,8 @@ public:
     ~FFICreateSdpObserver() override {}
     
     ffiPeerConnection* pc_ = nullptr;
+    virtual void AddRef() const override {} 
+    virtual rtc::RefCountReleaseStatus Release() const override {}
     
 protected:
     
@@ -434,7 +436,7 @@ int64_t ffiPeerConnection::GetSctp(){
 void ffiPeerConnection::CreateOffer(bool iceRestart){
     PeerConnectionInterface::RTCOfferAnswerOptions options;
     options.ice_restart = iceRestart;
-    FFICreateSdpObserver* observer = new FFICreateSdpObserver(this->pc_, this->cj_func_call_CreateOffer_);
+    FFICreateSdpObserver* observer = new FFICreateSdpObserver(this, this->cj_func_call_CreateOffer_);
     pc_->CreateOffer(observer, options);
 }
 
