@@ -138,11 +138,30 @@ public struct CJ_SupportedConstraints {
 
 @C
 public struct CJ_RTCSessionDescription {
-    public let sdp: CString = unsafe {zeroValue<CString>()}
-    public let sdp_size: Int64 = 0
-    public let RTCSdpType: CString = unsafe {zeroValue<CString>()}
-    public let RTCSdpType_size: Int64 = 0
-    public let undefined: Bool = true
+    public var sdp: CString = unsafe {zeroValue<CString>()}
+    public var sdp_size: Int64 = 0
+    public var RTCSdpType: CString = unsafe {zeroValue<CString>()}
+    public var RTCSdpType_size: Int64 = 0
+    public var undefined: Bool = true
+
+    public init(sdp: String, RTCSdpType: String) {
+        unsafe {
+            this.sdp = LibC.mallocCString(sdp)
+            this.sdp_size = sdp.size
+            this.RTCSdpType =LibC.mallocCString(RTCSdpType)
+            this.RTCSdpType_size = RTCSdpType.size
+            this.undefined = false
+        }
+    }
+
+    public static func GET(msg: String): CJ_RTCSessionDescription {
+        throw Webrtc4cjException("")
+    }
+}
+
+@C
+public struct CJ_RTCConfiguration {
+
 }
 
 @C

@@ -30,13 +30,18 @@ struct CJ_RTCTrackEvent {
 }
 
 public class RTCTrackEvent {
-    public RTCTrackEvent(
-        public let TYPE: String,
-        public let streams: Array<Int64>,
-        public let MediaStreamTrack_ptr: Int64,
-        public let RtpReceiver_ptr: Int64,
-        public let RtpTransceiver_ptr: Int64
-    ) {}
+    public let TYPE: String
+    public let streams: Array<Int64>
+    public let track: MediaStreamTrack
+//    public let receiver: RtpReceiver // TODO
+    public let transceiver: RtpTransceiver
+
+    public RTCTrackEvent( TYPE: String,  streams: Array<Int64>, MediaStreamTrack_ptr: Int64, RtpReceiver_ptr: Int64, RtpTransceiver_ptr: Int64) {
+        this.TYPE = TYPE
+        this.streams = streams
+        this.track = MediaStreamTrack(MediaStreamTrack_ptr)
+        this.transceiver = RtpTransceiver(RtpTransceiver_ptr)
+    }
 }
 
 @C

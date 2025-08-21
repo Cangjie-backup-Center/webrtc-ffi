@@ -46,7 +46,7 @@ sealed abstract class WebrtcClass {
 
 public class AudioDeviceModule <: WebrtcClass {
 
-    init(useStereoInput: Bool, useStereoOutput: Bool) {
+    public init(useStereoInput: Bool, useStereoOutput: Bool) {
         super(unsafe {ffi_newAudioDeviceModule(useStereoInput, useStereoOutput)}, this)
     }
 
@@ -59,6 +59,18 @@ public class PeerConnectionFactory <: WebrtcClass {
 //    public func createPeerConnectionFactoryID(adm: AudioDeviceModule) {
 //        this.ID = cj_newPeerConnectionFactory(adm.ID, cj_newHardwareVideoEncoderFactory() , cj_newHardwareVideoDecoderFactory())
 //    }
+
+    public func createPeerConnection(config: CJ_RTCConfiguration): RTCPeerConnection {
+        unsafe {
+            RTCPeerConnection(ffiPeerConnectionFactory_ffiCreatePeerConnection(this.ID, config))
+        }
+    }
+
+    public func SetDefault(){
+        unsafe {
+            ffi_SetDefault(this.ID)
+        }
+    }
 
     public func startAecDump(fd: Int32, max_size_bytes: Int32): Bool {
         return unsafe {ffi_StartAecDump(this.getID(), fd, max_size_bytes)}
@@ -74,13 +86,17 @@ public class AudioSource <: WebrtcClass {
 //    }
 }
 
-public class AudioTrack <: WebrtcClass {
+public class MediaTrack <: MediaStreamTrack {
+    public init(id: Int64) {
+        super(id, this)
+    }
+}
+
+public class AudioTrack <: MediaStreamTrack {
     public init(pcf: PeerConnectionFactory, tag: String) {
         super(unsafe {ffi_createAudioTrack(pcf.ID, LibC.mallocCString(tag))}, this)
     }
-//    public func createAudioTrackID(pcf: PeerConnectionFactory, tag: CString) {
-//        this.ID = cj_createAudioTrack(pcf.ID, tag)
-//    }
+
 }
 
 public class VideoSource <: WebrtcClass {
@@ -105,9 +121,9 @@ public class VideoTrack <: WebrtcClass {
 //    }
 }
 
-public class MediaStreamTrack <: WebrtcClass {
-    public init(id: Int64) {
-        super(id, this)
+public open class MediaStreamTrack <: WebrtcClass {
+    protected  init(id: Int64, t:MediaStreamTrack) {
+        super(id, t)
     }
 }
 
@@ -133,7 +149,7 @@ public class MediaStream <: WebrtcClass {
             let ret:CJ_ReturnArray = ffi_webrtc_FFIMediaStream_GetTracks(this.ID)
             let arr = Array<MediaStreamTrack>(ret.size, repeat: unsafe {zeroValue<MediaStreamTrack>()})
             for (i in 0..ret.size) {
-                arr[i] = MediaStreamTrack(ret.ptr.read(i))
+                arr[i] = MediaTrack(ret.ptr.read(i))
             }
             return arr
         }
@@ -144,7 +160,7 @@ public class MediaStream <: WebrtcClass {
             let ret:CJ_ReturnArray = ffi_webrtc_FFIMediaStream_GetAudioTracks(this.ID)
             let arr = Array<MediaStreamTrack>(ret.size, repeat: unsafe {zeroValue<MediaStreamTrack>()})
             for (i in 0..ret.size) {
-                arr[i] = MediaStreamTrack(ret.ptr.read(i))
+                arr[i] = MediaTrack(ret.ptr.read(i))
             }
             return arr
         }
@@ -155,7 +171,7 @@ public class MediaStream <: WebrtcClass {
             let ret:CJ_ReturnArray = ffi_webrtc_FFIMediaStream_GetVideoTracks(this.ID)
             let arr = Array<MediaStreamTrack>(ret.size, repeat: unsafe {zeroValue<MediaStreamTrack>()})
             for (i in 0..ret.size) {
-                arr[i] = MediaStreamTrack(ret.ptr.read(i))
+                arr[i] = MediaTrack(ret.ptr.read(i))
             }
             return arr
         }
@@ -187,6 +203,7 @@ public class MediaDevices <: WebrtcClass {
 }
 
 foreign {
+    func ffiPeerConnectionFactory_ffiCreatePeerConnection(cpp_ptr: Int64, config: CJ_RTCConfiguration): Int64
     func ffi_newNativeVideoRenderer(surfaceId: Int64): Int64
     func ffi_setVideoTrack(ffiNVR: Int64, surfaceId: Int64): Unit
     func ffi_setMirror(ffiNVR: Int64, mirrorBool: Bool): Unit

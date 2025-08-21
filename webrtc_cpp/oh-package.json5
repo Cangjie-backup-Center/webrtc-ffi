@@ -6,6 +6,5 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "libwebrtc_cpp.so": "file:./src/main/cpp/types/libwebrtc_cpp"
   }
 }

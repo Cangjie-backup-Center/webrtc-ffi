@@ -8,7 +8,6 @@ internal import ohos.base.*
 internal import ohos.component.*
 internal import ohos.state_manage.*
 import ohos.state_macro_manage.*
-import webrtc_cj.*
 import ohos.net.webSocket.*
 import ohos.ability.getStageContext
 import ohos.ability_access_ctrl.AbilityAccessCtrl
@@ -18,7 +17,10 @@ import std.sync.*
 import std.random.Random
 import kit.AbilityKit.*
 import ohos.concurrency.launch
+import ohos.prompt_action.PromptAction
+import kit.AudioKit.*
 import ohos.file_fs.*
+import webrtc_cj.*
 
 let Index_WebRTC_TAG: String = "[Index]"
 // 用于测试的信令服务器
@@ -48,19 +50,131 @@ class EntryView {
     private var mXComponentController1: VideoRenderController = VideoRenderController()
     private var mXComponentController2: VideoRenderController = VideoRenderController()
     private var ws: WebSocket = createWebSocket()
-    private var localAudioSource: AudioSource = AudioSource()
-    private var localVideoSource: VideoSource = VideoSource()
-    private var localAudioTrack: AudioTrack = AudioTrack()
-    private var localCameraVideoTrack: VideoTrack = VideoTrack()
-    private var retVideoTrack:Array<MediaStreamTrack> = Array<MediaStreamTrack>()
-    @State var adm: AudioDeviceModule = AudioDeviceModule()
-    @State var pcf: PeerConnectionFactory = PeerConnectionFactory()
-    private var mediaDevices: MediaDevices = MediaDevices()
+    private var localAudioSource: ?AudioSource = None
+    private var localAudioSource2: ?AudioSource = None
+    private var localVideoSource: ?VideoSource = None
+    private var localAudioTrack: ?MediaStreamTrack = None
+    private var localAudioTrack2: ?MediaStreamTrack = None
+    private var localVideoTrack: ?MediaStreamTrack = None
+    private var remoteAudioTrack: ?MediaStreamTrack = None
+    private var remoteVideoTrack: ?MediaStreamTrack = None
+    @State var adm: ?AudioDeviceModule = Option<AudioDeviceModule>.None
+    @State var pcf: ?PeerConnectionFactory = Option<PeerConnectionFactory>.None
+    private var pc: ?RTCPeerConnection = None
+    private var recvChannel: ?RTCDataChannel = None
+    private var sendChannel: ?RTCDataChannel = None
     private var displayMediaStream: MediaStream = MediaStream(-1)
-
+    private var mediaDevices: MediaDevices = MediaDevices()
+    private var onDataChannelMessageReceived: (RTCDataChannel, MessageEvent) -> Unit = { pc, event => }
+    private var localCameraVideoTrack: ?VideoTrack = None
+    private var retVideoTrack:Array<MediaStreamTrack> = Array<MediaStreamTrack>()
 
     func build() {
         Column() {
+          Row() {
+            Text("状态")
+              .fontSize(32)
+              .fontWeight(FontWeight.Normal)
+              .margin(right: 24)
+            Text(this.statusText)
+              .fontSize(32)
+              .fontWeight(FontWeight.Bold)
+          }
+          .alignSelf(ItemAlign.Start)
+
+          Row() {
+            Text("本机ID")
+              .fontSize(32)
+              .fontWeight(FontWeight.Normal)
+              .margin(right: 24)
+              .align(Alignment.Start)
+            Text(this.myId)
+              .fontSize(32)
+              .fontWeight(FontWeight.Bold)
+          }
+          .alignSelf(ItemAlign.Start)
+          .padding(top: 10)
+
+          Row() {
+            TextInput(placeholder: '请输入对端ID')
+              .width(200)
+              .height(54)
+              .fontSize(28)
+              .fontWeight(FontWeight.Normal)
+              .setType(InputType.Number)
+              .layoutWeight(20)
+              .onChange({ value =>
+                this.peerId = value
+              })
+
+            Button(this.buttonTitle)
+              .width(150)
+              .height(54)
+              .fontSize(20)
+              .fontWeight(FontWeight.Bold)
+              .margin(top: 20)
+              .onClick({ =>
+                if (this.buttonTitle == 'Disconnect') {
+                this.ws.close(
+                    {
+                        errorCode: Option<AsyncError>, data: Option<Bool> => match (errorCode) {
+                            case Some(e) => 0 // error
+                            case _ => match (data) {
+                                case Some(value) => 1 // success
+                                case _ => 0 // error
+                            }
+                        }
+                    })
+                  this.buttonTitle = 'Connect'
+                  return
+                }
+                if (this.peerId.size < 2 || this.peerId.size > 4) {
+                  PromptAction.showToast(message: "请输入2到4位数ID")
+                  return
+                }
+                this.sendMessage('SESSION ' + this.peerId)
+                this.buttonTitle = 'Disconnect'
+              })
+              .margin(left: 10, right: 20)
+
+            Row() {
+              Checkbox(name: 'remote_offerer', group: 'checkboxGroup')
+                .select(false)
+                .selectedColor(0x39a2db)
+                .onChange({value =>
+                  AppLog.info('remote_offerer change is ${value}')
+                }).margin(right: 8)
+              Text("Remote offerer")
+                .fontSize(20)
+                .fontWeight(FontWeight.Normal)
+            }.layoutWeight(20).visibility(Visibility.Hidden)
+          }
+          .alignSelf(ItemAlign.Start)
+          .padding(top: 24)
+
+          Row() {
+            Button(this.muteBtnTitle)
+              .width(150)
+              .height(54)
+              .fontSize(20)
+              .fontWeight(FontWeight.Bold)
+              .margin(top: 20)
+              .onClick({ =>
+                AppLog.error("${Index_WebRTC_TAG} audio muted: ${this.muted}")
+                this.muted = !this.muted
+                this.muteBtnTitle = if (this.muted) {
+                'Unmute'
+                } else {
+                'Mute'
+                }
+//                this.pc?.setAudioPlayout(!this.muted)  // TODO.. 等昕宇代码整合
+//                this.pc?.setAudioRecording(!this.muted) // TODO.. 等昕宇代码整合
+              })
+              .margin(left: 10, right: 20)
+          }
+          .alignSelf(ItemAlign.Start)
+          .padding(top: 24)
+
             Row() {
             XComponent(
               id: "local-video",
@@ -87,6 +201,16 @@ class EntryView {
     }
 
     protected override func aboutToAppear(): Unit {
+        // 设置音频策略，允许和其它音频流并发
+//        let strategy: AudioSessionStrategy = AudioSessionStrategy(concurrencyMode: AudioConcurrencyMode.CONCURRENCY_MIX_WITH_OTHERS)
+        let audioManager = getAudioManager()
+        // TODO.. 这里仓颉 api 是音频会话管理器， arkts 描述是音频路由管理器，arkts 调用的是 getSessionManager()
+        let audioSessionManager = audioManager.getRoutingManager()
+        // audioSessionManager.activateAudioSession(strategy) TODO.. 这里仓颉 api 未提供此方法了
+
+//        Logging.enableLogThreads()
+//        Logging.enableLogTimeStamps()
+//        Logging.enableLogToDebugOutput(LoggingSeverity.VERBOSE)
         let stageContext = getStageContext(getContext())
         let atManager = AbilityAccessCtrl.createAtManager()
         let permissionList = ["ohos.permission.MICROPHONE", "ohos.permission.CAMERA"]
@@ -145,32 +269,107 @@ class EntryView {
                 errorCode: Option<AsyncError>, data: Option<MessageData> => match (errorCode) {
                     case Some(e) => 0 // error
                     case _ => match (data) {
-                        case Some(value) => this.createPeerConnection()
+                        case Some(value) =>
+                            AppLog.error("${Index_WebRTC_TAG} websocket receive message: ${value}")
+                            if (value.toString() == "HELLO".toAsciiLower()) {
+                                this.setStatus("Registered with server, waiting for call")
+                                this.createPeerConnection()
+                            } else if (value.toString() == 'SESSION_OK') {
+                                this.setStatus("Starting negotiation")
+                                this.sendOffer()
+                            } else if (value.toString() == 'OFFER_REQUEST') {
+                                this.sendOffer()
+                            } else {
+                                if (value.toString().startsWith('ERROR')) {
+                                  this.handleIncomingError(value.toString())
+                                } else {
+                                  try {
+                                        let msgData: String = value.toString()
+                                    if (msgData.contains("sdp")) {
+                                      this.receiveSdp(msgData)
+                                    }
+//                                        else if (value.ice) {
+                                    // TODO.. 此方法未写
+//                                      this.receiveIce(value.ice)
+//                                    }
+                                else {
+                                      AppLog.error('${Index_WebRTC_TAG} receive unknown message: ' + value.toString())
+                                      this.handleIncomingError("Unknown incoming JSON")
+                                    }
+                                  } catch (error: Exception) {
+                                    AppLog.error('${Index_WebRTC_TAG} receive invalid message: ' + value.toString())
+                                  }
+                                }
+                              }
                         case _ => 0 // error
                     }
                 }
             })
+
+        let closeCallBack = WebSocketAsyncCallback<CloseResult>(
+            {
+                errorCode: Option<AsyncError>, data: Option<CloseResult> => match (errorCode) {
+                    case Some(e) => 0 // error
+                    case _ => match (data) {
+                        case Some(value) =>
+                            AppLog.error("${Index_WebRTC_TAG} websocket closed")
+                            this.setStatus("Disconnected from server")
+//                            this.pc?.close() // TODO.. 昕宇
+                            Timer.once(Duration.second, {=>
+                                this.ws.connect(SIGNAL_SERVER, {
+                                errorCode: Option<AsyncError>, data: Option<Bool> => match(errorCode) {
+                                    case Some(e) => 0 // error
+                                    case _ => match (data) {
+                                    case Some(value) => 1 // success
+                                    case _ => 0 // error
+                                    }
+                                }
+                                })
+                            })
+                        case _ => 0 // error
+                    }
+                }
+            })
+
+        let errorCallBack = WebSocketErrorCallback({
+            err: BusinessException =>
+                AppLog.error("${Index_WebRTC_TAG} websocket err: ' + ${err.code}")
+                this.setError("Unable to connect to server: " + err.message)
+                Timer.once(Duration.second, {=>
+                    this.ws.connect(SIGNAL_SERVER, {
+                    errorCode: Option<AsyncError>, data: Option<Bool> => match(errorCode) {
+                        case Some(e) => 0 // error
+                        case _ => match (data) {
+                        case Some(value) => 1 // success
+                        case _ => 0 // error
+                        }
+                    }
+                    })
+                })
+        })
         this.ws.on(OnOffType.OPEN, openCallBack)
+        this.ws.on(OnOffType.CLOSE, closeCallBack)
+        this.ws.on(OnOffType.ERROR, errorCallBack)
         this.ws.on(OnOffType.MESSAGE, messageCallBack)
         spawn {
             let syncCounter: SyncCounter = SyncCounter(1)
                 this.createAudioDeviceModule({
                     value => launch {
-                        this.adm.createID(value)
+                        this.adm = value
                         syncCounter.dec()
                     }
                 })
             syncCounter.waitUntilZero()
             this.createPeerConnectionFactory({
                 value => launch {
-                    this.pcf.createID(value)
+                    this.pcf = value
                 }
             })
         }
     }
 
     protected override func aboutToDisappear() {
-//        cj_StopAecDump(this.pcf.getID())
+//        this.pcf?.stopAecDump() // TODO.. 昕宇
         this.ws.close(
             {
                 errorCode: Option<AsyncError>, data: Option<Bool> => match (errorCode) {
@@ -185,6 +384,42 @@ class EntryView {
         this.ws.off(OnOffType.CLOSE)
         this.ws.off(OnOffType.ERROR)
         this.ws.off(OnOffType.MESSAGE)
+    }
+
+    func onPageShow(): Unit {
+        AppLog.info('${Index_WebRTC_TAG} onPageShow')
+    }
+
+    func onPageHide(): Unit {
+        AppLog.info('${Index_WebRTC_TAG} onPageHide')
+    }
+
+    func handleIncomingError(error: String) {
+        this.setError('ERROR: ' + error)
+        this.ws.close(
+                {
+                    errorCode: Option<AsyncError>, data: Option<Bool> => match (errorCode) {
+                        case Some(e) => 0 // error
+                        case _ => match (data) {
+                            case Some(value) => 1 // success
+                            case _ => 0 // error
+                        }
+                    }
+                })
+    }
+
+    func sendOffer(): Future<Unit> {
+        spawn {
+            // TODO.. 昕宇
+//            try {
+//              let offer = this.pc?.createOffer().get()
+//              AppLog.error("${Index_WebRTC_TAG} createOffer: ${offer}")
+//              this.pc?.setLocalDescription(offer)
+//              this.sendMessage(offer)
+//            } catch (e: Exception) {
+//              AppLog.error('${Index_WebRTC_TAG} sendOffer: ${e}')
+//            }
+        }
     }
 
     func sendMessage(message:String):Future<Unit> {
@@ -221,44 +456,59 @@ class EntryView {
         this.statusText = error
     }
 
-    func createAudioDeviceModule(callback: (admID:Int64) -> Unit): Future<Unit> {
+    func createAudioDeviceModule(callback: (admID:AudioDeviceModule) -> Unit): Future<Unit> {
         spawn {
-            callback(cj_newAudioDeviceModule(true , true))
+            callback(AudioDeviceModule(true , true))
+            // TODO.. 暂不放开，不需要打印
+//            this.adm.oncapturererror = (event) => {
+//              AppLog.error('oncapturererror: ${event}')
+//            }
+//            this.adm.oncapturerstatechange = (event) => {
+//              AppLog.info('oncapturerstatechange: ${event}')
+//            }
+//            this.adm.oncapturersamplesready = (event) => {
+//              AppLog.debug('oncapturersamplesready: ${event}')
+//            }
+//            this.adm.onrenderererror = (event) => {
+//              AppLog.error('onrenderererror: ${event}')
+//            }
+//            this.adm.onrendererstatechange = (event) => {
+//              AppLog.info('onrendererstatechange: ${event}')
+//            }
+//            Logging.d('this.adm: ${this.adm}')
         }
     }
 
-    func createPeerConnectionFactory(callback: (pcfID:Int64) -> Unit): Future<Unit> {
+    func createPeerConnectionFactory(callback: (pcf: PeerConnectionFactory) -> Unit): Future<Unit> {
         spawn {
-            let ret: Int64 = cj_newPeerConnectionFactory(this.adm.getID() , cj_newHardwareVideoEncoderFactory() , cj_newHardwareVideoDecoderFactory())
+            let ret: PeerConnectionFactory = PeerConnectionFactory(this.adm.getOrThrow())
             callback(ret)
+            ret.SetDefault()
+            let filesDir = getContext().filesDir
+            let file = FileFs.open("${filesDir}/test.txt", mode: (READ_WRITE.mode | CREATE.mode))
+            this.pcf?.startAecDump(file.fd, -1)
         }
     }
 
     func prepareLocalMedia(): Future<Unit> {
         spawn {
-            if (this.localAudioTrack.getID() == 0) {
+            if (this.localAudioTrack?.getID() == 0) {
                 var ffiao: FFIAudioOptions = FFIAudioOptions()
                 ffiao.noise_suppression = true
                 ffiao.echo_cancellation = true
-                this.localAudioSource.createAudioSourceID(this.pcf, ffiao)
-
-                let audioChar: CString = unsafe{LibC.mallocCString("audio")}
-                this.localAudioTrack.createAudioTrackID(this.pcf, audioChar)
+                this.localAudioSource = AudioSource(this.pcf.getOrThrow(), ffiao)
+                this.localAudioTrack = AudioTrack(this.pcf.getOrThrow(), "audio")
             }
-
-            if (this.localCameraVideoTrack.getID() == 0) {
+            if (this.localCameraVideoTrack?.getID() == 0) {
                 var ffiCVSP:FFICreateVideoSourceParameters = FFICreateVideoSourceParameters()
                 ffiCVSP.width = 1280.0
                 ffiCVSP.height = 720.0
                 ffiCVSP.facingMode = unsafe {LibC.mallocCString("user")}
                 ffiCVSP.isScreencast = false
-                this.localVideoSource.createVideoSourceID(this.pcf, ffiCVSP)
-
-                let videoChar: CString = unsafe {LibC.mallocCString("video")}
-                this.localCameraVideoTrack.createVideoTrackID(this.pcf, videoChar)
-
+                this.localVideoSource = VideoSource(this.pcf.getOrThrow(), ffiCVSP)
+                this.localCameraVideoTrack = VideoTrack(this.pcf.getOrThrow(), "video")
                 this.mXComponentController1.newNativeVideoRenderer()
-                this.mXComponentController1.setVideoTrack(this.localCameraVideoTrack)
+                this.mXComponentController1.setVideoTrack(this.localCameraVideoTrack.getOrThrow())
                 this.mXComponentController1.setMirror(true)
                 this.mXComponentController1.setScalingMode(ScalingMode().aspectFit)
             }
@@ -278,7 +528,18 @@ class EntryView {
                 that.mXComponentController1.newNativeVideoRenderer()
                 that.mXComponentController1.setVideoTrack(that.retVideoTrack[0])
                 that.mXComponentController1.setScalingMode(ScalingMode().aspectFit)
-                })
+            })
+
+            let audioTracks = this.displayMediaStream.getAudioTracks()
+            if (audioTracks.size > 0) {
+                // TODO.. 考虑暂不加
+//                this.localAudioTrack = audioTracks[0]
+//                AppLog.error('${Index_WebRTC_TAG} audioTrack: ${this.localAudioTrack}')
+            }
+            if (audioTracks.size > 1) {
+//                this.localAudioTrack2 = audioTracks[1]
+//                AppLog.error('${Index_WebRTC_TAG} audioTrack2: ${this.localAudioTrack}')
+            }
         }
     }
 
@@ -286,7 +547,213 @@ class EntryView {
         spawn {
 //            prepareLocalMedia().get()
             prepareDisplayMedia()
+            // TODO.. 需要传 STUN_SERVER，现在空参数构造
+            this.pc = this.pcf?.createPeerConnection(CJ_RTCConfiguration())
+            if (this.pc.isNone()) {
+              AppLog.error('${Index_WebRTC_TAG} failed to create RTCPeerConnection')
+              return
+            }
+            this.pc?.onTrack = { pc, event =>
+                // TODO.. 需要实现 ToString 接口
+//              AppLog.info('${Index_WebRTC_TAG} ontrack: ${event}')
+//              // TODO.. kind 需实现
+//                if (event.track.kind == 'video') {
+                this.remoteVideoTrack = event.track
+                this.mXComponentController2.setVideoTrack(event.track)
+//              // TODO.. kind 需实现
+//              } else if (event.track.kind == 'audio') {
+                this.remoteAudioTrack = event.track
+//              }
+            }
+            this.pc?.onSignalingChange = { pc, event =>
+              AppLog.info('${Index_WebRTC_TAG} onsignalingstatechange: ${this.pc?.signalingState}')
+            }
+            // TODO.. onconnectionstatechange 需实现， connectionState 需实现
+//            this.pc?.onconnectionstatechange = { pc, event =>
+//              AppLog.info('${Index_WebRTC_TAG} onconnectionstatechange: ' + this.pc?.connectionState)
+//              if (this.pc?.connectionState == 'failed') {
+//                this.setError("Peer connection failed")
+//                this.ws.close(
+//                    {
+//                        errorCode: Option<AsyncError>, data: Option<Bool> => match (errorCode) {
+//                            case Some(e) => 0 // error
+//                            case _ => match (data) {
+//                                case Some(value) => 1 // success
+//                                case _ => 0 // error
+//                            }
+//                        }
+//                })
+//              }
+//            }
+            // TODO.. onnegotiationneeded 需实现
+//            this.pc?.onnegotiationneeded = { pc, event =>
+//              // this is Index
+//              AppLog.info('${Index_WebRTC_TAG} onnegotiationneeded: this= ${this.pc}')
+//              AppLog.info('${Index_WebRTC_TAG} onnegotiationneeded: event= ${event}')
+//            }
+            // TODO.. onIceCandidate 需实现， candidate 需实现
+//            this.pc?.onIceCandidate = { pc, event =>
+//              AppLog.info('${Index_WebRTC_TAG} onicecandidate: this=')
+//              AppLog.info('${Index_WebRTC_TAG} onicecandidate: event=${event}')
+//              if (event.candidate) {
+//                this.sendMessage(event.candidate)
+//              }
+//            }
+            // TODO.. onIceCandidateError 需实现，ToString 接口需实现
+//            this.pc?.onIceCandidateError = { pc, event =>
+//              AppLog.error('${Index_WebRTC_TAG} onicecandidateerror: event= ${event}')
+//            }
+            // TODO.. oniceconnectionstatechange 需实现， iceConnectionState 需实现
+//            this.pc?.oniceconnectionstatechange{ pc, event =>
+//              AppLog.info('${Index_WebRTC_TAG} oniceconnectionstatechange: ${this.pc?.iceConnectionState}')
+//              if (this.pc?.iceConnectionState == 'failed') {
+//                this.setError("Ice connection failed")
+//                this.ws.close(
+//                    {
+//                        errorCode: Option<AsyncError>, data: Option<Bool> => match (errorCode) {
+//                            case Some(e) => 0 // error
+//                            case _ => match (data) {
+//                                case Some(value) => 1 // success
+//                                case _ => 0 // error
+//                            }
+//                        }
+//                })
+//              }
+//            }
+            // TODO.. oniceconnectionstatechange 需实现， iceGatheringState 需实现
+//            this.pc?.onicegatheringstatechange = { pc, event =>
+//              AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: ${this.pc?.iceGatheringState}')
+//              match (this.pc?.iceGatheringState) {
+//                case "new" =>
+//                  AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: gathering is either just starting or has been reset')
+//                case "gathering" =>
+//                  AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: gathering has begun or is ongoing')
+//                case "complete" =>
+//                  AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: gathering has ended')
+//                case _ => ()
+//              }
+//            }
+            this.pc?.ondatachannel = { pc, event =>
+              AppLog.info('${Index_WebRTC_TAG} ondatachannel: this=')
+//              AppLog.info('${Index_WebRTC_TAG} ondatachannel: event= ${event}')
+              this.setStatus("Data channel created")
+              this.recvChannel = event
+              this.recvChannel?.onopen = this.onDataChannelOpen
+              this.recvChannel?.onmessage = this.onDataChannelMessageReceived
+                // TODO.. onerror 没实现
+//              this.recvChannel?.onerror = this.onDataChannelError
+              this.recvChannel?.onclose = this.onDataChannelClose
+            }
+            if (let Some(v) <- this.localAudioTrack) {
+                // TODO.. 昕宇
+//              let rtpSender1 = this.pc?.addTrack(v)
+//              AppLog.info('${Index_WebRTC_TAG} rtpSender1: ${rtpSender1}')
+            }
+            if (let Some(v) <- this.localAudioTrack2) {
+                // TODO.. 昕宇
+//              let rtpSender2 = this.pc?.addTrack(v)
+//              AppLog.info('${Index_WebRTC_TAG} rtpSender2: ${rtpSender2}')
+            }
+            if (let Some(v) <- this.localVideoTrack) {
+                // TODO.. 昕宇
+//              let rtpSender3 = this.pc.addTrack(v)
+//              AppLog.info('${Index_WebRTC_TAG} rtpSender3: ${rtpSender3}')
+            }
+            // TODO.. 昕宇
+//            AppLog.info('${Index_WebRTC_TAG} transceivers: ${this.pc?.getTransceivers()}')
+            // TODO.. 昕宇
+//            this.sendChannel = this.pc?.createDataChannel("send")
+//            AppLog.info('${Index_WebRTC_TAG} sendChannel: ${this.sendChannel}')
+            this.sendChannel?.onopen = {pc, event =>
+              // this is Index
+              AppLog.info('${Index_WebRTC_TAG} =dataChannel.OnOpen: this=')
+//              AppLog.info("${Index_WebRTC_TAG} =dataChannel.OnOpen: ${event}")
+                // TODO.. send 需实现
+//              this.sendChannel?.send("Hi! (from ArkTS)")
+              let data1 = Array<UInt8>(20, repeat: 0)
+//              this.sendChannel?.send(data1)
+              let data2 = Array<UInt8>(20, repeat: 1)
+//              this.sendChannel?.send(data2)
+              let data3 = Array<UInt8>(20, repeat: 2)
+//              this.sendChannel?.send(data3)
+            }
+            this.sendChannel?.onmessage = this.onDataChannelMessageReceived
+            // TODO.. onerror 实现
+//            this.sendChannel?.onerror = this.onDataChannelError
+            this.sendChannel?.onclose = this.onDataChannelClose
         }
+    }
+//
+    func onDataChannelOpen(pc: RTCDataChannel, event: Event): Unit {
+        // this is webrtc.RTCDataChannel
+//        AppLog.info("${Index_WebRTC_TAG} dataChannel.OnOpen: ${event}")
+        // TODO.. send 需实现
+//        pc.send("Hi! (from ArkTS)")
+    }
 
+    func onDataChannelError(pc: RTCDataChannel, event: Event): Unit {
+        // this is webrtc.RTCDataChannel
+        // TODO.. event 实现 ToString
+//            AppLog.info("${Index_WebRTC_TAG} dataChannel.OnError: ${event}")
+    }
+
+    func onDataChannelClose(pc: RTCDataChannel, event: Event): Unit {
+        // this is webrtc.RTCDataChannel
+        AppLog.info("${Index_WebRTC_TAG} dataChannel.OnClose:")
+        // TODO.. event 实现 ToString
+//            AppLog.info("${Index_WebRTC_TAG} dataChannel.OnClose ${event}")
+    }
+
+    func sendAnswer(): Future<Unit> {
+        spawn {
+            // TODO.. 昕宇 createAnswer
+//        this.setStatus("Got SDP offer, creating answer")
+//        this.pc?.createAnswer().then({ desc =>
+//          AppLog.error('${Index_WebRTC_TAG} Success to create answer: ${desc}')
+//          this.pc?.setLocalDescription(desc).then({ =>
+//            this.setStatus("Sending SDP answer")
+//            this.sendMessage(JSON.stringify(this.pc?.localDescription))
+//          })
+//        }).catch((e: Error) => {
+//          AppLog.error('${Index_WebRTC_TAG} Failed to create answer: ' + e.message)
+//          this.setError(e.message)
+//        })
+        }
+    }
+
+    func receiveSdp(sdp: String): Future<Unit> {
+        spawn {
+            CJ_RTCSessionDescription.GET(sdp)
+            // TODO.. 艳情挪到 FFI 层实现
+//            if (sdp.types == 'offer') {
+//              AppLog.error('${Index_WebRTC_TAG} receive offer')
+//              this.pc?.setRemoteDescription(sdp).then({ =>
+//                this.setStatus("Remote SDP set")
+//                this.sendAnswer()
+//              }).catch((e: Error) => {
+//                AppLog.error("Set remote description error: " + e)
+//                this.setError(e.message)
+//              })
+//            } else if (sdp.types == 'answer') {
+//              AppLog.error('${Index_WebRTC_TAG} receive answer')
+//              this.pc?.setRemoteDescription(sdp).then({ =>
+//                this.setStatus("Remote SDP set")
+//              }).catch((e: Error) => {
+//                AppLog.error("${Index_WebRTC_TAG} Set remote description error: " + e)
+//                this.setError(e.message)
+//              })
+//            }
+        }
+    }
+
+    func receiveIce(ice: String): Future<Unit> {
+        spawn {
+        AppLog.error('${Index_WebRTC_TAG} receive icecandidate')
+        // TODO.. 昕宇 addIceCandidate
+//        this.pc?.addIceCandidate(ice).catch((e: Error) => {
+//          AppLog.error("${Index_WebRTC_TAG} add ice candidate error: " + e)
+//          this.setError(e.message)
+//        })
+        }
     }
 }
