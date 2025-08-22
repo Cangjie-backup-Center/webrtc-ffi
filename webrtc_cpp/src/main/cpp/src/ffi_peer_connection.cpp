@@ -108,34 +108,35 @@ bool CangjieToNativeConfiguration(
         }
     }
     
-    if (cjConfiguration.iceTransportPolicy_size) {
-        if(strncmp(cjConfiguration.iceTransportPolicy, kEnumIceTransportPolicyAll, cjConfiguration.iceTransportPolicy_size) == 0) {
-            configuration.bundle_policy = PeerConnectionInterface::kBundlePolicyBalanced;
-        } else if (strncmp(cjConfiguration.iceTransportPolicy, kEnumIceTransportPolicyRelay, cjConfiguration.iceTransportPolicy_size) == 0) {
-            configuration.bundle_policy = PeerConnectionInterface::kBundlePolicyBalanced;
-        } else{
-            RTC_LOG(LS_WARNING) << "Invalid iceTransportPolicy";
-        }
+    switch (static_cast<FFIRTCIceTransportPolicy>(cjConfiguration.iceTransportPolicy)) {
+    case FFIRTCIceTransportPolicy::ALL: 
+        configuration.type = PeerConnectionInterface::kAll;
+        break;
+    case FFIRTCIceTransportPolicy::RELAY: 
+        configuration.type = PeerConnectionInterface::kRelay;
+        break;
+    default:
+        RTC_LOG(LS_WARNING) << "Invalid iceTransportPolicy";
     }
     
-    if (cjConfiguration.bundlePolicy_size) {
-        if(strncmp(cjConfiguration.bundlePolicy, kEnumBundlePolicyBalanced, cjConfiguration.bundlePolicy_size) == 0) {
-            configuration.bundle_policy = PeerConnectionInterface::kBundlePolicyBalanced;
-        } else if (strncmp(cjConfiguration.bundlePolicy, kEnumBundlePolicyMaxCompact, cjConfiguration.bundlePolicy_size) == 0) {
-            configuration.bundle_policy = PeerConnectionInterface::kBundlePolicyMaxCompat;
-        } else if (strncmp(cjConfiguration.bundlePolicy, kEnumBundlePolicyMaxBundle, cjConfiguration.bundlePolicy_size) == 0) {
-            configuration.bundle_policy = PeerConnectionInterface::kBundlePolicyMaxBundle;
-        } else{
-            RTC_LOG(LS_WARNING) << "Invalid iceTransportPolicy";
-        }
+    switch (static_cast<FFIRTCBundlePolicy>(cjConfiguration.bundlePolicy)) {
+    case FFIRTCBundlePolicy::BALANCED: 
+        configuration.bundle_policy = PeerConnectionInterface::kBundlePolicyBalanced;
+        break;
+    case FFIRTCBundlePolicy::MAX_COMPAT: 
+        configuration.bundle_policy = PeerConnectionInterface::kBundlePolicyMaxCompat;
+        break;
+    case FFIRTCBundlePolicy::MAX_BUNDLE:
+        configuration.bundle_policy = PeerConnectionInterface::kBundlePolicyMaxBundle;
+        break;
+    default:
+        RTC_LOG(LS_WARNING) << "Invalid bundlePolicy";
     }
     
-    if (cjConfiguration.rtcpMuxPolicy_size) {
-        if(strncmp(cjConfiguration.rtcpMuxPolicy, kEnumRtcpMuxPolicyRequire, cjConfiguration.rtcpMuxPolicy_size) == 0) {
-            configuration.rtcp_mux_policy = PeerConnectionInterface::kRtcpMuxPolicyRequire;
-        } else {
-            RTC_LOG(LS_WARNING) << "Invalid rtcpMuxPolicy";
-        }
+    switch (static_cast<FFIRTCRtcpMuxPolicy>(cjConfiguration.bundlePolicy)) {
+    case FFIRTCRtcpMuxPolicy::REQUIRE:
+        configuration.rtcp_mux_policy = PeerConnectionInterface::kRtcpMuxPolicyRequire;
+        break;
     }
     
     if (cjConfiguration.certificates_size) {

@@ -500,11 +500,7 @@ class EntryView {
                 this.localAudioTrack = AudioTrack(this.pcf.getOrThrow(), "audio")
             }
             if (this.localCameraVideoTrack?.getID() == 0) {
-                var ffiCVSP:FFICreateVideoSourceParameters = FFICreateVideoSourceParameters()
-                ffiCVSP.width = 1280.0
-                ffiCVSP.height = 720.0
-                ffiCVSP.facingMode = unsafe {LibC.mallocCString("user")}
-                ffiCVSP.isScreencast = false
+                let ffiCVSP: CreateVideoSourceParameters = CreateVideoSourceParameters(1280.0, 720.0, "user", false)
                 this.localVideoSource = VideoSource(this.pcf.getOrThrow(), ffiCVSP)
                 this.localCameraVideoTrack = VideoTrack(this.pcf.getOrThrow(), "video")
                 this.mXComponentController1.newNativeVideoRenderer()
@@ -548,7 +544,14 @@ class EntryView {
 //            prepareLocalMedia().get()
             prepareDisplayMedia()
             // TODO.. 需要传 STUN_SERVER，现在空参数构造
-            this.pc = this.pcf?.createPeerConnection(CJ_RTCConfiguration())
+            this.pc = this.pcf?.createPeerConnection(RTCConfiguration(
+                    iceServers: [
+                        RTCIceServer(
+                            urls: [STUN_SERVER]
+                        )
+                    ]
+                )
+            )
             if (this.pc.isNone()) {
               AppLog.error('${Index_WebRTC_TAG} failed to create RTCPeerConnection')
               return
@@ -620,7 +623,7 @@ class EntryView {
 //                })
 //              }
 //            }
-            // TODO.. oniceconnectionstatechange 需实现， iceGatheringState 需实现
+            // TODO.. onicegatheringstatechange 需实现， iceGatheringState 需实现
 //            this.pc?.onicegatheringstatechange = { pc, event =>
 //              AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: ${this.pc?.iceGatheringState}')
 //              match (this.pc?.iceGatheringState) {

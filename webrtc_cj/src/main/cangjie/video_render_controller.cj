@@ -22,7 +22,9 @@ public class VideoRenderController <: XComponentController {
 
     protected override func onSurfaceCreated(surfaceId: String) {
         mySurfaceId = surfaceId
-        cj_SetSurfaceId(Int64.parse(surfaceId))
+        unsafe {
+            ffi_SetSurfaceId(Int64.parse(surfaceId))
+        }
     }
 
     protected override func onSurfaceChanged(surfaceId: String, rect: SurfaceRect) {

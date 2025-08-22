@@ -68,7 +68,7 @@ int64_t ffi_newPeerConnectionFactory(int64_t ffiADM_int64 , int64_t ffiHVEF_int6
     return (int64_t)ffiPCF;
 }
 
-int64_t ffi_createAudioSource(int64_t ffiPCF_int64 , ffiAudioOptions ffiao) {
+int64_t ffi_createAudioSource(int64_t ffiPCF_int64 , FFIAudioOptions ffiao) {
     webrtc::ffiPeerConnectionFactory* ffiPCF_ptr = (webrtc::ffiPeerConnectionFactory*)ffiPCF_int64;
     return ffiPCF_ptr->ffiCreateAudioSource(ffiao);
 }
@@ -79,7 +79,7 @@ int64_t ffi_createAudioTrack(int64_t ffiPCF_int64, char* ffi_audioId) {
     return ffiPCF_ptr->ffiCreateAudioTrack(ffi_id_str);
 }
 
-int64_t ffi_createVideoSource(int64_t ffiPCF_int64 , ffiCreateVideoSourceParameters fficvsp) {
+int64_t ffi_createVideoSource(int64_t ffiPCF_int64 , FFICreateVideoSourceParameters fficvsp) {
     webrtc::ffiPeerConnectionFactory* ffiPCF_ptr = (webrtc::ffiPeerConnectionFactory*)ffiPCF_int64;
     return ffiPCF_ptr->ffiCreateVideoSource(fficvsp);
 } 
@@ -211,6 +211,27 @@ void peerConnection_set_cj_func_call_OnIceCandidateError_(int64_t cpp_ptr, void 
 void peerConnection_set_cj_func_call_onTrack_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_RTCTrackEvent ptr)){
     ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnTrack(pe);
 }
+void peerConnection_set_cj_func_call_SetOnConnectionChange_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr)) {
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnConnectionChange(pe);
+}
+void peerConnection_set_cj_func_call_SetOnRenegotiationNeeded_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr)){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnRenegotiationNeeded(pe);
+}
+void peerConnection_set_cj_func_call_SetOnStandardizedIceConnectionChange_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr)){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnStandardizedIceConnectionChange(pe);
+}
+void peerConnection_set_cj_func_call_SetOnIceGatheringChange_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr)){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnIceGatheringChange(pe);
+}
+void peerConnection_set_cj_func_call_SetOnIceCandidate_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_OnIceCandidateEvent ptr)){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnIceCandidate(pe);
+}
+void peerConnection_set_cj_func_call_SetCallBackCreateOffer_(int64_t cpp_ptr, void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg)){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->SetCallBackCreateOffer(pe);
+}
+void peerConnection_set_cj_func_call_SetCallBackCreateAnswer_(int64_t cpp_ptr, void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg)){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->SetCallBackCreateAnswer(pe);
+}
 bool peerConnection_GetCanTrickleIceCandidates(int64_t cpp_ptr) {
     return ((webrtc::ffiPeerConnection*)cpp_ptr)->GetCanTrickleIceCandidates();
 }
@@ -308,6 +329,16 @@ int64_t dataConnection_get_binaryType_(int64_t cpp_ptr){
 }
 void dataConnection_set_binaryType_(int64_t cpp_ptr, int64_t value){
     return ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->SetBinaryType((enum FFIBinaryType)value);
+}
+
+void dataConnection_Send_String(int64_t cpp_ptr, char* data){
+    ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->Send(data);
+}
+void dataConnection_Send_binary(int64_t cpp_ptr, uint8_t* data, int64_t size){
+    ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->Send(data, size);
+}
+void dataConnection_Close(int64_t cpp_ptr) {
+    ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->Close();
 }
 
 void SctpTransport_set_class_key(int64_t cpp_ptr, int64_t classKey) {

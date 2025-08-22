@@ -22,26 +22,7 @@
 
 #define OHOS_LOG_DOMAIN 0xD001234
 
-typedef struct {
-    bool echo_cancellation;
-    // bool auto_gain_control;
-    bool noise_suppression;
-    // bool highpass_filter;
-    // bool stereo_swapping;
-    // int audio_jitter_buffer_max_packets;
-    // bool audio_jitter_buffer_fast_accelerate;
-    // int audio_jitter_buffer_min_delay_ms;
-    // bool audio_network_adaptor;
-    // std::string audio_network_adaptor_config;
-    // bool init_recording_on_send;
-}ffiAudioOptions;
 
-typedef struct {
-    double width;
-    double height;
-    char* facingMode;
-    bool isScreencast;
-}ffiCreateVideoSourceParameters;
 
 
 namespace webrtc{
@@ -59,19 +40,19 @@ public:
                         ffiHardwareVideoDecoderFactory* ffiHVDF);
     ~ffiPeerConnectionFactory();
 
-    void copyVauleCreateAudioSource(ffiAudioOptions ffi_audioOptions);
+    void copyVauleCreateAudioSource(FFIAudioOptions ffi_audioOptions);
     void copyVauleCreateAudioTrack(std::string ffi_id);
-    void copyVauleCreateVideoSource(ffiCreateVideoSourceParameters ffi_videoSource);
+    void copyVauleCreateVideoSource(FFICreateVideoSourceParameters ffi_videoSource);
     void copyVauleCreateVideoTrack(std::string ffi_videoId);
 
-    ffiCreateVideoSourceParameters getCreateVideosSource();
+    FFICreateVideoSourceParameters getCreateVideosSource();
     rtc::scoped_refptr<OhosVideoTrackSource> getVideoSource();
     rtc::scoped_refptr<VideoTrackInterface> getVideoTrack();
 
     int64_t ffiCreatePeerConnection(CJ_RTCConfiguration config);
-    int64_t ffiCreateAudioSource(ffiAudioOptions ffi_audioOptions);
+    int64_t ffiCreateAudioSource(FFIAudioOptions ffi_audioOptions);
     int64_t ffiCreateAudioTrack(std::string ffi_audioId_str);
-    int64_t ffiCreateVideoSource(ffiCreateVideoSourceParameters ffi_videoSource);
+    int64_t ffiCreateVideoSource(FFICreateVideoSourceParameters ffi_videoSource);
     int64_t ffiCreateVideoTrack(std::string ffi_videoId_str);
 
     std::shared_ptr<PeerConnectionFactoryWrapper> GetWrapper() const
@@ -105,10 +86,10 @@ private:
     rtc::scoped_refptr<VideoTrackInterface> videoTrack_;
     rtc::scoped_refptr<AudioTrackInterface> audioTrack_;
 
-    ffiCreateVideoSourceParameters createVideosSource_;
+    FFICreateVideoSourceParameters createVideosSource_;
     std::string audioId_;
     std::string videoId_;
-    ffiAudioOptions audioOptions_;
+    FFIAudioOptions audioOptions_;
 
     PeerConnectionFactoryInterface* GetFactory() const{
         return wrapper_->GetFactory();
@@ -116,8 +97,8 @@ private:
 
 };
 
-void ffiVideoReceiveParameters(ffiCreateVideoSourceParameters createVideosSource,MediaTrackConstraints& nativeTrackConstraints);
-bool ffiValidateAndCopyConstraintSet(ffiCreateVideoSourceParameters createVideosSource, NakedValueDisposition nakedTreatment , MediaTrackConstraintSet& trackConstraints,std::string& errorMessage);
+void ffiVideoReceiveParameters(FFICreateVideoSourceParameters createVideosSource,MediaTrackConstraints& nativeTrackConstraints);
+bool ffiValidateAndCopyConstraintSet(FFICreateVideoSourceParameters createVideosSource, NakedValueDisposition nakedTreatment , MediaTrackConstraintSet& trackConstraints,std::string& errorMessage);
 
 bool ffiValidateAndCopyConstraint(char* ffiCreateVideoSourceChar, NakedValueDisposition nakedTreatment, StringConstraint& constraint,std::string& errorMessage);
 void ffiValidateAndCopyConstraint(double ffiCreateVideoSourceDouble, NakedValueDisposition nakedTreatment, LongConstraint& constraint);

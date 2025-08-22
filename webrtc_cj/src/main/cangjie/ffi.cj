@@ -159,9 +159,162 @@ public struct CJ_RTCSessionDescription {
     }
 }
 
-@C
-public struct CJ_RTCConfiguration {
 
+@C
+struct CJ_RTCIceServer {
+    public var urls: CPointer<CString>
+    public var urls_size: Int64
+    public var username: CString
+    public var username_size: Int64
+    public var credential: CString
+    public var credential_size: Int64
+    public init(urls: CPointer<CString>, urls_size: Int64, username: CString, username_size: Int64, credential: CString, credential_size: Int64) {
+        this.urls = urls
+        this.urls_size = urls_size
+        this.username = username
+        this.username_size = username_size
+        this.credential = credential
+        this.credential_size = credential_size
+    }
+}
+
+@C
+struct CJ_RTCRtpEncodingParameters {
+    public var rid: CString
+    public var rid_size: Int64
+    public var active: Bool
+    public var maxBitrate: Int64
+    public var maxFramerate: Int64
+    public var scaleResolutionDownBy: Int64
+
+    public init(rid: CString, rid_size: Int64, active: Bool, maxBitrate: Int64, maxFramerate: Int64, scaleResolutionDownBy: Int64) {
+        this.rid = rid
+        this.rid_size = rid_size
+        this.active = active
+        this.maxBitrate = maxBitrate
+        this.maxFramerate = maxFramerate
+        this.scaleResolutionDownBy = scaleResolutionDownBy
+    }
+}
+
+@C
+struct CJ_RTCRtpHeaderExtensionParameters {
+    public var id: Int64
+    public var uri: CString
+    public var uri_size: Int64
+    public var encrypted: Bool
+    public init(id: Int64, uri: CString, uri_size: Int64,encrypted: Bool ) {
+        this.id = id
+        this.uri = uri
+        this.uri_size = uri_size
+        this.encrypted = encrypted
+    }
+}
+
+@C
+struct CJ_RTCRtcpParameters {
+    public var cname: CString
+    public var cname_size: Int64
+    public var reducedSize: Bool
+    public init(cname: CString, cname_size: Int64,reducedSize: Bool ) {
+        this.cname = cname
+        this.cname_size = cname_size
+        this.reducedSize = reducedSize
+    }
+}
+
+@C
+struct CJ_RTCRtpCodecParameters {
+    public var clockRate: Int64
+    public var channels: Int64
+    public var mimeType: CString
+    public var mimeType_size: Int64
+    public var sdpFmtpLine: CString
+    public var sdpFmtpLine_size: Int64
+    public var payloadType: Int64
+
+    public init(clockRate: Int64, channels: Int64, mimeType: CString, mimeType_size: Int64, sdpFmtpLine: CString, sdpFmtpLine_size: Int64, payloadType: Int64) {
+        this.clockRate=clockRate
+        this.channels=channels
+        this.mimeType=mimeType
+        this.mimeType_size=mimeType_size
+        this.sdpFmtpLine=sdpFmtpLine
+        this.sdpFmtpLine_size=sdpFmtpLine_size
+        this.payloadType=payloadType
+    }
+}
+
+@C
+struct CJ_RTCRtpSendParameters {
+    var codecs: CPointer<CJ_RTCRtpCodecParameters>
+    var codecs_size: Int64
+    var headerExtensions: CPointer<CJ_RTCRtpHeaderExtensionParameters>
+    var headerExtensions_size: Int64
+    var rtcp: CJ_RTCRtcpParameters
+    var encodings: CPointer<CJ_RTCRtpEncodingParameters>
+    var encodings_size: Int64
+    var transactionId: CString
+    var transactionId_size: Int64
+
+   public init(codecs: CPointer<CJ_RTCRtpCodecParameters>, codecs_size: Int64, headerExtensions: CPointer<CJ_RTCRtpHeaderExtensionParameters>, headerExtensions_size: Int64, rtcp: CJ_RTCRtcpParameters, encodings: CPointer<CJ_RTCRtpEncodingParameters>, encodings_size: Int64, transactionId: CString, transactionId_size: Int64) {
+        this.codecs = codecs
+        this.codecs_size = codecs_size
+        this.headerExtensions = headerExtensions
+        this.headerExtensions_size = headerExtensions_size
+        this.rtcp = rtcp
+        this.encodings = encodings
+        this.encodings_size = encodings_size
+        this.transactionId = transactionId
+        this.transactionId_size = transactionId_size
+    }
+}
+
+@C
+struct CJ_RTCCertificate {
+    public let expires: Int64
+    public let credential: CPointer<CJ_RTCDtlsFingerprint>
+    public let credential_size: Int64
+    public init(expires: Int64, credential: CPointer<CJ_RTCDtlsFingerprint>, credential_size: Int64) {
+        this.expires = expires
+        this.credential = credential
+        this.credential_size = credential_size
+    }
+}
+
+@C
+struct CJ_RTCDtlsFingerprint {
+    public let algorithm: CString
+    public let algorithm_size: Int64
+    public let value: CString
+    public let value_size: Int64
+    public init(algorithm: CString, algorithm_size: Int64, value: CString, value_size: Int64) {
+        this.algorithm = algorithm
+        this.algorithm_size = algorithm_size
+        this.value = value
+        this.value_size = value_size
+    }
+}
+
+@C
+struct CJ_RTCConfiguration {
+    let iceServers: CPointer<CJ_RTCIceServer>
+    let iceServers_size: Int64
+    let iceTransportPolicy: Int64
+    let bundlePolicy: Int64
+    let rtcpMuxPolicy: Int64
+    let certificates: CPointer<CJ_RTCCertificate>
+    let certificates_size: Int64
+    let iceCandidatePoolSize: Int64
+    public init(iceServers: CPointer<CJ_RTCIceServer>, iceServers_size: Int64, iceTransportPolicy: Int64, bundlePolicy: Int64, rtcpMuxPolicy: Int64, certificates: CPointer<CJ_RTCCertificate>, certificates_size: Int64, iceCandidatePoolSize: Int64){
+        this.iceServers = iceServers
+        this.iceServers_size = iceServers_size
+        this.iceTransportPolicy = iceTransportPolicy
+        this.bundlePolicy = bundlePolicy
+        this.rtcpMuxPolicy = rtcpMuxPolicy
+        this.certificates = certificates
+        this.certificates_size = certificates_size
+        this.iceCandidatePoolSize = iceCandidatePoolSize
+    }
 }
 
 @C

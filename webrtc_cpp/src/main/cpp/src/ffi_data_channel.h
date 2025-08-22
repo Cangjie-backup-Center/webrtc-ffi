@@ -38,7 +38,11 @@ public:
     FFIBinaryType GetBinaryType();
     void SetBinaryType(FFIBinaryType value);
 // readonly
-//    int64_t cj_class_key = 0;
+    
+    void Send(uint8_t* data, int64_t size);
+    void Send(char* data);
+    void Close();
+    
 
     void SetOnopen(void (*pe)(int64_t id, CJ_Event ptr));
     void SetOnclose(void (*pe)(int64_t id, CJ_Event ptr));

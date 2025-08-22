@@ -93,6 +93,41 @@ namespace webrtc {
         binaryType_ = value;
     }
 // readonly
+
+    void ffiDataChannelObserverTemp::Send(uint8_t* data, int64_t size) {
+        RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+        if (dataChannel_->state() != DataChannelInterface::kOpen) {
+            CANGJIE_THROW("Datachannel state is not open");
+        }
+        dataChannel_->SendAsync(DataBuffer(rtc::CopyOnWriteBuffer((uint8_t*)data, size), true), [&](RTCError err) {
+            if (!err.ok()) {
+                RTC_LOG(LS_ERROR) << "send array buffer error: " << err.type() << ", " << err.message();
+            }
+            delete data;
+            data = nullptr;
+        });
+    }
+
+    void ffiDataChannelObserverTemp::Send(char* data) {
+        RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+        if (dataChannel_->state() != DataChannelInterface::kOpen) {
+            CANGJIE_THROW("Datachannel state is not open");
+        }
+        std::string str;
+        str = data;
+        delete data;
+        data = nullptr;
+        dataChannel_->SendAsync(DataBuffer(str), [&](RTCError err) {
+            if (!err.ok()) {
+                RTC_LOG(LS_ERROR) << "send array buffer error: " << err.type() << ", " << err.message();
+            }
+        });
+    }
+    void ffiDataChannelObserverTemp::Close() {
+        RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+        dataChannel_->Close();
+    }
+
     void ffiDataChannelObserverTemp::SetOnStateChange(void (*pe)(int64_t id, int64_t ptr)){
         cj_func_OnStateChange_ = pe;
     }

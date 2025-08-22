@@ -82,7 +82,7 @@ ffiPeerConnectionFactory::~ffiPeerConnectionFactory(){
     releasePtr(ffiMST_);
 }
 
-void ffiPeerConnectionFactory::copyVauleCreateAudioSource(ffiAudioOptions ffi_audioOptions){
+void ffiPeerConnectionFactory::copyVauleCreateAudioSource(FFIAudioOptions ffi_audioOptions){
     audioOptions_.echo_cancellation = ffi_audioOptions.echo_cancellation;
     audioOptions_.noise_suppression = ffi_audioOptions.noise_suppression;
 }
@@ -95,14 +95,14 @@ void ffiPeerConnectionFactory::copyVauleCreateVideoTrack(std::string ffi_videoId
     videoId_ = ffi_videoId;
 }
 
-void ffiPeerConnectionFactory::copyVauleCreateVideoSource(ffiCreateVideoSourceParameters ffi_videoSource){
+void ffiPeerConnectionFactory::copyVauleCreateVideoSource(FFICreateVideoSourceParameters ffi_videoSource){
     createVideosSource_.width = ffi_videoSource.width;
     createVideosSource_.height = ffi_videoSource.height;
     createVideosSource_.facingMode = ffi_videoSource.facingMode;
     createVideosSource_.isScreencast = ffi_videoSource.isScreencast;
 }
 
-ffiCreateVideoSourceParameters ffiPeerConnectionFactory::getCreateVideosSource(){
+FFICreateVideoSourceParameters ffiPeerConnectionFactory::getCreateVideosSource(){
     return createVideosSource_; 
 }
 
@@ -121,7 +121,7 @@ int64_t ffiPeerConnectionFactory::ffiCreatePeerConnection(CJ_RTCConfiguration co
     return 0;
 }
 
-int64_t ffiPeerConnectionFactory::ffiCreateAudioSource(ffiAudioOptions ffi_audioOptions){
+int64_t ffiPeerConnectionFactory::ffiCreateAudioSource(FFIAudioOptions ffi_audioOptions){
     copyVauleCreateAudioSource(ffi_audioOptions);
     cricket::AudioOptions options;
     options.echo_cancellation = audioOptions_.echo_cancellation;
@@ -149,7 +149,7 @@ int64_t ffiPeerConnectionFactory::ffiCreateAudioTrack(std::string ffi_audioId_st
     return 0;
 }
 
-int64_t ffiPeerConnectionFactory::ffiCreateVideoSource(ffiCreateVideoSourceParameters ffi_videoSource){
+int64_t ffiPeerConnectionFactory::ffiCreateVideoSource(FFICreateVideoSourceParameters ffi_videoSource){
     copyVauleCreateVideoSource(ffi_videoSource);
 
     std::unique_ptr<VideoCapturer> videoCapturer;
@@ -214,7 +214,7 @@ void ffiPeerConnectionFactory::SetDefault(ffiPeerConnectionFactory* pcf){
 }
 
 
-void ffiVideoReceiveParameters(ffiCreateVideoSourceParameters createVideosSource,MediaTrackConstraints& video){
+void ffiVideoReceiveParameters(FFICreateVideoSourceParameters createVideosSource,MediaTrackConstraints& video){
     std::string errorMessage;
     MediaTrackConstraintSet basic;
     ffiValidateAndCopyConstraintSet(createVideosSource, NakedValueDisposition::kTreatAsIdeal , basic , errorMessage);
@@ -278,7 +278,7 @@ bool ffiValidateStringConstraint(char* ffiCreateVideoSourceChar, std::string& er
     return ret_ValidateString;
 }
 
-bool ffiValidateAndCopyConstraintSet(ffiCreateVideoSourceParameters createVideosSource, NakedValueDisposition nakedTreatment , MediaTrackConstraintSet& trackConstraints,std::string& errorMessage){
+bool ffiValidateAndCopyConstraintSet(FFICreateVideoSourceParameters createVideosSource, NakedValueDisposition nakedTreatment , MediaTrackConstraintSet& trackConstraints,std::string& errorMessage){
     ffiValidateAndCopyConstraint(createVideosSource.width,nakedTreatment,trackConstraints.width);
     ffiValidateAndCopyConstraint(createVideosSource.height,nakedTreatment,trackConstraints.height);
     if (!ffiValidateAndCopyConstraint(createVideosSource.facingMode,nakedTreatment,trackConstraints.facingMode,errorMessage)){

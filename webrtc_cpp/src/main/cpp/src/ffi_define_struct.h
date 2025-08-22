@@ -77,6 +77,28 @@ enum class FFIScreenCaptureAudioFilterEnum { CURRENT_APP, NOTIFICATION };
 
 
 typedef struct {
+    bool echo_cancellation;
+    // bool auto_gain_control;
+    bool noise_suppression;
+    // bool highpass_filter;
+    // bool stereo_swapping;
+    // int audio_jitter_buffer_max_packets;
+    // bool audio_jitter_buffer_fast_accelerate;
+    // int audio_jitter_buffer_min_delay_ms;
+    // bool audio_network_adaptor;
+    // std::string audio_network_adaptor_config;
+    // bool init_recording_on_send;
+}FFIAudioOptions;
+
+typedef struct {
+    double width;
+    double height;
+    char* facingMode;
+    bool isScreencast;
+}FFICreateVideoSourceParameters;
+
+
+typedef struct {
     double width;
     double height;
     double aspectRatio;
@@ -149,25 +171,25 @@ typedef struct {
 } CJ_RTCIceServer;
 
 typedef struct {
-    int64_t expires;
-    char *credential;
+    char *algorithm;
+    int64_t algorithm_size;
+    char *value;
+    int64_t value_size;
 } CJ_RTCDtlsFingerprint;
 
 
 typedef struct {
     int64_t expires;
-//    CJ_RTCDtlsFingerprint* credential;
+    CJ_RTCDtlsFingerprint* credential;
+    int64_t credential_size;
 } CJ_RTCCertificate;
 
 typedef struct {
     CJ_RTCIceServer *iceServers;
     int64_t iceServers_size;
-    char *iceTransportPolicy;
-    int64_t iceTransportPolicy_size;
-    char *bundlePolicy;
-    int64_t bundlePolicy_size;
-    char *rtcpMuxPolicy;
-    int64_t rtcpMuxPolicy_size;
+    int64_t iceTransportPolicy;  // 枚举
+    int64_t bundlePolicy;  // 枚举
+    int64_t rtcpMuxPolicy;  // 枚举
     CJ_RTCCertificate *certificates;
     int64_t certificates_size;
     int64_t iceCandidatePoolSize;
@@ -254,6 +276,8 @@ typedef struct {
 } CJ_OnIceCandidateEvent;
 
 typedef struct {
+    char * rid;
+    int64_t rid_size;
     bool active;
     int64_t maxBitrate;
     int64_t maxFramerate;
@@ -264,18 +288,22 @@ typedef struct {
     int64_t clockRate;
     int64_t channels;
     char* mimeType;
+    int64_t mimeType_size;
     char* sdpFmtpLine;
+    int64_t sdpFmtpLine_size;
     int64_t payloadType;
 } CJ_RTCRtpCodecParameters;
 
 typedef struct {
     int64_t id;
     char* uri;
+    int64_t uri_size;
     bool encrypted;
 } CJ_RTCRtpHeaderExtensionParameters;
 
 typedef struct {
     char* cname;
+    int64_t cname_size;
     bool reducedSize;
 } CJ_RTCRtcpParameters;
 
@@ -288,6 +316,7 @@ typedef struct {
     CJ_RTCRtpEncodingParameters* encodings;
     int64_t encodings_size;
     const char* transactionId;
+    int64_t transactionId_size;
 } CJ_RTCRtpSendParameters;
 
 typedef struct {

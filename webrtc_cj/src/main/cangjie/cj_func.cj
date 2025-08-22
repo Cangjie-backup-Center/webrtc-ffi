@@ -15,11 +15,17 @@ public struct FFIAudioOptions{
 }
 
 @C
-public struct FFICreateVideoSourceParameters{
-    public var width: Float64 = 0.00
-    public var height: Float64 = 0.00
-    public var facingMode: CString = unsafe{LibC.mallocCString("")}
-    public var isScreencast: Bool = false;
+struct FFICreateVideoSourceParameters{
+    public var width: Float64
+    public var height: Float64
+    public var facingMode: CString
+    public var isScreencast: Bool
+    public init(width: Float64, height: Float64, facingMode: CString, isScreencast: Bool) {
+        this.width = width
+        this.height = height
+        this.facingMode = facingMode
+        this.isScreencast = isScreencast
+    }
 }
 
 sealed abstract class WebrtcClass {
@@ -60,9 +66,9 @@ public class PeerConnectionFactory <: WebrtcClass {
 //        this.ID = cj_newPeerConnectionFactory(adm.ID, cj_newHardwareVideoEncoderFactory() , cj_newHardwareVideoDecoderFactory())
 //    }
 
-    public func createPeerConnection(config: CJ_RTCConfiguration): RTCPeerConnection {
+    public func createPeerConnection(config: RTCConfiguration): RTCPeerConnection {
         unsafe {
-            RTCPeerConnection(ffiPeerConnectionFactory_ffiCreatePeerConnection(this.ID, config))
+            RTCPeerConnection(ffiPeerConnectionFactory_ffiCreatePeerConnection(this.ID, config.cpp))
         }
     }
 
@@ -100,14 +106,10 @@ public class AudioTrack <: MediaStreamTrack {
 }
 
 public class VideoSource <: WebrtcClass {
-
-    public init(pcf: PeerConnectionFactory, ffiCVSP: FFICreateVideoSourceParameters) {
-        super(unsafe{ffi_createVideoSource(pcf.ID, ffiCVSP)}, this)
+    public init(pcf: PeerConnectionFactory, ffiCVSP: CreateVideoSourceParameters) {
+        super(unsafe{ffi_createVideoSource(pcf.ID, ffiCVSP.cpp)}, this)
     }
 
-//    public func createVideoSourceID(pcf: PeerConnectionFactory, ffiCVSP: FFICreateVideoSourceParameters) {
-//        this.ID = cj_createVideoSource(pcf.ID, ffiCVSP)
-//    }
 }
 
 public class VideoTrack <: WebrtcClass {

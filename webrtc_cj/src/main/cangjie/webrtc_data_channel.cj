@@ -26,6 +26,9 @@ foreign {
     func dataConnection_get_binaryType_(cpp_ptr: Int64): Int64
     func dataConnection_set_binaryType_(cpp_ptr: Int64, value: Int64): Unit
 
+    func dataConnection_Send_String(cpp_ptr: Int64, value: CString): Unit
+    func dataConnection_Send_binary(cpp_ptr: Int64, value: CPointer<Byte>, size: Int64): Unit
+    func dataConnection_Close(cpp_ptr: Int64): Unit
 }
 
 public enum DataChannelState {
@@ -67,16 +70,13 @@ public enum BinaryType {
     }
 }
 
-public class RTCDataChannel <: WebrtcClass {
-    var onopen_: ((pc: RTCDataChannel, dc: Event) -> Unit) = {_,_ => }
-    var onopen_use: Bool = false
-    var onclosing_: ((pc: RTCDataChannel, dc: Event) -> Unit) = {_,_ => }
-    var onclosing_use: Bool = false
-    var onclose_: ((pc: RTCDataChannel, dc: Event) -> Unit) = {_,_ => }
-    var onclose_use: Bool = false
-    var onmessage_: ((pc: RTCDataChannel, dc: MessageEvent) -> Unit) = {_,_ => }
-    var onmessage_use: Bool = false
-//    public var onerror: ((pc: RTCDataChannel, dc: Event) -> Unit) = {_,_ => }
+public class RTCDataChannel <: WebrtcClass & Resource {
+    var onopen_: ?((pc: RTCDataChannel, dc: Event) -> Unit) = None
+    var onclosing_: ?((pc: RTCDataChannel, dc: Event) -> Unit) = None
+    var onclose_: ?((pc: RTCDataChannel, dc: Event) -> Unit) = None
+    var onmessage_: ?((pc: RTCDataChannel, dc: MessageEvent) -> Unit) = None
+    var onerror_: ?((pc: RTCDataChannel, dc: RTCErrorEvent) -> Unit) = None
+    var closed: Bool = false
 
     public init(id: Int64) {
         super(id, this)
@@ -84,80 +84,78 @@ public class RTCDataChannel <: WebrtcClass {
     }
 
     public mut prop onopen: ((pc: RTCDataChannel, dc: Event) -> Unit) {
-        get (){
-            return onopen_
-        }
+        get (){onopen_ ?? {_,_=>}}
         set(value) {
+            if (onopen_.isNone()){
+                unsafe {
+                    dataConnection_set_cj_func_Onopen_(this.ID, { id: Int64, event: CJ_Event =>
+                        let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
+                        obj.onopen(obj, Event(event.eventType.toString()))
+                    })
+                }
+            }
             onopen_ = value
-            if (onopen_use) {
-                return
-            }
-            unsafe {
-                dataConnection_set_cj_func_Onopen_(this.ID, { id: Int64, event: CJ_Event =>
-                    let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
-                    obj.onopen_(obj, Event(event.eventType.toString()))
-                })
-            }
-            onopen_use = true
         }
     }
 
     public mut prop onclosing: ((pc: RTCDataChannel, dc: Event) -> Unit) {
-        get (){ return onclosing_}
+        get (){onclosing_ ?? {_,_=>}}
         set(value) {
+            if (onclosing_.isNone()) {
+                unsafe {
+                     dataConnection_set_cj_func_Onclosing_(this.ID, { id: Int64, event: CJ_Event =>
+                        let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
+                        obj.onclosing(obj, Event(event.eventType.toString()))
+                    })
+                }
+            }
             onclosing_ = value
-            if (onclosing_use) {
-                return
-            }
-            unsafe {
-                 dataConnection_set_cj_func_Onclosing_(this.ID, { id: Int64, event: CJ_Event =>
-                    let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
-                    obj.onclosing_(obj, Event(event.eventType.toString()))
-                })
-            }
-            onclosing_use = true
         }
     }
 
     public mut prop onclose: ((pc: RTCDataChannel, dc: Event) -> Unit) {
-        get (){ return onclose_}
+        get (){onclose_ ?? {_,_=>}}
         set(value) {
+            if(onclose_.isNone()) {
+                unsafe {
+                     dataConnection_set_cj_func_Onclose_(this.ID, { id: Int64, event: CJ_Event =>
+                        let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
+                        obj.onclose(obj, Event(event.eventType.toString()))
+                    })
+                }
+            }
             onclose_ = value
-            if (onclose_use) {
-                return
-            }
-            unsafe {
-                 dataConnection_set_cj_func_Onclose_(this.ID, { id: Int64, event: CJ_Event =>
-                    let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
-                    obj.onclose_(obj, Event(event.eventType.toString()))
-                })
-            }
-            onclose_use = true
         }
     }
 
     public mut prop onmessage: ((pc: RTCDataChannel, dc: MessageEvent) -> Unit) {
-        get (){ return onmessage_}
+        get (){onmessage_ ?? {_,_=>}}
         set(value) {
-            onmessage_ = value
-            if (onmessage_use) {
-                return
-            }
-            unsafe {
-                dataConnection_set_cj_func_Onmessage_(this.ID, { id: Int64, event: CJ_MessageEvent =>
-                    let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
-                    if (event.binary) {
-                        let arr = Array<Byte>(event.data_arr_size, repeat: 0)
-                        for(i in 0..event.data_arr_size) {
-                            arr[i] = event.data_arr.read(i)
+            if (onmessage_.isNone()) {
+                unsafe {
+                    dataConnection_set_cj_func_Onmessage_(this.ID, { id: Int64, event: CJ_MessageEvent =>
+                        let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
+                        if (event.binary) {
+                            let arr = Array<Byte>(event.data_arr_size, repeat: 0)
+                            for(i in 0..event.data_arr_size) {
+                                arr[i] = event.data_arr.read(i)
+                            }
+                            obj.onmessage(obj, MessageEvent(event.TYPE.toString(), ARRAY_BUFFER(arr)))
+                        } else{
+                            obj.onmessage(obj, MessageEvent(event.TYPE.toString(), STRING(event.data_str.toString())))
                         }
-                        obj.onmessage(obj, MessageEvent(event.TYPE.toString(), ARRAY_BUFFER(arr)))
-                    } else{
-                        obj.onmessage(obj, MessageEvent(event.TYPE.toString(), STRING(event.data_str.toString())))
-                    }
-                })
+                    })
+                }
             }
-            onmessage_use = true
+            onmessage_ = value
+        }
+    }
+
+    public mut prop onerror: ((pc: RTCDataChannel, dc: RTCErrorEvent) -> Unit) {
+        get(){onerror_??{_,_=>}}
+        set(v) {
+            // TODO
+            onerror_ = v
         }
     }
 
@@ -247,6 +245,33 @@ public class RTCDataChannel <: WebrtcClass {
         set(v) {
             unsafe {dataConnection_set_binaryType_(this.ID, BinaryType.GET(v))}
         }
+    }
+
+    public func send(data: String): Unit {
+        unsafe {
+            dataConnection_Send_String(this.ID, LibC.mallocCString(data))
+        }
+    }
+
+    public func send(data: Array<Byte>): Unit {
+        unsafe {
+            let ptr = acquireArrayRawData(data)
+            dataConnection_Send_binary(this.ID, ptr.pointer, data.size)
+            releaseArrayRawData(ptr)
+        }
+    }
+
+    public func close(): Unit {
+        unsafe {
+            if (!this.closed){
+                dataConnection_Close(this.ID)
+                this.closed = true
+            }
+        }
+    }
+
+    public func isClosed(): Bool {
+        this.closed
     }
 
 }

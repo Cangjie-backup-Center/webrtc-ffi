@@ -8,6 +8,14 @@ foreign func peerConnection_set_cj_func_call_OnDataChannel_(cpp_ptr: Int64, fn: 
 foreign func peerConnection_set_cj_func_call_OnSignalingChange_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
 foreign func peerConnection_set_cj_func_call_OnIceCandidateError_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_RTCPeerConnectionIceErrorEvent) -> Unit>): Unit
 foreign func peerConnection_set_cj_func_call_onTrack_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_RTCTrackEvent) -> Unit>): Unit
+foreign func peerConnection_set_cj_func_call_SetOnConnectionChange_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
+foreign func peerConnection_set_cj_func_call_SetOnRenegotiationNeeded_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
+foreign func peerConnection_set_cj_func_call_SetOnStandardizedIceConnectionChange_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
+foreign func peerConnection_set_cj_func_call_SetOnIceGatheringChange_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
+foreign func peerConnection_set_cj_func_call_SetOnIceCandidate_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_OnIceCandidateEvent) -> Unit>): Unit
+//foreign func peerConnection_set_cj_func_call_SetCallBackCreateOffer_(cpp_ptr: Int64, fn: CFunc<(id: Int64, isSuccess: Bool, ptr: CJ_RTCSessionDescription, msg: CString) -> Unit>): Unit
+//foreign func peerConnection_set_cj_func_call_SetCallBackCreateAnswer_(cpp_ptr: Int64, fn: CFunc<(id: Int64, isSuccess: Bool, ptr: CJ_RTCSessionDescription, msg: CString) -> Unit>): Unit
+
 foreign func peerConnection_GetCanTrickleIceCandidates(cpp_ptr: Int64): Bool
 foreign func peerConnection_GetSignalingState(cpp_ptr: Int64): Int64
 foreign func peerConnection_GetIceGatheringState(cpp_ptr: Int64): Int64
@@ -25,101 +33,161 @@ foreign func peerConnection_static_GenerateCertificate(cpp_ptr: CString): Int64
 
 public class RTCPeerConnection <: WebrtcClass {
 
-    var ondatachannel_: ((pc: RTCPeerConnection, dc: RTCDataChannel) -> Unit) = {_,_ => }
-    var ondatachannel_use: Bool = false
-    var onSignalingChange_: ((pc: RTCPeerConnection, dc: Event) -> Unit) = {_,_ => }
-    var onSignalingChange_use: Bool = false
-    var onIceCandidateError_: ((pc: RTCPeerConnection, dc: RTCPeerConnectionIceErrorEvent) -> Unit) = {_,_ => }
-    var onIceCandidateError_use: Bool = false
-    var onTrack_: ((pc: RTCPeerConnection, dc: RTCTrackEvent) -> Unit) = {_,_ => }
-    var onTrack_use: Bool = false
+    var ondatachannel_: ?((pc: RTCPeerConnection, dc: RTCDataChannel) -> Unit) = None
+    var onSignalingChange_: ?((pc: RTCPeerConnection, dc: Event) -> Unit) = None
+    var onIceCandidateError_: ?((pc: RTCPeerConnection, dc: RTCPeerConnectionIceErrorEvent) -> Unit) = None
+    var onTrack_: ?((pc: RTCPeerConnection, dc: RTCTrackEvent) -> Unit) = None
+    var onConnectionChange_: ?((pc: RTCPeerConnection, dc: Event) -> Unit) = None
+    var onRenegotiationNeeded_: ?((pc: RTCPeerConnection, dc: Event) -> Unit) = None
+    var onStandardizedIceConnectionChange_: ?((pc: RTCPeerConnection, dc: Event) -> Unit) = None
+    var onIceGatheringChange_: ?((pc: RTCPeerConnection, dc: Event) -> Unit) = None
+    var onIceCandidate_: ?((pc: RTCPeerConnection, dc: OnIceCandidateEvent) -> Unit) = None
 
 
     public mut prop ondatachannel: ((pc: RTCPeerConnection, dc: RTCDataChannel) -> Unit) {
-        get() {ondatachannel_}
+        get() {ondatachannel_ ?? {_,_=>}}
         set(v) {
+            if (this.ondatachannel_.isNone()) {
+                unsafe {
+                    peerConnection_set_cj_func_call_OnDataChannel_(this.ID, { id: Int64, ptr: Int64 =>
+                        let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
+                        ffipc.ondatachannel(ffipc, RTCDataChannel(ptr))
+                    })
+                }
+            }
             ondatachannel_ = v
-            if (ondatachannel_use) {
-                return
-            }
-            unsafe {
-                peerConnection_set_cj_func_call_OnDataChannel_(this.ID, { id: Int64, ptr: Int64 =>
-                    let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
-                    ffipc.ondatachannel(ffipc, RTCDataChannel(ptr))
-                })
-            }
-            ondatachannel_use = true
         }
     }
     public mut prop onSignalingChange: ((pc: RTCPeerConnection, dc: Event) -> Unit) {
-        get() {onSignalingChange_}
+        get() {onSignalingChange_?? {_,_=>}}
         set(v) {
+            if (this.onSignalingChange_.isNone()) {
+                unsafe {
+                    peerConnection_set_cj_func_call_OnSignalingChange_(this.ID, { id: Int64, ptr: CJ_Event =>
+                        let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
+                        ffipc.onSignalingChange(ffipc, Event(ptr.eventType.toString()))
+                    })
+                }
+            }
             onSignalingChange_ = v
-            if (onSignalingChange_use) {
-                return
-            }
-            unsafe {
-                peerConnection_set_cj_func_call_OnSignalingChange_(this.ID, { id: Int64, ptr: CJ_Event =>
-                    let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
-                    ffipc.onSignalingChange(ffipc, Event(ptr.eventType.toString()))
-                })
-            }
-            onSignalingChange_use = true
         }
     }
     public mut prop onIceCandidateError: ((pc: RTCPeerConnection, dc: RTCPeerConnectionIceErrorEvent) -> Unit) {
-        get() {onIceCandidateError_}
+        get() {onIceCandidateError_?? {_,_=>}}
         set(v) {
-            onIceCandidateError_ = v
-            if (onIceCandidateError_use) {
-                return
-            }
-            unsafe {
-                peerConnection_set_cj_func_call_OnIceCandidateError_(this.ID, { id: Int64, ptr: CJ_RTCPeerConnectionIceErrorEvent =>
-                    let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
-                    ffipc.onIceCandidateError(ffipc, RTCPeerConnectionIceErrorEvent(
-                        ptr.TYPE.toString(),
-                        ptr.address.toString(),
-                        ptr.port,
-                        ptr.url.toString(),
-                        ptr.errorCode,
-                        ptr.errorText.toString()
-                    ))
-                })
-            }
-            onIceCandidateError_use = true
-        }
-    }
-
-    public mut prop onTrack: ((pc: RTCPeerConnection, dc: RTCTrackEvent) -> Unit) {
-        get() {onTrack_}
-        set(v) {
-            onTrack_ = v
-            if (onTrack_use) {
-                return
-            }
-            unsafe {
-                peerConnection_set_cj_func_call_onTrack_(this.ID, { id: Int64, ptr: CJ_RTCTrackEvent =>
-                    let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
-                    let arr = Array<Int64> (ptr.streams_size, repeat: 0)
-                    for(i in 0..ptr.streams_size) {
-                        arr[i] = ptr.streams.read(i)
-                    }
-                    ffipc.onTrack(
-                        ffipc, RTCTrackEvent(
+            if (onIceCandidateError_.isNone()){
+                unsafe {
+                    peerConnection_set_cj_func_call_OnIceCandidateError_(this.ID, { id: Int64, ptr: CJ_RTCPeerConnectionIceErrorEvent =>
+                        let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
+                        ffipc.onIceCandidateError(ffipc, RTCPeerConnectionIceErrorEvent(
                             ptr.TYPE.toString(),
-                            arr,
-                            ptr.MediaStreamTrack_ptr,
-                            ptr.RtpReceiver_ptr,
-                            ptr.RtpTransceiver_ptr
-                        )
-                    )
-                })
+                            ptr.address.toString(),
+                            ptr.port,
+                            ptr.url.toString(),
+                            ptr.errorCode,
+                            ptr.errorText.toString()
+                        ))
+                    })
+                }
             }
-            onTrack_use = true
+            onIceCandidateError_ = v
         }
     }
-
+    public mut prop onTrack: ((pc: RTCPeerConnection, dc: RTCTrackEvent) -> Unit) {
+        get() {onTrack_?? {_,_=>}}
+        set(v) {
+            if (onTrack_.isNone()) {
+                unsafe {
+                    peerConnection_set_cj_func_call_onTrack_(this.ID, { id: Int64, ptr: CJ_RTCTrackEvent =>
+                        let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
+                        let arr = Array<Int64> (ptr.streams_size, repeat: 0)
+                        for(i in 0..ptr.streams_size) {
+                            arr[i] = ptr.streams.read(i)
+                        }
+                        ffipc.onTrack(
+                            ffipc, RTCTrackEvent(
+                                ptr.TYPE.toString(),
+                                arr,
+                                ptr.MediaStreamTrack_ptr,
+                                ptr.RtpReceiver_ptr,
+                                ptr.RtpTransceiver_ptr
+                            )
+                        )
+                    })
+                }
+            }
+            onTrack_ = v
+        }
+    }
+    public mut prop onconnectionstatechange: ((pc: RTCPeerConnection, dc: Event) -> Unit){
+        get () {onConnectionChange_??{_,_=>}}
+        set (v) {
+            if (onConnectionChange_.isNone()) {
+                unsafe {
+                    peerConnection_set_cj_func_call_SetOnConnectionChange_(this.ID, { id: Int64, ptr: CJ_Event =>
+                        let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
+                        ffipc.onconnectionstatechange( ffipc, Event(ptr.eventType.toString()) )
+                    })
+                }
+            }
+            onConnectionChange_ = v
+        }
+    }
+    public mut prop onnegotiationneeded: ((pc: RTCPeerConnection, dc: Event) -> Unit){
+        get () {onRenegotiationNeeded_??{_,_=>}}
+        set (v) {
+            if (onRenegotiationNeeded_.isNone()) {
+                unsafe {
+                    peerConnection_set_cj_func_call_SetOnConnectionChange_(this.ID, { id: Int64, ptr: CJ_Event =>
+                        let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
+                        ffipc.onnegotiationneeded( ffipc, Event(ptr.eventType.toString()) )
+                    })
+                }
+            }
+            onRenegotiationNeeded_ = v
+        }
+    }
+    public mut prop oniceconnectionstatechange: ((pc: RTCPeerConnection, dc: Event) -> Unit){
+        get () {onStandardizedIceConnectionChange_??{_,_=>}}
+        set (v) {
+            if (onStandardizedIceConnectionChange_.isNone()) {
+                unsafe {
+                    peerConnection_set_cj_func_call_SetOnConnectionChange_(this.ID, { id: Int64, ptr: CJ_Event =>
+                        let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
+                        ffipc.oniceconnectionstatechange( ffipc, Event(ptr.eventType.toString()) )
+                    })
+                }
+            }
+            onStandardizedIceConnectionChange_ = v
+        }
+    }
+    public mut prop onicegatheringstatechange: ((pc: RTCPeerConnection, dc: Event) -> Unit){
+        get () {onIceGatheringChange_??{_,_=>}}
+        set (v) {
+            if (onIceGatheringChange_.isNone()) {
+                unsafe {
+                    peerConnection_set_cj_func_call_SetOnConnectionChange_(this.ID, { id: Int64, ptr: CJ_Event =>
+                        let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
+                        ffipc.onicegatheringstatechange( ffipc, Event(ptr.eventType.toString()) )
+                    })
+                }
+            }
+        }
+    }
+    public mut prop onIceCandidate: ((pc: RTCPeerConnection, dc: OnIceCandidateEvent) -> Unit){
+        get () {onIceCandidate_??{_,_=>}}
+        set (v) {
+            if (onIceCandidate_.isNone()) {
+                unsafe {
+                    peerConnection_set_cj_func_call_SetOnConnectionChange_(this.ID, { id: Int64, ptr: CJ_Event =>
+                        let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
+//                        ffipc.onIceCandidate( ffipc, Event(ptr.eventType.toString()) ) // TODO
+                    })
+                }
+            }
+            onIceCandidate_ = v
+        }
+    }
     public static func GenerateCertificate(keyname: String): Int64{
         return unsafe {
             let str = LibC.mallocCString(keyname)

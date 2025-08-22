@@ -32,9 +32,9 @@ extern "C" {
     int64_t ffi_newHardwareVideoEncoderFactory();
     int64_t ffi_newHardwareVideoDecoderFactory();
     int64_t ffi_newPeerConnectionFactory(int64_t ffiADM_int64 , int64_t ffiHVEF_int64 , int64_t ffiHVDF_int64);
-    int64_t ffi_createAudioSource(int64_t ffiPCF_int64 , ffiAudioOptions ffiao);
+    int64_t ffi_createAudioSource(int64_t ffiPCF_int64 , FFIAudioOptions ffiao);
     int64_t ffi_createAudioTrack(int64_t ffiPCF_int64 , char* ffi_audioId);
-    int64_t ffi_createVideoSource(int64_t ffiPCF_int64 , ffiCreateVideoSourceParameters fficvsp);
+    int64_t ffi_createVideoSource(int64_t ffiPCF_int64 , FFICreateVideoSourceParameters fficvsp);
     int64_t ffi_createVideoTrack(int64_t ffiPCF_int64 , char* ffi_videoId);
     void ffi_SetDefault(int64_t ffiPCF_int64);
     bool ffi_StartAecDump(int64_t ffiPCF_int64, int fd, int max_size_bytes);
@@ -82,6 +82,13 @@ extern "C" {
     void peerConnection_set_cj_func_call_OnSignalingChange_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr));
     void peerConnection_set_cj_func_call_OnIceCandidateError_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_RTCPeerConnectionIceErrorEvent ptr));
     void peerConnection_set_cj_func_call_onTrack_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_RTCTrackEvent ptr));
+    void peerConnection_set_cj_func_call_SetOnConnectionChange_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr));
+    void peerConnection_set_cj_func_call_SetOnRenegotiationNeeded_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr));
+    void peerConnection_set_cj_func_call_SetOnStandardizedIceConnectionChange_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr));
+    void peerConnection_set_cj_func_call_SetOnIceGatheringChange_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr));
+    void peerConnection_set_cj_func_call_SetOnIceCandidate_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_OnIceCandidateEvent ptr));
+    void peerConnection_set_cj_func_call_SetCallBackCreateOffer_(int64_t cpp_ptr, void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg));
+    void peerConnection_set_cj_func_call_SetCallBackCreateAnswer_(int64_t cpp_ptr, void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg));
     bool peerConnection_GetCanTrickleIceCandidates(int64_t cpp_ptr);
     int64_t peerConnection_GetSignalingState(int64_t cpp_ptr);
     int64_t peerConnection_GetIceGatheringState(int64_t cpp_ptr);
@@ -115,6 +122,10 @@ extern "C" {
     void dataConnection_set_bufferedAmountLowThreshold_(int64_t cpp_ptr, int64_t value);
     int64_t dataConnection_get_binaryType_(int64_t cpp_ptr);
     void dataConnection_set_binaryType_(int64_t cpp_ptr, int64_t value);
+    void dataConnection_Send_String(int64_t cpp_ptr, char* data);
+    void dataConnection_Send_binary(int64_t cpp_ptr, uint8_t* data, int64_t size);
+    void dataConnection_Close(int64_t cpp_ptr);
+    
 
     // sctp_transport
     void SctpTransport_set_class_key(int64_t cpp_ptr, int64_t classKey);

@@ -1,6 +1,7 @@
 #ifndef WEBRTC_FFI_OHOS_AUDIO_DEVICE_MODULE_H_
 #define WEBRTC_FFI_OHOS_AUDIO_DEVICE_MODULE_H_
 
+#include "ffi_cj_class.h"
 #include "ohos_audio_device_module.h"
 #include "audio_input.h"
 #include "audio_output.h"
@@ -16,13 +17,16 @@
 namespace webrtc{
 
 class ffiAudioDeviceModule : public AudioInput::Observer,
-                            public AudioOutput::Observer 
+                            public AudioOutput::Observer ,
+                            public CJ_CLASS_BASE::FFICangjieClassID
 {
 public:
     ffiAudioDeviceModule(bool ffiUseStereoInput,bool ffiUseStereoOutput);
     ~ffiAudioDeviceModule();
     rtc::scoped_refptr<OhosAudioDeviceModule> getAdm();
 
+    
+    
 protected:
     void OnAudioInputError(AudioInput* input, AudioErrorType type,const std::string& message) override;
     void OnAudioInputStateChange(AudioInput* input, AudioStateType newState) override;
