@@ -355,4 +355,14 @@ public class MediaTrackConstraints {
 }
 
 
+@C
+public struct CJ_RTCIceCandidateInit {
+    let isBuild: Bool = false
+    let ordered: Bool = false
+    let maxPacketLifeTime: Int64 = 0
+    let maxRetransmits: Int64 = 0
+    let protocol: CString = unsafe {zeroValue<CString>()}
+    let negotiated: Bool = false
+    let id: Int64 = 0
+}
 

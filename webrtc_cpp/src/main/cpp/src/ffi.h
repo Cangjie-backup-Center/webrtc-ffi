@@ -102,7 +102,24 @@ extern "C" {
     CJ_RTCSessionDescription peerConnection_GetPendingRemoteDescription(int64_t cpp_ptr);
     int64_t peerConnection_GetSctp(int64_t cpp_ptr);
     int64_t peerConnection_static_GenerateCertificate(char* keyname);
-
+    int64_t peerConnection_addTrack(int64_t cpp_ptr, int64_t ffiMST_ptr, CJ_ArrayMediaStream streamVec);
+    
+    void peerConnection_setLocalDescription(int64_t cpp_ptr, CJ_RTCSessionDescription description);
+    void peerConnection_setRemoteDescription(int64_t cpp_ptr, CJ_RTCSessionDescription description);
+    void peerConnection_createOffer(int64_t cpp_ptr);
+    void peerConnection_createAnswer(int64_t cpp_ptr);
+    void peerConnection_addIceCandidate(int64_t cpp_ptr, CJ_RTCIceCandidateInit candidate); 
+    void peerConnection_set_cj_func_call_addIceCandidate_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_RTCIceCandidateInit candidate));
+    int64_t peerConnection_createDataChannel(int64_t cpp_ptr, char* label, CJ_RTCDataChannelInit dataChannelDict);
+    int64_t* peerConnection_getSenders(int64_t cpp_ptr);
+    int64_t* peerConnection_getReceivers(int64_t cpp_ptr);
+    int64_t* peerConnection_getTransceivers(int64_t cpp_ptr);
+    void peerConnection_restartIce(int64_t cpp_ptr);
+    void peerConnection_setConfiguration(int64_t cpp_ptr, cj_RTCConfiguration configuration);
+    void peerConnection_close(int64_t cpp_ptr);
+    void peerConnection_setAudioRecording(int64_t cpp_ptr, bool recording);
+    void peerConnection_setAudioPlayout(int64_t cpp_ptr, bool playout); 
+    
     // DataChannel
     void dataConnection_set_class_key(int64_t cpp_ptr, int64_t classKey);  // 设置到对应的cpp类中仓颉类的randomid.
     void dataConnection_set_cj_func_Onopen_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event event));

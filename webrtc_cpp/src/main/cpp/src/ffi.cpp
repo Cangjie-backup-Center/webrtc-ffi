@@ -274,6 +274,66 @@ int64_t peerConnection_static_GenerateCertificate(char* keyname){
     return webrtc::ffiPeerConnection::GenerateCertificate(keyname);
 }
 
+int64_t peerConnection_addTrack(int64_t cpp_ptr, int64_t ffiMST_ptr, CJ_ArrayMediaStream streamVec){
+    return ((webrtc::ffiPeerConnection*)cpp_ptr)->addTrack(ffiMST_ptr, streamVec);
+}
+
+void peerConnection_setLocalDescription(int64_t cpp_ptr, CJ_RTCSessionDescription description){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->setLocalDescription(description);
+}
+
+void peerConnection_setRemoteDescription(int64_t cpp_ptr, CJ_RTCSessionDescription description){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->setRemoteDescription(description);
+}
+
+void peerConnection_createOffer(int64_t cpp_ptr){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->createOffer();
+}
+
+void peerConnection_createAnswer(int64_t cpp_ptr){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->createAnswer();
+}
+
+int64_t peerConnection_createDataChannel(int64_t cpp_ptr, char* label, CJ_RTCDataChannelInit dataChannelDict){
+    return ((webrtc::ffiPeerConnection*)cpp_ptr)->createDataChannel(label, dataChannelDict);
+}
+
+void peerConnection_addIceCandidate(int64_t cpp_ptr, CJ_RTCIceCandidateInit candidate){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->addIceCandidate(candidate);
+}
+
+int64_t* peerConnection_getSenders(int64_t cpp_ptr){
+    return ((webrtc::ffiPeerConnection*)cpp_ptr)->getSenders();
+}
+
+int64_t* peerConnection_getReceivers(int64_t cpp_ptr){
+    return ((webrtc::ffiPeerConnection*)cpp_ptr)->getReceivers();
+}
+
+int64_t* peerConnection_getTransceivers(int64_t cpp_ptr){
+    return ((webrtc::ffiPeerConnection*)cpp_ptr)->getTransceivers();
+}
+
+void peerConnection_restartIce(int64_t cpp_ptr){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->restartIce();
+}
+
+void peerConnection_setConfiguration(int64_t cpp_ptr, CJ_RTCConfiguration configuration){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->setConfiguration(configuration);
+}
+
+void peerConnection_close(int64_t cpp_ptr){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->close();
+}
+
+void peerConnection_setAudioRecording(int64_t cpp_ptr, bool recording){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->setAudioRecording(recording);
+}
+
+void peerConnection_setAudioPlayout(int64_t cpp_ptr, bool playout){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->setVideoRecording(playout);
+}
+
 // dataConnection
 void dataConnection_set_class_key(int64_t cpp_ptr, int64_t classKey){
     ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->SetCJClassID(classKey);

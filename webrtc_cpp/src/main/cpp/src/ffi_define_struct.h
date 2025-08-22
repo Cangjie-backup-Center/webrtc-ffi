@@ -162,6 +162,11 @@ typedef struct {
 } CJ_ReturnArray;
 
 typedef struct {
+    int64_t *ptr;
+    int64_t size;
+} CJ_ArrayMediaStream;
+
+typedef struct {
     char **urls;
     int64_t urls_size;
     char *username;
@@ -325,6 +330,31 @@ typedef struct {
     int64_t channels;
     char* sdpFmtpLine;
 } CJ_RTCRtpCodec;
+
+typedef struct {
+    bool isBuild = false;
+    bool ordered;
+    int64_t maxPacketLifeTime;
+    int64_t maxRetransmits;
+    char* protocol;
+    bool negotiated;
+    int64_t id;
+} CJ_RTCDataChannelInit;
+
+typedef struct {
+    bool isBuild = false;
+    char* candidate = "";
+    int32_t sdpMLineIndex = 0;
+    char* sdpMid = "";
+    char* usernameFragment;
+} CJ_RTCIceCandidateInit;
+
+typedf struct{
+    kind: char*;
+    id: char*;
+    enabled: bool;
+    readyState: char*;
+}CJ_MediaStreamTrack;
 
 /*namespace webrtc {
 
