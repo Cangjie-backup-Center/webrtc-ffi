@@ -160,6 +160,33 @@ public struct CJ_RTCSessionDescription {
 }
 
 
+//typedef struct{
+//    int64_t rtcErrorDetailType;
+//    const char* msg;
+//}CJ_ErrorMessage;
+@C
+struct CJ_ErrorMessage {
+    let rtcErrorDetailType: Int64 = 0
+    let msg: CString = unsafe{zeroValue<CString>()}
+}
+
+public class ErrorMessage {
+    public prop errorDetail: FFIRTCErrorDetailType {get(){
+        FFIRTCErrorDetailType.GET(this.cpp.rtcErrorDetailType)
+    }}
+    public prop msg: String {get() {this.cpp.msg.toString()}}
+
+    private var cpp: CJ_ErrorMessage
+    init(msg: CJ_ErrorMessage){
+        this.cpp = msg
+    }
+    ~init() {
+        unsafe {
+            LibC.free(this.cpp.msg)
+        }
+    }
+}
+
 @C
 struct CJ_RTCIceServer {
     public var urls: CPointer<CString>
@@ -364,5 +391,25 @@ public struct CJ_RTCIceCandidateInit {
     let protocol: CString = unsafe {zeroValue<CString>()}
     let negotiated: Bool = false
     let id: Int64 = 0
+}
+
+//typedef struct {
+//    bool isBuild = false;
+//    bool ordered;
+//    int64_t maxPacketLifeTime;
+//    int64_t maxRetransmits;
+//    char* protocol;
+//    bool negotiated;
+//    int64_t id;
+//} CJ_RTCDataChannelInit;
+@C
+public struct CJ_RTCDataChannelInit {
+    var isBuild: Bool = false
+    var ordered: Bool = false
+    var maxPacketLifeTime: Int64 = -1
+    var maxRetransmits: Int64 = -1
+    var protocol: CString = unsafe{zeroValue<CString>()}
+    var negotiated: Bool = false
+    var id: Int64 = -1
 }
 

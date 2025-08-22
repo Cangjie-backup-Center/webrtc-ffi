@@ -275,19 +275,24 @@ int64_t peerConnection_static_GenerateCertificate(char* keyname){
 }
 
 int64_t peerConnection_addTrack(int64_t cpp_ptr, int64_t ffiMST_ptr, CJ_ArrayMediaStream streamVec){
-    return ((webrtc::ffiPeerConnection*)cpp_ptr)->addTrack(ffiMST_ptr, streamVec);
+    std::vector<webrtc::FFIMediaStream*> arr;
+    for (int i = 0; i < streamVec.size; i++) {
+        arr.push_back((webrtc::FFIMediaStream*)streamVec.ptr[i]);
+    }
+    
+    return ((webrtc::ffiPeerConnection*)cpp_ptr)->addTrack((webrtc::ffiMediaStreamTrack*)ffiMST_ptr, arr);
 }
 
-void peerConnection_setLocalDescription(int64_t cpp_ptr, CJ_RTCSessionDescription description){
-    ((webrtc::ffiPeerConnection*)cpp_ptr)->setLocalDescription(description);
+void peerConnection_setLocalDescription(int64_t cpp_ptr, CJ_RTCSessionDescription description, void (*pe)(int64_t cj_id, CJ_ErrorMessage msg)){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->setLocalDescription(description, pe);
 }
 
-void peerConnection_setRemoteDescription(int64_t cpp_ptr, CJ_RTCSessionDescription description){
-    ((webrtc::ffiPeerConnection*)cpp_ptr)->setRemoteDescription(description);
+void peerConnection_setRemoteDescription(int64_t cpp_ptr, CJ_RTCSessionDescription description, void (*pe)(int64_t cj_id, CJ_ErrorMessage msg)){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->setRemoteDescription(description, pe);
 }
 
-void peerConnection_createOffer(int64_t cpp_ptr){
-    ((webrtc::ffiPeerConnection*)cpp_ptr)->createOffer();
+void peerConnection_createOffer(int64_t cpp_ptr, bool iceRestart){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->createOffer(iceRestart);
 }
 
 void peerConnection_createAnswer(int64_t cpp_ptr){
@@ -300,6 +305,10 @@ int64_t peerConnection_createDataChannel(int64_t cpp_ptr, char* label, CJ_RTCDat
 
 void peerConnection_addIceCandidate(int64_t cpp_ptr, CJ_RTCIceCandidateInit candidate){
     ((webrtc::ffiPeerConnection*)cpp_ptr)->addIceCandidate(candidate);
+}
+
+void peerConnection_SetAddIceCandidate(int64_t cpp_ptr, void (*pe)(int64_t id,const  char* msg)){
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->SetAddIceCandidate(pe);
 }
 
 int64_t* peerConnection_getSenders(int64_t cpp_ptr){
@@ -331,7 +340,7 @@ void peerConnection_setAudioRecording(int64_t cpp_ptr, bool recording){
 }
 
 void peerConnection_setAudioPlayout(int64_t cpp_ptr, bool playout){
-    ((webrtc::ffiPeerConnection*)cpp_ptr)->setVideoRecording(playout);
+    ((webrtc::ffiPeerConnection*)cpp_ptr)->setAudioPlayout(playout);
 }
 
 // dataConnection
@@ -399,6 +408,10 @@ void dataConnection_Send_binary(int64_t cpp_ptr, uint8_t* data, int64_t size){
 }
 void dataConnection_Close(int64_t cpp_ptr) {
     ((webrtc::ffiDataChannelObserverTemp*)cpp_ptr)->Close();
+}
+
+void RTCDataChannel_CPP_FREE(int64_t cpp_ptr){
+    delete (webrtc::ffiDataChannelObserverTemp*)cpp_ptr;  //释放RTCDataChannel的C侧资源
 }
 
 void SctpTransport_set_class_key(int64_t cpp_ptr, int64_t classKey) {

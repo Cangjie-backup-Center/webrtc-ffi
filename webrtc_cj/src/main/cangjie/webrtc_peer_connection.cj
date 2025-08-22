@@ -13,8 +13,6 @@ foreign func peerConnection_set_cj_func_call_SetOnRenegotiationNeeded_(cpp_ptr: 
 foreign func peerConnection_set_cj_func_call_SetOnStandardizedIceConnectionChange_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
 foreign func peerConnection_set_cj_func_call_SetOnIceGatheringChange_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
 foreign func peerConnection_set_cj_func_call_SetOnIceCandidate_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_OnIceCandidateEvent) -> Unit>): Unit
-//foreign func peerConnection_set_cj_func_call_SetCallBackCreateOffer_(cpp_ptr: Int64, fn: CFunc<(id: Int64, isSuccess: Bool, ptr: CJ_RTCSessionDescription, msg: CString) -> Unit>): Unit
-//foreign func peerConnection_set_cj_func_call_SetCallBackCreateAnswer_(cpp_ptr: Int64, fn: CFunc<(id: Int64, isSuccess: Bool, ptr: CJ_RTCSessionDescription, msg: CString) -> Unit>): Unit
 
 foreign func peerConnection_GetCanTrickleIceCandidates(cpp_ptr: Int64): Bool
 foreign func peerConnection_GetSignalingState(cpp_ptr: Int64): Int64
@@ -29,6 +27,7 @@ foreign func peerConnection_GetPendingLocalDescription(cpp_ptr: Int64): CJ_RTCSe
 foreign func peerConnection_GetPendingRemoteDescription(cpp_ptr: Int64): CJ_RTCSessionDescription
 foreign func peerConnection_GetSctp(cpp_ptr: Int64): Int64
 foreign func peerConnection_static_GenerateCertificate(cpp_ptr: CString): Int64
+foreign func peerConnection_CPP_FREE(cpp_ptr: Int64): Unit  // TODO
 
 
 public class RTCPeerConnection <: WebrtcClass {
@@ -42,6 +41,8 @@ public class RTCPeerConnection <: WebrtcClass {
     var onStandardizedIceConnectionChange_: ?((pc: RTCPeerConnection, dc: Event) -> Unit) = None
     var onIceGatheringChange_: ?((pc: RTCPeerConnection, dc: Event) -> Unit) = None
     var onIceCandidate_: ?((pc: RTCPeerConnection, dc: OnIceCandidateEvent) -> Unit) = None
+    var setLocalDescription_callback_: ((ErrorMessage) -> Unit) = {_=>}
+    var setRemoteDescription_callback_: ((ErrorMessage) -> Unit) = {_=>}
 
 
     public mut prop ondatachannel: ((pc: RTCPeerConnection, dc: RTCDataChannel) -> Unit) {
@@ -204,6 +205,13 @@ public class RTCPeerConnection <: WebrtcClass {
         }
     }
 
+    ~init() {
+        unsafe {
+            peerConnection_CPP_FREE(this.ID)
+        }
+    }
+
+
     public prop canTrickleIceCandidates: Bool {
         get() {unsafe{peerConnection_GetCanTrickleIceCandidates(this.ID)}}
     }
@@ -290,6 +298,43 @@ public class RTCPeerConnection <: WebrtcClass {
         }
     }
 
+    public func setLocalDescription(description: CJ_RTCSessionDescription, pe: (ErrorMessage) -> Unit): Unit {
+        unsafe {
+            this.setLocalDescription_callback_ = pe;
+            peerConnection_setLocalDescription(this.ID, description, {id: Int64, msg: CJ_ErrorMessage =>
+                let obj = GetObject<RTCPeerConnection>(id)
+                obj.setLocalDescription_callback_(ErrorMessage(msg))
+            })
+        }
+    }
+    public func setRemoteDescription(description: CJ_RTCSessionDescription, pe: (ErrorMessage) -> Unit): Unit {
+        unsafe {
+            this.setRemoteDescription_callback_ = pe;
+            peerConnection_setLocalDescription(this.ID, description, {id: Int64, msg: CJ_ErrorMessage =>
+                let obj = GetObject<RTCPeerConnection>(id)
+                obj.setRemoteDescription_callback_(ErrorMessage(msg))
+            })
+        }
+    }
 
+    public func createDataChannel(label: String, dataChannelDict!: CJ_RTCDataChannelInit = CJ_RTCDataChannelInit()): RTCDataChannel {
+        unsafe {
+            let str = LibC.mallocCString(label)
+            let ptr = peerConnection_createDataChannel(this.ID, str, dataChannelDict)
+            LibC.free(str)
+            return RTCDataChannel(ptr)
+        }
+    }
+
+    public func createOffer
+    public func stopAecDump
+    public func close
+    public func setAudioPlayout
+    public func setAudioRecording
+    public func setLocalDescription
+    public func addTrack
+    public func getTransceivers
+    public func createAnswer
+    public func addIceCandidate
 
 }

@@ -24,51 +24,79 @@ const char kEnumRtcpMuxPolicyRequire[] = "require";
 namespace webrtc{
 
 
-class FFICreateSdpObserver : public FFIEventTarget<FFICreateSdpObserver>, public CreateSessionDescriptionObserver {
+class FFISetLocalSdpObserver : public SetLocalDescriptionObserverInterface {
 public:
-    FFICreateSdpObserver (ffiPeerConnection* pc, void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg))  {
+    ffiPeerConnection* fpc_ = nullptr;
+    void (*cj_func_callback_)(int64_t id, CJ_ErrorMessage msg) = nullptr;
+    FFISetLocalSdpObserver(ffiPeerConnection* pc, void (*pe)(int64_t id, CJ_ErrorMessage msg)) {
+        fpc_ = pc;
         cj_func_callback_ = pe;
-        pc_ = pc;
-    };
-    ~FFICreateSdpObserver() override {}
-    
-    ffiPeerConnection* pc_ = nullptr;
-    virtual void AddRef() const override {} 
-    virtual rtc::RefCountReleaseStatus Release() const override {}
-    
-protected:
-    
-    void (*cj_func_callback_)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg) = nullptr;
-    
-    void OnSuccess(SessionDescriptionInterface* desc) override {
-        this->Dispatch(
-           CallbackEvent<FFICreateSdpObserver>::Create([this, desc](FFICreateSdpObserver& target) {
-                std::string sdp;
-                desc->ToString(&sdp);
-                RTC_DLOG(LS_VERBOSE) << "sdp: " << sdp;
-                std::string sdptype;
-                sdptype = webrtc::SdpTypeToString(desc->GetType());
-                this->cj_func_callback_(this->pc_->GetCJClassID(), true, CJ_RTCSessionDescription{
-                    sdp: sdp.data(),
-                    sdp_size: (int64_t)sdp.size(),
-                    RTCSdpType: sdptype.data(),
-                    RTCSdpType_size: (int64_t)sdptype.size(),
-                    undefined: false
-                }, "");
-            })
-        );
     }
-    
-    void OnFailure(RTCError error) override {
-        this->Dispatch(
-            CallbackEvent<FFICreateSdpObserver>::Create([this, error](FFICreateSdpObserver& target) {
-                const char* message = error.message();
-                this->cj_func_callback_(this->pc_->GetCJClassID(), false, CJ_RTCSessionDescription(), message);
-            })
-        );
+
+protected:
+    void OnSetLocalDescriptionComplete(RTCError error) override
+    {
+        RTC_DLOG(LS_INFO) << __FUNCTION__;
+        if (!error.ok()) {
+            RTC_LOG(LS_ERROR) << "Error: " << error.type() << ", " << error.message();
+        }
+
+        cj_func_callback_(this->fpc_->GetCJClassID(), CJ_ErrorMessage{rtcErrorDetailType: (int64_t)error.error_detail(), msg: error.message()});
     }
 };
 
+class FFISetRemoteSdpObserver : public SetRemoteDescriptionObserverInterface {
+public:
+    ffiPeerConnection* pc_ = nullptr;
+    void (*cj_func_callback_)(int64_t id, CJ_ErrorMessage msg) = nullptr;
+    FFISetRemoteSdpObserver(ffiPeerConnection* pc, void (*pe)(int64_t id, CJ_ErrorMessage msg)) {
+        pc_ = pc;
+        cj_func_callback_ = pe;
+    }
+
+protected:
+    void OnSetRemoteDescriptionComplete(RTCError error) override
+    {
+        RTC_DLOG(LS_INFO) << __FUNCTION__;
+        if (!error.ok()) {
+            RTC_LOG(LS_ERROR) << "Error: " << error.type() << ", " << error.message();
+        }
+
+        cj_func_callback_(this->pc_->GetCJClassID(), CJ_ErrorMessage{rtcErrorDetailType: (int64_t)error.error_detail(), msg: error.message()});
+    }
+};
+
+class FFICreateSdpObserver : public CreateSessionDescriptionObserver {
+public:
+    CJ_FFICreateSdpObserver_result ret;
+    FFICreateSdpObserver() { 
+        ret = CJ_FFICreateSdpObserver_result{};
+    }
+
+protected:
+    void OnSuccess(SessionDescriptionInterface* desc) override
+    {
+        RTC_LOG(LS_INFO) << "CreateSessionDescription success: " << desc;
+
+        std::string sdp;
+        desc->ToString(&sdp);
+        RTC_DLOG(LS_VERBOSE) << "sdp: " << sdp;
+        std::string sdptype = webrtc::SdpTypeToString(desc->GetType());
+
+        this->ret.isFail = false;
+        this->ret.sdp = sdp.data();
+        this->ret.RTCSdpType = sdptype.data();
+        delete desc;
+    }
+
+    void OnFailure(RTCError error) override
+    {
+        RTC_LOG(LS_ERROR) << "CreateSessionDescription failed";
+        const char* message = error.message();
+        this->ret.isFail = true;
+        strcpy(this->ret.msg , message);
+    }
+};
 
 rtc::scoped_refptr<rtc::RTCCertificate> ffiPeerConnection::certificate_ = rtc::scoped_refptr<rtc::RTCCertificate>();
 
@@ -434,14 +462,6 @@ int64_t ffiPeerConnection::GetSctp(){
     return (int64_t)sctpTransport;
 }
 
-void ffiPeerConnection::CreateOffer(bool iceRestart){
-    PeerConnectionInterface::RTCOfferAnswerOptions options;
-    options.ice_restart = iceRestart;
-    FFICreateSdpObserver* observer = new FFICreateSdpObserver(this, this->cj_func_call_CreateOffer_);
-    pc_->CreateOffer(observer, options);
-}
-
-
 void ffiPeerConnection::SetOnIceCandidate(void (*pe)(int64_t id, CJ_OnIceCandidateEvent ptr)) {
     this->cj_func_call_OnIceCandidate_ = pe;
 }
@@ -678,13 +698,13 @@ void ffiPeerConnection::OnTrack(rtc::scoped_refptr<RtpTransceiverInterface> tran
 void ffiPeerConnection::OnRemoveTrack(rtc::scoped_refptr<RtpReceiverInterface> receiver) {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 }
+//
+//void ffiPeerConnection::OnRemoveTrack(rtc::scoped_refptr<RtpReceiverInterface> receiver) {
+//    RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+//}
 
-void ffiPeerConnection::OnRemoveTrack(rtc::scoped_refptr<RtpReceiverInterface> receiver) {
-    RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-}
 
-
-int64_t ffiPeerConnection::addTrack(ffiMediaStreamTrack* track, std::vector<ffiMeadiaTrack*> streamVec){
+int64_t ffiPeerConnection::addTrack(ffiMediaStreamTrack* track, std::vector<webrtc::FFIMediaStream*> streamVec){
     RTC_LOG(LS_INFO) << __FUNCTION__;
 
     std::vector<std::string> streamIds;
@@ -699,14 +719,14 @@ int64_t ffiPeerConnection::addTrack(ffiMediaStreamTrack* track, std::vector<ffiM
         streamIds.push_back("stream_id");
     }
 
-    auto track = track->Get();
-    auto result = pc_->AddTrack(track, streamIds);
+    auto peerconnection_track = track->Get();
+    auto result = pc_->AddTrack(peerconnection_track, streamIds);
     if (!result.ok()) {
         CANGJIE_THROW("AddTrack error");
     }
 
-    if (track && track->kind() == MediaStreamTrackInterface::kAudioKind) {
-        auto source = factory_->GetAudioSource(track);
+    if (peerconnection_track && peerconnection_track->kind() == MediaStreamTrackInterface::kAudioKind) {
+        auto source = factory_->GetAudioSource(peerconnection_track);
         auto adm = factory_->GetAudioDeviceModule();
         if (source && adm) {
             adm->AddAudioInput(source->GetAudioInput());
@@ -722,14 +742,14 @@ int64_t ffiPeerConnection::addTrack(ffiMediaStreamTrack* track, std::vector<ffiM
 // }
 
 
-void ffiPeerConnection::setLocalDescription(cj_RTCSessionDescription description) {
+void ffiPeerConnection::setLocalDescription(CJ_RTCSessionDescription description, void (*pe)(int64_t cj_id, CJ_ErrorMessage msg)) {
     RTC_LOG(LS_INFO) << __FUNCTION__;
     std::unique_ptr<SessionDescriptionInterface> desc;
     
-    if (!description->undefined){
+    if (!description.undefined){
         std::string sdp = "";
-        sdp = description->sdp;
-        std::string type = description->RTCSdpType;
+        sdp = description.sdp;
+        std::string type = description.RTCSdpType;
         auto sdpType = SdpTypeFromString(type);
 
         SdpParseError error;
@@ -739,6 +759,7 @@ void ffiPeerConnection::setLocalDescription(cj_RTCSessionDescription description
         }
     }
 
+    auto observer = rtc::make_ref_counted<FFISetLocalSdpObserver>(this, pe);
     if (desc) {
         pc_->SetLocalDescription(std::move(desc), observer);
     } else {
@@ -747,33 +768,40 @@ void ffiPeerConnection::setLocalDescription(cj_RTCSessionDescription description
     return ;
 }
 
-void ffiPeerConnection::setRemoteDescription(cj_RTCSessionDescription description) {
+void ffiPeerConnection::setRemoteDescription(CJ_RTCSessionDescription description, void (*pe)(int64_t cj_id, CJ_ErrorMessage msg)) {
     RTC_LOG(LS_INFO) << __FUNCTION__;
     std::string sdp = "";
-    sdp = description->sdp;
-    std::string type = description->RTCSdpType;
+    sdp = description.sdp;
+    std::string type = description.RTCSdpType;
     auto sdpType = SdpTypeFromString(type);
+    std::unique_ptr<SessionDescriptionInterface> desc;
 
     SdpParseError error;
+
     desc = CreateSessionDescription(*sdpType, sdp, &error);
     if (!desc) {
         CANGJIE_THROW("CreateSessionDescription error");
     }
 
+    auto observer = rtc::make_ref_counted<FFISetRemoteSdpObserver>(this->pc_, pe);
+
     pc_->SetRemoteDescription(std::move(desc), observer);
 }
 
-void ffiPeerConnection::createOffer(bool iceRestart){
+CJ_FFICreateSdpObserver_result ffiPeerConnection::createOffer(bool iceRestart){
     PeerConnectionInterface::RTCOfferAnswerOptions options;
     options.ice_restart = iceRestart;
-    auto observer = rtc::make_ref_counted<FFICreateSdpObserver>(this->pc_, this->cj_func_call_CreateOffer_);
+    auto observer = rtc::make_ref_counted<FFICreateSdpObserver>();
     pc_->CreateOffer(observer.get(), options);
+    return observer.get()->ret;
 }
 
-void ffiPeerConnection::createAnswer() {
+CJ_FFICreateSdpObserver_result ffiPeerConnection::createAnswer() {
     RTC_LOG(LS_INFO) << __FUNCTION__;
-    auto observer = rtc::make_ref_counted<FFICreateSdpObserver>(this->pc_, this->cj_func_call_CreateAnswer_);
+    auto observer = rtc::make_ref_counted<FFICreateSdpObserver>();
+    PeerConnectionInterface::RTCOfferAnswerOptions options;
     pc_->CreateAnswer(observer.get(), options);
+    return observer.get()->ret;
 }
 
 int64_t ffiPeerConnection::createDataChannel(char* label, CJ_RTCDataChannelInit dataChannelDict) {
@@ -785,14 +813,12 @@ int64_t ffiPeerConnection::createDataChannel(char* label, CJ_RTCDataChannelInit 
     }
     
     if (!dataChannelDict.isBuild) {
-        auto result = pc_->CreateDataChannel(label_, nullptr);
+        auto result = pc_->CreateDataChannelOrError(label_, nullptr);
         if (!result.ok()) {
             auto& error = result.error();
             CANGJIE_THROW("CreateDataChannel error");
         }
-
-        auto observer = std::make_unique<ffiDataChannelObserverTemp>(result.value());
-        ffiDataChannelObserverTemp* observerPtr = new ffiDataChannelObserverTemp(label_, result);
+        ffiDataChannelObserverTemp* observerPtr = new ffiDataChannelObserverTemp(result.value());
         return (int64_t)observerPtr;
     }
     
@@ -807,24 +833,25 @@ int64_t ffiPeerConnection::createDataChannel(char* label, CJ_RTCDataChannelInit 
     return (int64_t)observerPtr;
 }
 
-void ffiPeerConnection::SetAddIceCandidate(void (*pe)(int64_t id, CJ_RTCIceCandidateInit candidate)){
+void ffiPeerConnection::SetAddIceCandidate(void (*pe)(int64_t id, const char* msg)){
     this->cj_func_call_addIceCandidate = pe;
 }
 
-void ffiPeerConnection::addIceCandidate(CJ_RTCIceCandidateInit candidate) {
+
+void ffiPeerConnection::addIceCandidate(CJ_RTCIceCandidateInit iceCandidate) {
     RTC_LOG(LS_INFO) << __FUNCTION__;
     std::string sdp;
     std::string sdpMid;
     int sdpMLineIndex = 0;
 
-    if(candidate.isBuild) {
-        sdp = candidate.candidate;
-        if (strcmp(candidate.sdpMid, "")) {
-            sdpMid = candidate.sdpMid;
+    if(iceCandidate.isBuild) {
+        sdp = iceCandidate.candidate;
+        if (strcmp(iceCandidate.sdpMid, "")) {
+            sdpMid = iceCandidate.sdpMid;
         }
 
-        if (candidate.sdpMLineIndex != 0) {
-            sdpMLineIndex = candidate.sdpMLineIndex;
+        if (iceCandidate.sdpMLineIndex != 0) {
+            sdpMLineIndex = iceCandidate.sdpMLineIndex;
         }
     }
 
@@ -835,18 +862,17 @@ void ffiPeerConnection::addIceCandidate(CJ_RTCIceCandidateInit candidate) {
     }
 
     this->Dispatch(
-        CallbackEvent<ffiPeerConnection>::Create([this, error](ffiPeerConnection& target) {
-            if(error->ok()) {
-                
-            } else {
-                auto type = error->type();
-                auto message = error->message();
-                OH_LOG_Print(LOG_APP, LOG_ERROR, LOG_DOMAIN, "webrtc", "type:%{public}s",type);
-                cj_func_call_addIceCandidate(this->cj_class_key, message);
-            }
+        CallbackEvent<ffiPeerConnection>::Create([this, candidate](ffiPeerConnection& target) {
+            pc_->AddIceCandidate(std::unique_ptr<IceCandidateInterface>(candidate), [this](RTCError error) {
+                RTC_DLOG(LS_INFO) << "AddIceCandidate complete: " << error.ok();
+                auto type = error.type();
+                auto message = error.message();
+                this->cj_func_call_addIceCandidate(this->cj_class_key, message);
+            });
         })
     );
 
+    
 }
 
 
@@ -886,16 +912,6 @@ int64_t* ffiPeerConnection::getTransceivers() {
     return retTransceivers;
 }
 
-// CJ_RTCConfiguration ffiPeerConnection::getConfiguration() {
-//     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
-
-//     auto configuration = pc_->GetConfiguration();
-//     if () {
-//         /* code */
-//     }
-    
-// }
-
 void ffiPeerConnection::restartIce() {
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
     pc_->RestartIce();
@@ -906,7 +922,7 @@ void ffiPeerConnection::setConfiguration(CJ_RTCConfiguration cjConfig) {
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
     PeerConnectionInterface::RTCConfiguration config;
     if(!CangjieToNativeConfiguration(cjConfig, config)) {
-        OH_LOG_ERROR(LOG_APP, "CangjieToNativeConfiguration error");
+        LOGI("CangjieToNativeConfiguration error");
     }
 
     auto error = pc_->SetConfiguration(config);
@@ -961,7 +977,7 @@ void ffiPeerConnection::setAudioRecording(bool recording) {
 
 void ffiPeerConnection::setAudioPlayout(bool playout) {
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
-    pc_->SetVideoRecording(playout);
+    pc_->SetAudioPlayout(playout);
     return ;
 }
 

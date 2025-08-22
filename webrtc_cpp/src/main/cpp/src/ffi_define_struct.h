@@ -10,15 +10,16 @@
 #include "api/rtp_parameters.h"
 #include <cstdint>
 
-enum class FFIRTCErrorDetailType {
-    DATA_CHANNEL_FAILURE,
-    DTLS_FAILURE,
-    FINGERPRINT_FAILURE,
-    HARDWARE_ENCODER_ERROR,
-    HARDWARE_ENCODER_NOT_AVAILABLE,
-    SCTP_FAILURE,
-    SDP_SYNTAX_ERROR
-};
+//enum class FFIRTCErrorDetailType {
+//  NONE,
+//  DATA_CHANNEL_FAILURE,
+//  DTLS_FAILURE,
+//  FINGERPRINT_FAILURE,
+//  SCTP_FAILURE,
+//  SDP_SYNTAX_ERROR,
+//  HARDWARE_ENCODER_NOT_AVAILABLE,
+//  HARDWARE_ENCODER_ERROR,
+//};
 enum class FFIRTCIceProtocol { TCP, UDP };
 enum class FFIRTCIceCandidateType { HOST, PRFLX, RELAY, SRFLX };
 enum class FFIRTCIceTcpCandidateType { ACTIVE, PASSIVE, SO };
@@ -208,6 +209,18 @@ typedef struct {
     bool undefined = true; // 如果 true , 其他值就无效了
 } CJ_RTCSessionDescription;
 
+typedef struct {
+    char *sdp;
+    char *RTCSdpType;
+    bool isFail = true; // 如果 true , 其他值就无效了
+    char* msg;
+} CJ_FFICreateSdpObserver_result;
+
+
+
+
+
+
 //typedef struct {
 //    int64_t maxChannels;
 //    int64_t maxMessageSize;
@@ -349,12 +362,19 @@ typedef struct {
     char* usernameFragment;
 } CJ_RTCIceCandidateInit;
 
-typedf struct{
-    kind: char*;
-    id: char*;
-    enabled: bool;
-    readyState: char*;
+typedef struct{
+    char* kind;
+    char* id;
+    bool enabled;
+    char* readyState;
 }CJ_MediaStreamTrack;
+
+
+typedef struct{
+    int64_t rtcErrorDetailType;
+    const char* msg;
+}CJ_ErrorMessage;
+
 
 /*namespace webrtc {
 

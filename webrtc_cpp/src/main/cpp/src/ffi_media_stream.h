@@ -28,6 +28,12 @@ class PeerConnectionFactoryWrapper;
                 stream_ = stream;
                 observer_ = nullptr;
             }
+    
+            rtc::scoped_refptr<MediaStreamInterface> Get() const
+            {
+                return stream_;
+            }
+
 
             ~FFIMediaStream() {
                 if (audioMediaStreamTrackPtr != nullptr) {

@@ -104,18 +104,19 @@ extern "C" {
     int64_t peerConnection_static_GenerateCertificate(char* keyname);
     int64_t peerConnection_addTrack(int64_t cpp_ptr, int64_t ffiMST_ptr, CJ_ArrayMediaStream streamVec);
     
-    void peerConnection_setLocalDescription(int64_t cpp_ptr, CJ_RTCSessionDescription description);
-    void peerConnection_setRemoteDescription(int64_t cpp_ptr, CJ_RTCSessionDescription description);
-    void peerConnection_createOffer(int64_t cpp_ptr);
+    void peerConnection_setLocalDescription(int64_t cpp_ptr, CJ_RTCSessionDescription description, void (*pe)(int64_t cj_id, CJ_ErrorMessage msg));
+    void peerConnection_setRemoteDescription(int64_t cpp_ptr, CJ_RTCSessionDescription description, void (*pe)(int64_t cj_id, CJ_ErrorMessage msg));
+    void peerConnection_createOffer(int64_t cpp_ptr, bool iceRestart);
     void peerConnection_createAnswer(int64_t cpp_ptr);
     void peerConnection_addIceCandidate(int64_t cpp_ptr, CJ_RTCIceCandidateInit candidate); 
-    void peerConnection_set_cj_func_call_addIceCandidate_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_RTCIceCandidateInit candidate));
+    void peerConnection_SetAddIceCandidate(int64_t cpp_ptr, void (*pe)(int64_t id,const  char* msg));
+    
     int64_t peerConnection_createDataChannel(int64_t cpp_ptr, char* label, CJ_RTCDataChannelInit dataChannelDict);
     int64_t* peerConnection_getSenders(int64_t cpp_ptr);
     int64_t* peerConnection_getReceivers(int64_t cpp_ptr);
     int64_t* peerConnection_getTransceivers(int64_t cpp_ptr);
     void peerConnection_restartIce(int64_t cpp_ptr);
-    void peerConnection_setConfiguration(int64_t cpp_ptr, cj_RTCConfiguration configuration);
+    void peerConnection_setConfiguration(int64_t cpp_ptr, CJ_RTCConfiguration configuration);
     void peerConnection_close(int64_t cpp_ptr);
     void peerConnection_setAudioRecording(int64_t cpp_ptr, bool recording);
     void peerConnection_setAudioPlayout(int64_t cpp_ptr, bool playout); 
@@ -142,7 +143,7 @@ extern "C" {
     void dataConnection_Send_String(int64_t cpp_ptr, char* data);
     void dataConnection_Send_binary(int64_t cpp_ptr, uint8_t* data, int64_t size);
     void dataConnection_Close(int64_t cpp_ptr);
-    
+    void RTCDataChannel_CPP_FREE(int64_t cpp_ptr);
 
     // sctp_transport
     void SctpTransport_set_class_key(int64_t cpp_ptr, int64_t classKey);

@@ -29,6 +29,7 @@ foreign {
     func dataConnection_Send_String(cpp_ptr: Int64, value: CString): Unit
     func dataConnection_Send_binary(cpp_ptr: Int64, value: CPointer<Byte>, size: Int64): Unit
     func dataConnection_Close(cpp_ptr: Int64): Unit
+    func RTCDataChannel_CPP_FREE(cpp_ptr: Int64): Unit
 }
 
 public enum DataChannelState {
@@ -82,7 +83,11 @@ public class RTCDataChannel <: WebrtcClass & Resource {
         super(id, this)
         unsafe {dataConnection_set_class_key(this.ID, this.randomid)}
     }
-
+    ~init() {
+        unsafe {
+            RTCDataChannel_CPP_FREE(this.ID)
+        }
+    }
     public mut prop onopen: ((pc: RTCDataChannel, dc: Event) -> Unit) {
         get (){onopen_ ?? {_,_=>}}
         set(value) {

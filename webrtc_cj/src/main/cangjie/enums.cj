@@ -4,13 +4,14 @@
 package webrtc_cj
 
 public enum FFIRTCErrorDetailType {
+    | NONE
     | DATA_CHANNEL_FAILURE
     | DTLS_FAILURE
     | FINGERPRINT_FAILURE
-    | HARDWARE_ENCODER_ERROR
-    | HARDWARE_ENCODER_NOT_AVAILABLE
     | SCTP_FAILURE
     | SDP_SYNTAX_ERROR
+    | HARDWARE_ENCODER_NOT_AVAILABLE
+    | HARDWARE_ENCODER_ERROR
 }
 
 public enum FFIRTCIceProtocol {
@@ -162,26 +163,28 @@ public enum FFIScreenCaptureAudioFilterEnum {
 extend FFIRTCErrorDetailType {
     public static func GET(index: Int64): FFIRTCErrorDetailType {
         return match (index) {
-            case 0 => DATA_CHANNEL_FAILURE
-            case 1 => DTLS_FAILURE
-            case 2 => FINGERPRINT_FAILURE
-            case 3 => HARDWARE_ENCODER_ERROR
-            case 4 => HARDWARE_ENCODER_NOT_AVAILABLE
-            case 5 => SCTP_FAILURE
-            case 6 => SDP_SYNTAX_ERROR
+            case 0 => NONE
+            case 1 => DATA_CHANNEL_FAILURE
+            case 2 => DTLS_FAILURE
+            case 3 => FINGERPRINT_FAILURE
+            case 4 => SCTP_FAILURE
+            case 5 => SDP_SYNTAX_ERROR
+            case 6 => HARDWARE_ENCODER_NOT_AVAILABLE
+            case 7 => HARDWARE_ENCODER_ERROR
             case _ => throw Webrtc4cjException("not found.")
         }
     }
 
     public static func GET(index: FFIRTCErrorDetailType): Int64 {
         return match (index) {
-            case DATA_CHANNEL_FAILURE => 0
-            case DTLS_FAILURE => 1
-            case FINGERPRINT_FAILURE => 2
-            case HARDWARE_ENCODER_ERROR => 3
-            case HARDWARE_ENCODER_NOT_AVAILABLE => 4
-            case SCTP_FAILURE => 5
-            case SDP_SYNTAX_ERROR => 6
+            case NONE => 0
+            case DATA_CHANNEL_FAILURE => 1
+            case DTLS_FAILURE => 2
+            case FINGERPRINT_FAILURE => 3
+            case SCTP_FAILURE => 4
+            case SDP_SYNTAX_ERROR => 5
+            case HARDWARE_ENCODER_NOT_AVAILABLE => 6
+            case HARDWARE_ENCODER_ERROR => 7
         }
     }
 }

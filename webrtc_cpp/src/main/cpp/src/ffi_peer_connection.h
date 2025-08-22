@@ -14,6 +14,7 @@
 #include "ffi_rtp_receiver.h"
 #include "ffi_rtp_transceiver.h"
 #include "ffi_sctp_transport.h"
+#include "jsep.h"
 #include <cstdint>
 
 
@@ -59,20 +60,18 @@ public:
     void (*cj_func_call_CreateOffer_)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg) = nullptr;
     void (*cj_func_call_CreateAnswer_)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg) = nullptr;
 
-protected:
-    template<typename... streamArgs>
-    ffiRtpReceiver* addTrack(ffiMediaStreamTrack* track, streamArgs&&... streams);
+    int64_t addTrack(ffiMediaStreamTrack* track, std::vector<webrtc::FFIMediaStream*> streamVec);
     // void removeTrack(ffiRtpReceiver* receiver);
-    void setLocalDescription(cj_RTCSessionDescription description);
-    void setRemoteDescription(cj_RTCSessionDescription description);
-    void createOffer(bool iceRestart);
-    void createAnswer();
-    RTCDataChannel* createDataChannel(char* label,CJ_RTCDataChannelInit dataChannelDict);
+    void setLocalDescription(CJ_RTCSessionDescription description, void (*pe)(int64_t cj_id, CJ_ErrorMessage msg));
+    void setRemoteDescription(CJ_RTCSessionDescription description, void (*pe)(int64_t cj_id, CJ_ErrorMessage msg));
+    CJ_FFICreateSdpObserver_result createOffer(bool iceRestart);
+    CJ_FFICreateSdpObserver_result createAnswer();
+    int64_t createDataChannel(char* label,CJ_RTCDataChannelInit dataChannelDict);
     void addIceCandidate(CJ_RTCIceCandidateInit candidate);
     int64_t* getSenders();
     int64_t* getReceivers();
     int64_t* getTransceivers();
-    RTCConfigur1ation* getConfiguration();
+//    RTCConfigur1ation* getConfiguration();
     void restartIce();
     void setConfiguration(CJ_RTCConfiguration cjConfig);
     // RTCRtpTransceiver* addTransceiver();
@@ -118,8 +117,8 @@ public:
     void SetCallBackCreateOffer(void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg));
     void SetCallBackCreateAnswer(void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg));
 
-    void SetAddIceCandidate(void (*pe)(int64_t id, CJ_RTCIceCandidateInit candidate));
-    void (*cj_func_call_addIceCandidate)(int64_t id, char* msg, CJ_RTCIceCandidateInit candidate) = nullptr;
+    void SetAddIceCandidate(void (*pe)(int64_t id,const  char* msg));
+    void (*cj_func_call_addIceCandidate)(int64_t id, const char* msg) = nullptr;
 
 private:
     std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
