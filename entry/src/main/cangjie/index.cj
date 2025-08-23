@@ -409,11 +409,11 @@ class EntryView {
         this.ws.off(OnOffType.MESSAGE)
     }
 
-    func onPageShow(): Unit {
+    public func onPageShow(): Unit {
         AppLog.info('${Index_WebRTC_TAG} onPageShow')
     }
 
-    func onPageHide(): Unit {
+    public func onPageHide(): Unit {
         AppLog.info('${Index_WebRTC_TAG} onPageHide')
     }
 

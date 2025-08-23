@@ -323,7 +323,7 @@ public class RTCPeerConnection <: WebrtcClass {
             }
         } else {
             unsafe {
-                peerConnection_addIceCandidate(this.ID, RTCIceCandidateInit().cpp)
+                peerConnection_addIceCandidate(this.ID, RTCIceCandidateInit(false, "", 0, "", "").cpp)
             }
         }
     }
