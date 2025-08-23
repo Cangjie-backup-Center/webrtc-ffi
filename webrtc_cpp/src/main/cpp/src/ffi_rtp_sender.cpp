@@ -10,6 +10,8 @@
 
 namespace webrtc {
 
+ffiRtpSender::~ffiRtpSender() = default;
+
 int64_t ffiRtpSender::GetTrack() {
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
 

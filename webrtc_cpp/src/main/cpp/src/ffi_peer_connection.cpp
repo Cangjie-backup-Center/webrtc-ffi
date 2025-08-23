@@ -783,7 +783,7 @@ void ffiPeerConnection::setRemoteDescription(CJ_RTCSessionDescription descriptio
         CANGJIE_THROW("CreateSessionDescription error");
     }
 
-    auto observer = rtc::make_ref_counted<FFISetRemoteSdpObserver>(this->pc_, pe);
+    auto observer = rtc::make_ref_counted<FFISetRemoteSdpObserver>(this, pe);
 
     pc_->SetRemoteDescription(std::move(desc), observer);
 }
