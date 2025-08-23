@@ -240,11 +240,6 @@ typedef struct {
 
 typedef struct {
     const char *type;
-    const char *candidate;
-} CJ_RTCPeerConnectionIceEvent;
-
-typedef struct {
-    const char *type;
     int64_t *streams;
     int64_t streams_size;
     int64_t MediaStreamTrack_ptr; // ffiMediaStreamTrack
@@ -270,28 +265,30 @@ typedef struct {
 } CJ_MessageEvent;
 
 typedef struct {
-    int32_t sdpMLineIndex;
-    char* sdpMid;
-    char* candidate;
-    char* foundation;
-    char* component;
-    int32_t priority;
-    char* address;
-    char* protocol;
-    uint16_t port;
-    char* tcpType;
-    char* relatedAddress;
-    uint16_t relatedPort;
-    char* usernameFragment;
-    char* type;
-    char* adapterType;
-    char* serverUrl;
-} CJToCppCandidateObject;
+    bool undefined = true;
+    const char* candidate;
+    const char* sdpMid;
+    int64_t sdpMLineIndex;
+    const char* foundation;
+    int64_t component;
+    int64_t priority;
+    const char* address;
+    const char* iceProtocol;
+    int64_t port;
+    int64_t iceCandidateType;
+    const char* iceTcpCandidateType;
+    const char* relatedAddress;
+    int64_t relatedPort;
+    const char* usernameFragment;
+    // 父类的成员属性
+    const char* adapterType;
+    const char* serverUrl;
+} CJ_RTCIceCandidate ;
 
 typedef struct {
-    const char* type;
-    CJToCppCandidateObject* candidate;
-} CJ_OnIceCandidateEvent;
+    const char *type;
+    CJ_RTCIceCandidate candidate;
+} CJ_RTCPeerConnectionIceEvent;
 
 typedef struct {
     char * rid;

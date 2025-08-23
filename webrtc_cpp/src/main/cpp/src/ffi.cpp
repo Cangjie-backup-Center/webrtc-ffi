@@ -198,38 +198,38 @@ void peerConnection_set_class_key(int64_t cpp_ptr, int64_t classKey){
     ((webrtc::ffiPeerConnection*)cpp_ptr)->SetCJClassID(classKey);
 }
 
-void peerConnection_set_cj_func_call_OnDataChannel_(int64_t cpp_ptr, void (*pe)(int64_t id, int64_t ptr)) {
+void peerConnection_SetOnDataChannel_(int64_t cpp_ptr, void (*pe)(int64_t id, int64_t ptr)) {
     ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnDataChannel(pe);
 }
 
-void peerConnection_set_cj_func_call_OnSignalingChange_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr)){
+void peerConnection_SetOnSignalingChange_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr)){
     ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnSignalingChange(pe);
 }
-void peerConnection_set_cj_func_call_OnIceCandidateError_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_RTCPeerConnectionIceErrorEvent ptr)){
+void peerConnection_SetOnIceCandidateError_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_RTCPeerConnectionIceErrorEvent ptr)){
     ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnIceCandidateError(pe);
 }
-void peerConnection_set_cj_func_call_onTrack_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_RTCTrackEvent ptr)){
+void peerConnection_SetonTrack_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_RTCTrackEvent ptr)){
     ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnTrack(pe);
 }
-void peerConnection_set_cj_func_call_SetOnConnectionChange_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr)) {
+void peerConnection_SetOnConnectionChange_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr)) {
     ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnConnectionChange(pe);
 }
-void peerConnection_set_cj_func_call_SetOnRenegotiationNeeded_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr)){
+void peerConnection_SetOnRenegotiationNeeded_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr)){
     ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnRenegotiationNeeded(pe);
 }
-void peerConnection_set_cj_func_call_SetOnStandardizedIceConnectionChange_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr)){
+void peerConnection_SetOnStandardizedIceConnectionChange_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr)){
     ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnStandardizedIceConnectionChange(pe);
 }
-void peerConnection_set_cj_func_call_SetOnIceGatheringChange_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr)){
+void peerConnection_SetOnIceGatheringChange_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event ptr)){
     ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnIceGatheringChange(pe);
 }
-void peerConnection_set_cj_func_call_SetOnIceCandidate_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_OnIceCandidateEvent ptr)){
+void peerConnection_SetOnIceCandidate_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_RTCPeerConnectionIceEvent ptr)){
     ((webrtc::ffiPeerConnection*)cpp_ptr)->SetOnIceCandidate(pe);
 }
-void peerConnection_set_cj_func_call_SetCallBackCreateOffer_(int64_t cpp_ptr, void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg)){
+void peerConnection_SetCallBackCreateOffer_(int64_t cpp_ptr, void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg)){
     ((webrtc::ffiPeerConnection*)cpp_ptr)->SetCallBackCreateOffer(pe);
 }
-void peerConnection_set_cj_func_call_SetCallBackCreateAnswer_(int64_t cpp_ptr, void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg)){
+void peerConnection_SetCallBackCreateAnswer_(int64_t cpp_ptr, void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg)){
     ((webrtc::ffiPeerConnection*)cpp_ptr)->SetCallBackCreateAnswer(pe);
 }
 bool peerConnection_GetCanTrickleIceCandidates(int64_t cpp_ptr) {

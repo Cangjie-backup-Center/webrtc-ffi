@@ -4,16 +4,15 @@
 package webrtc_cj
 
 foreign func peerConnection_set_class_key(cpp_ptr: Int64, id: Int64): Unit
-foreign func peerConnection_set_cj_func_call_OnDataChannel_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: Int64) -> Unit>): Unit
-foreign func peerConnection_set_cj_func_call_OnSignalingChange_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
-foreign func peerConnection_set_cj_func_call_OnIceCandidateError_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_RTCPeerConnectionIceErrorEvent) -> Unit>): Unit
-foreign func peerConnection_set_cj_func_call_onTrack_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_RTCTrackEvent) -> Unit>): Unit
-foreign func peerConnection_set_cj_func_call_SetOnConnectionChange_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
-foreign func peerConnection_set_cj_func_call_SetOnRenegotiationNeeded_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
-foreign func peerConnection_set_cj_func_call_SetOnStandardizedIceConnectionChange_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
-foreign func peerConnection_set_cj_func_call_SetOnIceGatheringChange_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
-foreign func peerConnection_set_cj_func_call_SetOnIceCandidate_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_OnIceCandidateEvent) -> Unit>): Unit
-foreign func peerConnection_SetAddIceCandidate(cpp_ptr: Int64, fn: CFunc<(id: Int64, msg: CString) -> Unit>): Unit
+foreign func peerConnection_SetOnDataChannel_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: Int64) -> Unit>): Unit
+foreign func peerConnection_SetOnSignalingChange_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
+foreign func peerConnection_SetOnIceCandidateError_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_RTCPeerConnectionIceErrorEvent) -> Unit>): Unit
+foreign func peerConnection_SetonTrack_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_RTCTrackEvent) -> Unit>): Unit
+foreign func peerConnection_SetOnConnectionChange_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
+foreign func peerConnection_SetOnRenegotiationNeeded_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
+foreign func peerConnection_SetOnStandardizedIceConnectionChange_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
+foreign func peerConnection_SetOnIceGatheringChange_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
+foreign func peerConnection_SetOnIceCandidate_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_RTCPeerConnectionIceEvent) -> Unit>): Unit
 
 foreign func peerConnection_GetCanTrickleIceCandidates(cpp_ptr: Int64): Bool
 foreign func peerConnection_GetSignalingState(cpp_ptr: Int64): Int64
@@ -41,7 +40,7 @@ public class RTCPeerConnection <: WebrtcClass {
     var onRenegotiationNeeded_: ?((pc: RTCPeerConnection, dc: Event) -> Unit) = None
     var onStandardizedIceConnectionChange_: ?((pc: RTCPeerConnection, dc: Event) -> Unit) = None
     var onIceGatheringChange_: ?((pc: RTCPeerConnection, dc: Event) -> Unit) = None
-    var onIceCandidate_: ?((pc: RTCPeerConnection, dc: OnIceCandidateEvent) -> Unit) = None
+    var onIceCandidate_: ?((pc: RTCPeerConnection, dc: RTCPeerConnectionIceEvent) -> Unit) = None
     var setLocalDescription_callback_: ((ErrorMessage) -> Unit) = {_=>}
     var setRemoteDescription_callback_: ((ErrorMessage) -> Unit) = {_=>}
 
@@ -51,7 +50,7 @@ public class RTCPeerConnection <: WebrtcClass {
         set(v) {
             if (this.ondatachannel_.isNone()) {
                 unsafe {
-                    peerConnection_set_cj_func_call_OnDataChannel_(this.ID, { id: Int64, ptr: Int64 =>
+                    peerConnection_SetOnDataChannel_(this.ID, { id: Int64, ptr: Int64 =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
                         ffipc.ondatachannel(ffipc, RTCDataChannel(ptr))
                     })
@@ -65,7 +64,7 @@ public class RTCPeerConnection <: WebrtcClass {
         set(v) {
             if (this.onSignalingChange_.isNone()) {
                 unsafe {
-                    peerConnection_set_cj_func_call_OnSignalingChange_(this.ID, { id: Int64, ptr: CJ_Event =>
+                    peerConnection_SetOnSignalingChange_(this.ID, { id: Int64, ptr: CJ_Event =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
                         ffipc.onSignalingChange(ffipc, Event(ptr.eventType.toString()))
                     })
@@ -79,7 +78,7 @@ public class RTCPeerConnection <: WebrtcClass {
         set(v) {
             if (onIceCandidateError_.isNone()){
                 unsafe {
-                    peerConnection_set_cj_func_call_OnIceCandidateError_(this.ID, { id: Int64, ptr: CJ_RTCPeerConnectionIceErrorEvent =>
+                    peerConnection_SetOnIceCandidateError_(this.ID, { id: Int64, ptr: CJ_RTCPeerConnectionIceErrorEvent =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
                         ffipc.onIceCandidateError(ffipc, RTCPeerConnectionIceErrorEvent(
                             ptr.TYPE.toString(),
@@ -100,7 +99,7 @@ public class RTCPeerConnection <: WebrtcClass {
         set(v) {
             if (onTrack_.isNone()) {
                 unsafe {
-                    peerConnection_set_cj_func_call_onTrack_(this.ID, { id: Int64, ptr: CJ_RTCTrackEvent =>
+                    peerConnection_SetonTrack_(this.ID, { id: Int64, ptr: CJ_RTCTrackEvent =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
                         let arr = Array<Int64> (ptr.streams_size, repeat: 0)
                         for(i in 0..ptr.streams_size) {
@@ -126,7 +125,7 @@ public class RTCPeerConnection <: WebrtcClass {
         set (v) {
             if (onConnectionChange_.isNone()) {
                 unsafe {
-                    peerConnection_set_cj_func_call_SetOnConnectionChange_(this.ID, { id: Int64, ptr: CJ_Event =>
+                    peerConnection_SetOnConnectionChange_(this.ID, { id: Int64, ptr: CJ_Event =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
                         ffipc.onconnectionstatechange( ffipc, Event(ptr.eventType.toString()) )
                     })
@@ -140,7 +139,7 @@ public class RTCPeerConnection <: WebrtcClass {
         set (v) {
             if (onRenegotiationNeeded_.isNone()) {
                 unsafe {
-                    peerConnection_set_cj_func_call_SetOnConnectionChange_(this.ID, { id: Int64, ptr: CJ_Event =>
+                    peerConnection_SetOnRenegotiationNeeded_(this.ID, { id: Int64, ptr: CJ_Event =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
                         ffipc.onnegotiationneeded( ffipc, Event(ptr.eventType.toString()) )
                     })
@@ -154,7 +153,7 @@ public class RTCPeerConnection <: WebrtcClass {
         set (v) {
             if (onStandardizedIceConnectionChange_.isNone()) {
                 unsafe {
-                    peerConnection_set_cj_func_call_SetOnConnectionChange_(this.ID, { id: Int64, ptr: CJ_Event =>
+                    peerConnection_SetOnStandardizedIceConnectionChange_(this.ID, { id: Int64, ptr: CJ_Event =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
                         ffipc.oniceconnectionstatechange( ffipc, Event(ptr.eventType.toString()) )
                     })
@@ -168,7 +167,7 @@ public class RTCPeerConnection <: WebrtcClass {
         set (v) {
             if (onIceGatheringChange_.isNone()) {
                 unsafe {
-                    peerConnection_set_cj_func_call_SetOnConnectionChange_(this.ID, { id: Int64, ptr: CJ_Event =>
+                    peerConnection_SetOnIceGatheringChange_(this.ID, { id: Int64, ptr: CJ_Event =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
                         ffipc.onicegatheringstatechange( ffipc, Event(ptr.eventType.toString()) )
                     })
@@ -176,14 +175,14 @@ public class RTCPeerConnection <: WebrtcClass {
             }
         }
     }
-    public mut prop onIceCandidate: ((pc: RTCPeerConnection, dc: OnIceCandidateEvent) -> Unit){
+    public mut prop onIceCandidate: ((pc: RTCPeerConnection, dc: RTCPeerConnectionIceEvent) -> Unit){
         get () {onIceCandidate_??{_,_=>}}
         set (v) {
             if (onIceCandidate_.isNone()) {
                 unsafe {
-                    peerConnection_set_cj_func_call_SetOnConnectionChange_(this.ID, { id: Int64, ptr: CJ_Event =>
+                    peerConnection_SetOnIceCandidate_(this.ID, { id: Int64, ptr: CJ_RTCPeerConnectionIceEvent =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
-//                        ffipc.onIceCandidate( ffipc, Event(ptr.eventType.toString()) ) // TODO
+                        ffipc.onIceCandidate( ffipc, RTCPeerConnectionIceEvent(ptr) )
                     })
                 }
             }
@@ -216,14 +215,14 @@ public class RTCPeerConnection <: WebrtcClass {
     public prop canTrickleIceCandidates: Bool {
         get() {unsafe{peerConnection_GetCanTrickleIceCandidates(this.ID)}}
     }
-    public prop signalingState: Int64 {
-        get() {unsafe{peerConnection_GetSignalingState(this.ID)}}
+    public prop signalingState: FFIRTCSignalingState {
+        get() {FFIRTCSignalingState.GET(unsafe{peerConnection_GetSignalingState(this.ID)})}
     }
-    public prop iceGatheringState: Int64 {
-        get() {unsafe{peerConnection_GetIceGatheringState(this.ID)}}
+    public prop iceGatheringState: FFIRTCIceGatheringState {
+        get() {FFIRTCIceGatheringState.GET(unsafe{peerConnection_GetIceGatheringState(this.ID)})}
     }
-    public prop iceConnectionState: Int64 {
-        get() {unsafe{peerConnection_GetIceConnectionState(this.ID)}}
+    public prop iceConnectionState: FFIRTCIceConnectionState {
+        get() {FFIRTCIceConnectionState.GET(unsafe{peerConnection_GetIceConnectionState(this.ID)})}
     }
     public prop connectionState: FFIRTCIceConnectionState {
         get() {FFIRTCIceConnectionState.GET(unsafe{peerConnection_GetConnectionState(this.ID)})}
@@ -327,6 +326,17 @@ public class RTCPeerConnection <: WebrtcClass {
         }
     }
 
+    public func addIceCandidate(candidate: ?RTCIceCandidateInit): Unit {
+        if (let Some(v) <- candidate) {
+            unsafe {
+                peerConnection_addIceCandidate(this.ID, v.cpp)
+            }
+        } else {
+            unsafe {
+                peerConnection_addIceCandidate(this.ID, RTCIceCandidateInit().cpp)
+            }
+        }
+    }
     public func close(): Unit {
         unsafe {
             peerConnection_close(this.getID())
@@ -358,15 +368,15 @@ public class RTCPeerConnection <: WebrtcClass {
         }
     }
 
-    public func createOffer(iceRestart!: Bool = false): CJ_FFICreateSdpObserver_result {
+    public func createOffer(iceRestart!: Bool = false): FFICreateSdpObserverResult {
         unsafe {
-            return peerConnection_createOffer(this.getID(), iceRestart)
+            return FFICreateSdpObserverResult(peerConnection_createOffer(this.getID(), iceRestart))
         }
     }
 
-    public func createAnswer(cpp_ptr: Int64, iceRestart: Bool): CJ_FFICreateSdpObserver_result {
+    public func createAnswer(cpp_ptr: Int64, iceRestart: Bool): FFICreateSdpObserverResult {
         unsafe {
-            return peerConnection_createAnswer(cpp_ptr, iceRestart)
+            return FFICreateSdpObserverResult(peerConnection_createAnswer(cpp_ptr, iceRestart))
         }
     }
 

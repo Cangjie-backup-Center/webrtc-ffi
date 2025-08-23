@@ -462,7 +462,7 @@ int64_t ffiPeerConnection::GetSctp(){
     return (int64_t)sctpTransport;
 }
 
-void ffiPeerConnection::SetOnIceCandidate(void (*pe)(int64_t id, CJ_OnIceCandidateEvent ptr)) {
+void ffiPeerConnection::SetOnIceCandidate(void (*pe)(int64_t id, CJ_RTCPeerConnectionIceEvent ptr)) {
     this->cj_func_call_OnIceCandidate_ = pe;
 }
 
@@ -497,9 +497,9 @@ void ffiPeerConnection::OnIceCandidate(const IceCandidateInterface* candidate) {
             RTC_DCHECK_EQ(this, &target);
             if (cj_func_call_OnIceCandidate_) {
                 this->cj_func_call_OnIceCandidate_(
-                    this->cj_class_key, CJ_OnIceCandidateEvent{
+                    this->cj_class_key, CJ_RTCPeerConnectionIceEvent{
                         type : "icecandidate",
-                        candidate: (CJToCppCandidate(sdpMid, sdpMLineIndex, sdp, can)).value()
+                        candidate: CJToRTCPeerConnectionIceEvent(sdpMid, sdpMLineIndex, sdp, can)
                 });
             }
         })
@@ -867,12 +867,11 @@ void ffiPeerConnection::addIceCandidate(CJ_RTCIceCandidateInit iceCandidate) {
                 RTC_DLOG(LS_INFO) << "AddIceCandidate complete: " << error.ok();
                 auto type = error.type();
                 auto message = error.message();
-                this->cj_func_call_addIceCandidate(this->cj_class_key, message);
+                if (this->cj_func_call_addIceCandidate)
+                    this->cj_func_call_addIceCandidate(this->cj_class_key, message);
             });
         })
     );
-
-    
 }
 
 

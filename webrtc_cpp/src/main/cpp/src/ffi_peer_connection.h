@@ -113,7 +113,7 @@ public:
     void SetOnStandardizedIceConnectionChange(void (*pe)(int64_t id, CJ_Event ptr));
     void SetOnConnectionChange(void (*pe)(int64_t id, CJ_Event ptr));
     void SetOnIceGatheringChange(void (*pe)(int64_t id, CJ_Event ptr));
-    void SetOnIceCandidate(void (*pe)(int64_t id, CJ_OnIceCandidateEvent ptr));
+    void SetOnIceCandidate(void (*pe)(int64_t id, CJ_RTCPeerConnectionIceEvent ptr));
     void SetCallBackCreateOffer(void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg));
     void SetCallBackCreateAnswer(void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg));
 
@@ -134,7 +134,7 @@ private:
     void (*cj_func_call_OnStandardizedIceConnectionChange_)(int64_t id, CJ_Event ptr) = nullptr;
     void (*cj_func_call_OnConnectionChange_)(int64_t id, CJ_Event ptr) = nullptr;
     void (*cj_func_call_OnIceGatheringChange_)(int64_t id, CJ_Event ptr) = nullptr;
-    void (*cj_func_call_OnIceCandidate_)(int64_t id, CJ_OnIceCandidateEvent ptr) = nullptr;
+    void (*cj_func_call_OnIceCandidate_)(int64_t id, CJ_RTCPeerConnectionIceEvent ptr) = nullptr;
 
 public:
     static int64_t GenerateCertificate(std::string keyname);

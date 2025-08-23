@@ -266,7 +266,7 @@ foreign {
     func peerConnection_setRemoteDescription(cpp_ptr: Int64, description: CJ_RTCSessionDescription, pe: CFunc<(Int64, CJ_ErrorMessage) -> Unit>): Unit
     func peerConnection_createOffer(cpp_ptr: Int64, iceRestart: Bool): CJ_FFICreateSdpObserver_result
     func peerConnection_createAnswer(cpp_ptr: Int64, iceRestart: Bool): CJ_FFICreateSdpObserver_result
-    // func peerConnection_addIceCandidate(cpp_ptr: Int64, candidate: CJ_RTCIceCandidateInit): Unit
+    func peerConnection_addIceCandidate(cpp_ptr: Int64, candidate: CJ_RTCIceCandidateInit): Unit
     // func peerConnection_set_cj_func_call_addIceCandidate_(cpp_ptr: Int64, pe: CFunc<(that: Int64, id: Int64, candidate: CJ_RTCIceCandidateInit) -> Unit>): Unit
     func peerConnection_createDataChannel(cpp_ptr: Int64, label: CString, dataChannelDict: CJ_RTCDataChannelInit): Int64
     func peerConnection_getSenders(cpp_ptr: Int64): CPointer<Int64>

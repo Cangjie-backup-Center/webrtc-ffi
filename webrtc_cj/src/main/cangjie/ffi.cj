@@ -33,6 +33,11 @@ public class Webrtc4cjFFIException <: Exception {
     }
 }
 
+public enum WebrtcResult<T> {
+    Ok(T)
+    | Error(String)
+}
+
 @C // see ffi_define_struct.h
 public struct CJ_EnumerateDevicesInfo {
     public let deviceId: CString = unsafe {zeroValue<CString>()}
@@ -384,24 +389,63 @@ public class MediaTrackConstraints {
 
 @C
 public struct CJ_RTCIceCandidateInit {
-    let isBuild: Bool = false
-    let ordered: Bool = false
-    let maxPacketLifeTime: Int64 = 0
-    let maxRetransmits: Int64 = 0
-    let protocol: CString = unsafe {zeroValue<CString>()}
-    let negotiated: Bool = false
-    let id: Int64 = 0
+    var isBuild: Bool = false
+    var ordered: Bool = false
+    var maxPacketLifeTime: Int64 = 0
+    var maxRetransmits: Int64 = 0
+    var protocol: CString = unsafe {zeroValue<CString>()}
+    var negotiated: Bool = false
+    var id: Int64 = 0
+    public init() {}
+    public init(isBuild: Bool, ordered: Bool, maxPacketLifeTime: Int64, maxRetransmits: Int64, protocol: CString, negotiated: Bool, id: Int64) {
+        this.isBuild = isBuild
+        this.ordered = ordered
+        this.maxPacketLifeTime = maxPacketLifeTime
+        this.maxRetransmits = maxRetransmits
+        this.protocol = protocol
+        this.negotiated = negotiated
+        this.id = id
+    }
+
 }
 
-//typedef struct {
-//    bool isBuild = false;
-//    bool ordered;
-//    int64_t maxPacketLifeTime;
-//    int64_t maxRetransmits;
-//    char* protocol;
-//    bool negotiated;
-//    int64_t id;
-//} CJ_RTCDataChannelInit;
+public class RTCIceCandidateInit{
+    public prop ordered: Bool {get(){this.cpp.ordered}}
+    public prop maxPacketLifeTime: Int64{get(){this.cpp.maxPacketLifeTime}}
+    public prop maxRetransmits: Int64{get(){this.cpp.maxRetransmits}}
+    public prop protocol: String{get(){this.cpp.protocol.toString()}}
+    public prop negotiated: Bool{get(){this.cpp.negotiated}}
+    public prop id: Int64{get(){this.cpp.id}}
+    let cpp: CJ_RTCIceCandidateInit
+
+    public init(cpp: CJ_RTCIceCandidateInit){
+        this.cpp =cpp
+    }
+
+    public init(isBuild!: Bool = false,
+                ordered!: Bool = false,
+                maxPacketLifeTime!: Int64 = 0,
+                maxRetransmits!: Int64 = 0,
+                protocol!: CString = unsafe {zeroValue<CString>()},
+                negotiated!: Bool = false ,
+                id!: Int64 = 0) {
+        if (isBuild) {
+            this.cpp = CJ_RTCIceCandidateInit(isBuild, ordered, maxPacketLifeTime, maxRetransmits, protocol, negotiated, id)
+        } else {
+            this.cpp = CJ_RTCIceCandidateInit()
+        }
+    }
+
+    ~init(){
+        unsafe{
+            if (this.cpp.isBuild){
+                LibC.free(this.cpp.protocol)
+            }
+        }
+    }
+}
+
+
 @C
 public struct CJ_RTCDataChannelInit {
     var isBuild: Bool = false
@@ -425,4 +469,81 @@ public struct CJ_FFICreateSdpObserver_result {
     let RTCSdpType: CString = unsafe{zeroValue<CString>()}
     let isFail: Bool = true // 如果 true , 其他值就无效了
     let msg: CString = unsafe{zeroValue<CString>()}
+}
+
+
+public class RTCSessionDescription {
+    private var sdp_: ?String = None
+    private var RTCSdpType_: ?String = None
+    public prop sdp: String {
+        get() {
+            if (let Some(v) <- cpp) {
+                return v.sdp.toString()
+            } else {
+                return sdp_.getOrThrow()
+            }
+        }
+    }
+
+    public prop RTCSdpType: String {
+        get() {
+            if (let Some(v) <- cpp) {
+                return v.RTCSdpType.toString()
+            }else {
+                return RTCSdpType_.getOrThrow()
+            }
+        }
+    }
+
+    private var cpp: ?CJ_RTCSessionDescription = None
+    public init(cpp: CJ_RTCSessionDescription) {
+        this.cpp = cpp
+    }
+
+    public init(sdp: String, RTCSdpType: String) {
+        this.sdp_ = sdp
+        this.RTCSdpType_ = RTCSdpType
+    }
+
+    ~init() {
+        if (let Some(v) <- cpp) {
+            if (!v.undefined) {
+                unsafe {
+                    LibC.free(v.sdp)
+                    LibC.free(v.RTCSdpType)
+                }
+            }
+        }
+    }
+}
+
+
+
+public class FFICreateSdpObserverResult {
+    public prop result: WebrtcResult<RTCSessionDescription> {
+        get() {
+             if (this.cpp.isFail) {
+                return WebrtcResult.Error(this.cpp.msg.toString())
+             } else {
+                return WebrtcResult.Ok(RTCSessionDescription(this.cpp.sdp.toString(), this.cpp.RTCSdpType.toString()))
+             }
+        }
+    }
+
+    let cpp: CJ_FFICreateSdpObserver_result
+    public init(cpp: CJ_FFICreateSdpObserver_result) {
+        this.cpp = cpp
+    }
+
+    ~init() {
+        unsafe {
+            if (this.cpp.isFail) {
+                LibC.free(this.cpp.msg)
+            } else {
+                LibC.free(this.cpp.sdp)
+                LibC.free(this.cpp.RTCSdpType)
+            }
+        }
+    }
+
 }

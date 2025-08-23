@@ -61,15 +61,93 @@ struct CJ_Event {
     let eventType: CString = unsafe {zeroValue<CString>()}
 }
 
-//typedef struct {
-//    const char* type;
-//    CJToCppCandidateObject* candidate;
-//} CJ_OnIceCandidateEvent;
 
 @C
-struct CJ_OnIceCandidateEvent {
+struct CJ_RTCIceCandidate {
+    let undefined: Bool = unsafe {zeroValue<Bool>()}
+    let candidate: CString = unsafe {zeroValue<CString>()}
+    let sdpMid: CString = unsafe {zeroValue<CString>()}
+    let sdpMLineIndex: Int64 = unsafe {zeroValue<Int64>()}
+    let foundation: CString = unsafe {zeroValue<CString>()}
+    let component: Int64 = unsafe {zeroValue<Int64>()}
+    let priority: Int64 = unsafe {zeroValue<Int64>()}
+    let address: CString = unsafe {zeroValue<CString>()}
+    let iceProtocol: CString = unsafe {zeroValue<CString>()}
+    let port: Int64 = unsafe {zeroValue<Int64>()}
+    let iceCandidateType: Int64 = unsafe {zeroValue<Int64>()}
+    let iceTcpCandidateType: CString = unsafe {zeroValue<CString>()}
+    let relatedAddress: CString = unsafe {zeroValue<CString>()}
+    let relatedPort: Int64 = unsafe {zeroValue<Int64>()}
+    let usernameFragment: CString = unsafe {zeroValue<CString>()}
+    // 父类的成员属性
+    let adapterType: CString = unsafe {zeroValue<CString>()}
+    let serverUrl: CString = unsafe {zeroValue<CString>()}
+}
+
+public class RTCIceCandidate {
+    public prop undefined: Bool {get() {this.cpp.undefined}}
+    public prop candidate: String {get() {this.cpp.candidate.toString()}}
+    public prop sdpMid: String {get() {this.cpp.sdpMid.toString()}}
+    public prop sdpMLineIndex: Int64 {get() {this.cpp.sdpMLineIndex}}
+    public prop foundation: String {get() {this.cpp.foundation.toString()}}
+    public prop component: Int64 {get() {this.cpp.component}}
+    public prop priority: Int64 {get() {this.cpp.priority}}
+    public prop address: String {get() {this.cpp.address.toString()}}
+    public prop iceProtocol: String {get() {this.cpp.iceProtocol.toString()}}
+    public prop port: Int64 {get() {this.cpp.port}}
+    public prop iceCandidateType: Int64 {get() {this.cpp.iceCandidateType}}
+    public prop iceTcpCandidateType: String {get() {this.cpp.iceTcpCandidateType.toString()}}
+    public prop relatedAddress: String {get() {this.cpp.relatedAddress.toString()}}
+    public prop relatedPort: Int64 {get() {this.cpp.relatedPort}}
+    public prop usernameFragment: String {get() {this.cpp.usernameFragment.toString()}}
+//    public prop adapterType: String {get() {this.cpp.adapterType.toString()}}
+//    public prop serverUrl: String {get() {this.cpp.serverUrl.toString()}}
+    var cpp: CJ_RTCIceCandidate
+    init(cpp: CJ_RTCIceCandidate) {
+        this.cpp = cpp
+    }
+    ~init() {
+        unsafe {
+            if (!this.cpp.undefined) {
+                LibC.free(this.cpp.candidate)
+                LibC.free(this.cpp.sdpMid)
+                LibC.free(this.cpp.foundation)
+                LibC.free(this.cpp.address)
+                LibC.free(this.cpp.iceProtocol)
+                LibC.free(this.cpp.iceTcpCandidateType)
+                LibC.free(this.cpp.relatedAddress)
+                LibC.free(this.cpp.usernameFragment)
+                LibC.free(this.cpp.adapterType)
+                LibC.free(this.cpp.serverUrl)
+            }
+        }
+    }
+}
+
+@C
+struct CJ_RTCPeerConnectionIceEvent {
     let TYPE: CString = unsafe {zeroValue<CString>()}
-    // CJToCppCandidateObject* candidate; // TODO
+    let candidate: CJ_RTCIceCandidate = unsafe {zeroValue<CJ_RTCIceCandidate>()}
+}
+
+
+public class RTCPeerConnectionIceEvent {
+    public prop TYPE: String {get(){this.cpp.TYPE.toString()}}
+    public var candidate: ?RTCIceCandidate = None
+    public var url: ?String = None
+    let cpp: CJ_RTCPeerConnectionIceEvent
+    init(cpp: CJ_RTCPeerConnectionIceEvent) {
+        this.cpp = cpp
+        if(!this.cpp.candidate.undefined) {
+            this.candidate = RTCIceCandidate(this.cpp.candidate)
+            this.url = this.cpp.candidate.serverUrl.toString()
+        }
+    }
+    ~init() {
+        unsafe {
+            LibC.free(this.cpp.TYPE)
+        }
+    }
 }
 
 public class OnIceCandidateEvent {

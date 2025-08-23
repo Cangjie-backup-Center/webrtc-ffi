@@ -15,7 +15,7 @@
 namespace webrtc {
 
 
-std::optional<CJToCppCandidateObject*> CJToCppCandidate(const std::string& sdpMid,
+CJ_RTCIceCandidate CJToRTCPeerConnectionIceEvent(const std::string& sdpMid,
                     int32_t sdpMLineIndex, 
                     const std::string& sdp,
                     const cricket::Candidate& candidate);
