@@ -390,47 +390,37 @@ public class MediaTrackConstraints {
 @C
 public struct CJ_RTCIceCandidateInit {
     var isBuild: Bool = false
-    var ordered: Bool = false
-    var maxPacketLifeTime: Int64 = 0
-    var maxRetransmits: Int64 = 0
-    var protocol: CString = unsafe {zeroValue<CString>()}
-    var negotiated: Bool = false
-    var id: Int64 = 0
+    var candidate: CString = unsafe {zeroValue<CString>()}
+    var sdpMLineIndex: Int32 = 0
+    var sdpMid: CString = unsafe {zeroValue<CString>()}
+    var usernameFragment: CString = unsafe {zeroValue<CString>()}
     public init() {}
-    public init(isBuild: Bool, ordered: Bool, maxPacketLifeTime: Int64, maxRetransmits: Int64, protocol: CString, negotiated: Bool, id: Int64) {
+    public init(isBuild: Bool, candidate: CString, sdpMLineIndex: Int32, sdpMid: CString, usernameFragment: CString) {
         this.isBuild = isBuild
-        this.ordered = ordered
-        this.maxPacketLifeTime = maxPacketLifeTime
-        this.maxRetransmits = maxRetransmits
-        this.protocol = protocol
-        this.negotiated = negotiated
-        this.id = id
+        this.candidate = candidate
+        this.sdpMLineIndex = sdpMLineIndex
+        this.sdpMid = sdpMid
+        this.usernameFragment = usernameFragment
     }
-
 }
 
 public class RTCIceCandidateInit{
-    public prop ordered: Bool {get(){this.cpp.ordered}}
-    public prop maxPacketLifeTime: Int64{get(){this.cpp.maxPacketLifeTime}}
-    public prop maxRetransmits: Int64{get(){this.cpp.maxRetransmits}}
-    public prop protocol: String{get(){this.cpp.protocol.toString()}}
-    public prop negotiated: Bool{get(){this.cpp.negotiated}}
-    public prop id: Int64{get(){this.cpp.id}}
+    public prop isBuild: Bool {get() {this.cpp.isBuild}}
+    public prop candidate: String {get() {this.cpp.candidate.toString()}}
+    public prop sdpMLineIndex: Int32{get() {this.cpp.sdpMLineIndex}}
+    public prop sdpMid: String {get() {this.cpp.sdpMid.toString()}}
+    public prop usernameFragment: String {get() {this.cpp.usernameFragment.toString()}}
     let cpp: CJ_RTCIceCandidateInit
 
     public init(cpp: CJ_RTCIceCandidateInit){
         this.cpp =cpp
     }
 
-    public init(isBuild!: Bool = false,
-                ordered!: Bool = false,
-                maxPacketLifeTime!: Int64 = 0,
-                maxRetransmits!: Int64 = 0,
-                protocol!: CString = unsafe {zeroValue<CString>()},
-                negotiated!: Bool = false ,
-                id!: Int64 = 0) {
+    public init(isBuild: Bool, candidate: String, sdpMLineIndex: Int32, sdpMid: String, usernameFragment: String) {
         if (isBuild) {
-            this.cpp = CJ_RTCIceCandidateInit(isBuild, ordered, maxPacketLifeTime, maxRetransmits, protocol, negotiated, id)
+            unsafe {
+                this.cpp = CJ_RTCIceCandidateInit(isBuild, LibC.mallocCString(candidate), sdpMLineIndex, LibC.mallocCString(sdpMid), LibC.mallocCString(usernameFragment))
+            }
         } else {
             this.cpp = CJ_RTCIceCandidateInit()
         }
@@ -439,12 +429,13 @@ public class RTCIceCandidateInit{
     ~init(){
         unsafe{
             if (this.cpp.isBuild){
-                LibC.free(this.cpp.protocol)
+                LibC.free(this.cpp.candidate)
+                LibC.free(this.cpp.sdpMid)
+                LibC.free(this.cpp.usernameFragment)
             }
         }
     }
 }
-
 
 @C
 public struct CJ_RTCDataChannelInit {
@@ -458,7 +449,7 @@ public struct CJ_RTCDataChannelInit {
 }
 
 @C
-public struct CJ_ArrayMediaStream{
+public struct CJ_ArrayMediaStream {
     let ptr: CPointer<Int64> = unsafe {zeroValue<CPointer<Int64>>()}
     let size: Int64 = 0
 }
@@ -470,7 +461,6 @@ public struct CJ_FFICreateSdpObserver_result {
     let isFail: Bool = true // 如果 true , 其他值就无效了
     let msg: CString = unsafe{zeroValue<CString>()}
 }
-
 
 public class RTCSessionDescription {
     private var sdp_: ?String = None
@@ -495,7 +485,7 @@ public class RTCSessionDescription {
         }
     }
 
-    private var cpp: ?CJ_RTCSessionDescription = None
+    var cpp: ?CJ_RTCSessionDescription = None
     public init(cpp: CJ_RTCSessionDescription) {
         this.cpp = cpp
     }

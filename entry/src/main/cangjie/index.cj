@@ -66,13 +66,13 @@ class EntryView {
     var adm: ?AudioDeviceModule = Option<AudioDeviceModule>.None
     @State
     var pcf: ?PeerConnectionFactory = Option<PeerConnectionFactory>.None
-    private var pc: ?RTCPeerConnection = None
-    private var recvChannel: ?RTCDataChannel = None
-    private var sendChannel: ?RTCDataChannel = None
+    private var pc: ?RTCPeerConnection = Option<RTCPeerConnection>.None
+    private var recvChannel: ?RTCDataChannel = Option<RTCDataChannel>.None
+    private var sendChannel: ?RTCDataChannel = Option<RTCDataChannel>.None
     private var displayMediaStream: MediaStream = MediaStream(-1)
     private var mediaDevices: MediaDevices = MediaDevices()
     private var onDataChannelMessageReceived: (RTCDataChannel, MessageEvent) -> Unit = {pc, event =>}
-    private var localCameraVideoTrack: ?VideoTrack = None
+    private var localCameraVideoTrack: ?VideoTrack = Option<VideoTrack>.None
     private var retVideoTrack: Array<MediaStreamTrack> = Array<MediaStreamTrack>()
 
     func build() {
@@ -432,15 +432,15 @@ class EntryView {
 
     func sendOffer(): Future<Unit> {
         spawn {
-            // TODO.. 昕宇 createOffer setLocalDescription
              try {
-                let offer = this.pc?.createOffer()
-                if (let Some(v) <- offer) {
-//                	v.sdp
+                let offer = this.pc.getOrThrow().createOffer()
+                // AppLog.error("${Index_WebRTC_TAG} createOffer: ${offer}")
+                match (offer.result) {
+                    case Ok(v) =>
+                        this.pc?.setLocalDescription(v)
+                        this.sendMessage(v.sdp)
+                    case Error(str) => AppLog.error("${Index_WebRTC_TAG} str: ${str}")
                 }
-            // AppLog.error("${Index_WebRTC_TAG} createOffer: ${offer}")
-            // this.pc?.setLocalDescription(offer)
-            // this.sendMessage(offer)
              } catch (e: Exception) {
                 AppLog.error('${Index_WebRTC_TAG} sendOffer: ${e}')
              }
@@ -581,14 +581,13 @@ class EntryView {
                     // TODO.. 需要实现 ToString 接口
                     //              AppLog.info('${Index_WebRTC_TAG} ontrack: ${event}')
                     //              // TODO.. kind 需实现
-                    // if (event.track.kind == 'video') {
+//                     if (event.track.kind == 'video') {
                     this.remoteVideoTrack = event.track
                     this.mXComponentController2.setVideoTrack(event.track)
                     //              // TODO.. kind 需实现
                     //              } else if (event.track.kind == 'audio') {
                     this.remoteAudioTrack = event.track
             }
-        }
         this.pc?.onSignalingChange = {
             pc, event => AppLog.info('${Index_WebRTC_TAG} onsignalingstatechange: ${this.pc?.signalingState}')
         }
@@ -611,19 +610,16 @@ class EntryView {
 //                      AppLog.info('${Index_WebRTC_TAG} onnegotiationneeded: this= ${this.pc}')
 //                      AppLog.info('${Index_WebRTC_TAG} onnegotiationneeded: event= ${event}')
                     }
-        // TODO.. onIceCandidate 需实现， candidate 需实现
                     this.pc?.onIceCandidate = { pc, event =>
         //              AppLog.info('${Index_WebRTC_TAG} onicecandidate: this=')
         //              AppLog.info('${Index_WebRTC_TAG} onicecandidate: event=${event}')
-//                      if (event.candidate) {
-//                        this.sendMessage(event.candidate)
-//                      }
+                      if (let Some(v) <- event.candidate) {
+                        this.sendMessage(v.candidate)
+                      }
                     }
-        // TODO.. onIceCandidateError 需实现，ToString 接口需实现
                     this.pc?.onIceCandidateError = { pc, event =>
         //              AppLog.error('${Index_WebRTC_TAG} onicecandidateerror: event= ${event}')
                     }
-        // TODO.. oniceconnectionstatechange 需实现， iceConnectionState 需实现
                     this.pc?.oniceconnectionstatechange = { pc, event =>
                       AppLog.info('${Index_WebRTC_TAG} oniceconnect/ionstatechange: ${this.pc?.iceConnectionState}')
                       if (this.pc?.iceConnectionState.toString() == 'failed') {
@@ -640,19 +636,18 @@ class EntryView {
                         })
                       }
         }
-        // TODO.. onicegatheringstatechange 需实现， iceGatheringState 需实现
-                    this.pc?.onicegatheringstatechange = { pc, event =>
-                      AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: ${this.pc?.iceGatheringState}')
-        //              match (this.pc?.iceGatheringState) {
-        //                case "new" =>
-        //                  AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: gathering is either just starting or has been reset')
-        //                case "gathering" =>
-        //                  AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: gathering has begun or is ongoing')
-        //                case "complete" =>
-        //                  AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: gathering has ended')
-        //                case _ => ()
-        //              }
-                    }
+        this.pc?.onicegatheringstatechange = { pc, event =>
+          AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: ${this.pc?.iceGatheringState}')
+          match (this.pc.getOrThrow().iceGatheringState) {
+            case FFIRTCIceGatheringState.NEW =>
+              AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: gathering is either just starting or has been reset')
+            case FFIRTCIceGatheringState.GATHERING =>
+              AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: gathering has begun or is ongoing')
+            case FFIRTCIceGatheringState.COMPLETE =>
+              AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: gathering has ended')
+            case _ => ()
+          }
+        }
         this.pc?.ondatachannel = {
             pc, event =>
                 AppLog.info('${Index_WebRTC_TAG} ondatachannel: this=')
@@ -665,21 +660,17 @@ class EntryView {
                 this.recvChannel?.onclose = this.onDataChannelClose
         }
         if (let Some(v) <- this.localAudioTrack) {
-            // TODO.. 昕宇 addTrack
-            // let rtpSender1 = this.pc?.addTrack(v)
+             let rtpSender1 = this.pc?.addTrack(v)
             // AppLog.info('${Index_WebRTC_TAG} rtpSender1: ${rtpSender1}')
         }
         if (let Some(v) <- this.localAudioTrack2) {
-            // TODO.. 昕宇 addTrack
-            // let rtpSender2 = this.pc?.addTrack(v)
+             let rtpSender2 = this.pc?.addTrack(v)
             // AppLog.info('${Index_WebRTC_TAG} rtpSender2: ${rtpSender2}')
         }
         if (let Some(v) <- this.localVideoTrack) {
-            // TODO.. 昕宇 addTrack
-//             let rtpSender3 = this.pc.addTrack(v)
+             let rtpSender3 = this.pc?.addTrack(v)
             // AppLog.info('${Index_WebRTC_TAG} rtpSender3: ${rtpSender3}')
         }
-        // TODO.. 昕宇
 //         AppLog.info('${Index_WebRTC_TAG} transceivers: ${this.pc?.getTransceivers()}')
         this.sendChannel = this.pc?.createDataChannel("send")
 //         AppLog.info('${Index_WebRTC_TAG} sendChannel: ${this.sendChannel}')
@@ -700,7 +691,7 @@ class EntryView {
 //        // TODO.. onerror 实现
         this.sendChannel?.onerror = this.onDataChannelError
         this.sendChannel?.onclose = this.onDataChannelClose
-        // }
+         }
     }
 
     func onDataChannelOpen(pc: RTCDataChannel, event: Event): Unit {
@@ -724,18 +715,20 @@ class EntryView {
 
     func sendAnswer(): Future<Unit> {
         spawn {
-            // TODO.. 昕宇 createAnswer
             this.setStatus("Got SDP offer, creating answer")
-            //        this.pc?.createAnswer().then({ desc =>
-            //          AppLog.error('${Index_WebRTC_TAG} Success to create answer: ${desc}')
-            //          this.pc?.setLocalDescription(desc).then({ =>
-            //            this.setStatus("Sending SDP answer")
-            //            this.sendMessage(JSON.stringify(this.pc?.localDescription))
-            //          })
-            //        }).catch((e: Error) => {
-            //          AppLog.error('${Index_WebRTC_TAG} Failed to create answer: ' + e.message)
-            //          this.setError(e.message)
-            //        })
+            try {
+                let desc = this.pc.getOrThrow().createAnswer()
+    //            AppLog.error('${Index_WebRTC_TAG} Success to create answer: ${desc}')
+                match (desc.result) {
+                    case Ok(v) =>
+                        this.pc?.setLocalDescription(v)
+                        this.setStatus("Sending SDP answer")
+                        this.sendMessage(this.pc.getOrThrow().localDescription.sdp)
+                    case Error(str) => AppLog.error("${Index_WebRTC_TAG} str: ${str}")
+                }
+            } catch (e: Exception) {
+            	AppLog.error('${Index_WebRTC_TAG} createAnswer: ${e}')
+            }
         }
     }
 
@@ -748,11 +741,13 @@ class EntryView {
     func receiveIce(ice: String): Future<Unit> {
         spawn {
             AppLog.error('${Index_WebRTC_TAG} receive icecandidate')
-            // TODO.. 昕宇 addIceCandidate
-            //        this.pc?.addIceCandidate(ice).catch((e: Error) => {
-            //          AppLog.error("${Index_WebRTC_TAG} add ice candidate error: " + e)
-            //          this.setError(e.message)
-            //        })
+            try {
+                let iceCandidate = RTCIceCandidateInit(true, ice, 0, "", "")
+                this.pc.getOrThrow().addIceCandidate(iceCandidate)
+            } catch(e: Exception) {
+                AppLog.error("${Index_WebRTC_TAG} add ice candidate error: ${e}" )
+                this.setError(e.message)
+            }
         }
     }
 }

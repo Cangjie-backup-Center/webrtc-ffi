@@ -122,6 +122,15 @@ public class RTCIceCandidate {
             }
         }
     }
+
+    @OverflowWrapping
+    public func toJson(): ?RTCIceCandidateInit {
+        if (undefined) {
+            return None
+        } else {
+            return RTCIceCandidateInit(true, candidate, Int32(sdpMLineIndex), sdpMid, usernameFragment)
+        }
+    }
 }
 
 @C

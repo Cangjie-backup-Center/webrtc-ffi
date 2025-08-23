@@ -227,24 +227,14 @@ public class RTCPeerConnection <: WebrtcClass {
     public prop connectionState: FFIRTCIceConnectionState {
         get() {FFIRTCIceConnectionState.GET(unsafe{peerConnection_GetConnectionState(this.ID)})}
     }
-    public prop localDescription: Option<CJ_RTCSessionDescription> {
+    public prop localDescription: RTCSessionDescription {
         get() {
-            let temp = unsafe{peerConnection_GetLocalDescription(this.ID)}
-            if (temp.undefined) {
-                return None
-            } else {
-                return temp
-            }
+            return unsafe{RTCSessionDescription(peerConnection_GetLocalDescription(this.ID))}
         }
     }
-    public prop remoteDescription: Option<CJ_RTCSessionDescription> {
+    public prop remoteDescription: RTCSessionDescription {
         get() {
-            let temp = unsafe{peerConnection_GetRemoteDescription(this.ID)}
-            if (temp.undefined) {
-                return None
-            } else {
-                return temp
-            }
+            return unsafe{RTCSessionDescription(peerConnection_GetRemoteDescription(this.ID))}
         }
     }
     public prop currentLocalDescription: Option<CJ_RTCSessionDescription> {
@@ -298,19 +288,19 @@ public class RTCPeerConnection <: WebrtcClass {
         }
     }
 
-    public func setLocalDescription(description: CJ_RTCSessionDescription, pe: (ErrorMessage) -> Unit): Unit {
+    public func setLocalDescription(description: RTCSessionDescription, pe!: (ErrorMessage) -> Unit = { error => }): Unit {
         unsafe {
             this.setLocalDescription_callback_ = pe;
-            peerConnection_setLocalDescription(this.ID, description, {id: Int64, msg: CJ_ErrorMessage =>
+            peerConnection_setLocalDescription(this.ID, description.cpp.getOrThrow(), {id: Int64, msg: CJ_ErrorMessage =>
                 let obj = GetObject<RTCPeerConnection>(id)
                 obj.setLocalDescription_callback_(ErrorMessage(msg))
             })
         }
     }
-    public func setRemoteDescription(description: CJ_RTCSessionDescription, pe: (ErrorMessage) -> Unit): Unit {
+    public func setRemoteDescription(description: RTCSessionDescription, pe: (ErrorMessage) -> Unit): Unit {
         unsafe {
             this.setRemoteDescription_callback_ = pe;
-            peerConnection_setLocalDescription(this.ID, description, {id: Int64, msg: CJ_ErrorMessage =>
+            peerConnection_setLocalDescription(this.ID, description.cpp.getOrThrow(), {id: Int64, msg: CJ_ErrorMessage =>
                 let obj = GetObject<RTCPeerConnection>(id)
                 obj.setRemoteDescription_callback_(ErrorMessage(msg))
             })
@@ -356,15 +346,15 @@ public class RTCPeerConnection <: WebrtcClass {
         }
     }
 
-    public func addTrack(cpp_ptr: Int64, ffiMST_ptr: Int64, streamVec: CJ_ArrayMediaStream): Int64 {
+    public func addTrack(track: MediaStreamTrack, streamVec!: CJ_ArrayMediaStream = CJ_ArrayMediaStream()): Int64 {
         unsafe {
-            return peerConnection_addTrack(cpp_ptr, ffiMST_ptr, streamVec)
+            return peerConnection_addTrack(this.getID(), track.getID(), streamVec)
         }
     }
 
-    public func getTransceivers(cpp_ptr: Int64): CPointer<Int64> {
+    public func getTransceivers(): CPointer<Int64> {
         unsafe {
-            return peerConnection_getTransceivers(cpp_ptr)
+            return peerConnection_getTransceivers(this.getID())
         }
     }
 
@@ -374,9 +364,9 @@ public class RTCPeerConnection <: WebrtcClass {
         }
     }
 
-    public func createAnswer(cpp_ptr: Int64, iceRestart: Bool): FFICreateSdpObserverResult {
+    public func createAnswer(iceRestart!: Bool = false): FFICreateSdpObserverResult {
         unsafe {
-            return FFICreateSdpObserverResult(peerConnection_createAnswer(cpp_ptr, iceRestart))
+            return FFICreateSdpObserverResult(peerConnection_createAnswer(this.getID(), iceRestart))
         }
     }
 
