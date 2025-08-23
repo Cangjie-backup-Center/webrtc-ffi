@@ -413,3 +413,16 @@ public struct CJ_RTCDataChannelInit {
     var id: Int64 = -1
 }
 
+@C
+public struct CJ_ArrayMediaStream{
+    let ptr: CPointer<Int64> = unsafe {zeroValue<CPointer<Int64>>()}
+    let size: Int64 = 0
+}
+
+@C
+public struct CJ_FFICreateSdpObserver_result {
+    let sdp: CString = unsafe{zeroValue<CString>()}
+    let RTCSdpType: CString = unsafe{zeroValue<CString>()}
+    let isFail: Bool = true // 如果 true , 其他值就无效了
+    let msg: CString = unsafe{zeroValue<CString>()}
+}

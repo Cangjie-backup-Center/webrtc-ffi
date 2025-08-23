@@ -160,7 +160,7 @@ public enum FFIScreenCaptureAudioFilterEnum {
     CURRENT_APP | NOTIFICATION
 }
 
-extend FFIRTCErrorDetailType {
+extend FFIRTCErrorDetailType <: ToString & Equatable<FFIRTCErrorDetailType> {
     public static func GET(index: Int64): FFIRTCErrorDetailType {
         return match (index) {
             case 0 => NONE
@@ -187,9 +187,39 @@ extend FFIRTCErrorDetailType {
             case HARDWARE_ENCODER_ERROR => 7
         }
     }
+
+    public func toString(): String {
+        return match (this) {
+            case NONE => "NONE"
+            case DATA_CHANNEL_FAILURE => "DATA_CHANNEL_FAILURE"
+            case DTLS_FAILURE => "DTLS_FAILURE"
+            case FINGERPRINT_FAILURE => "FINGERPRINT_FAILURE"
+            case SCTP_FAILURE => "SCTP_FAILURE"
+            case SDP_SYNTAX_ERROR => "SDP_SYNTAX_ERROR"
+            case HARDWARE_ENCODER_NOT_AVAILABLE => "HARDWARE_ENCODER_NOT_AVAILABLE"
+            case HARDWARE_ENCODER_ERROR => "HARDWARE_ENCODER_ERROR"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCErrorDetailType): Bool {
+        return match ((this, rhs)) {
+            case (NONE, NONE) => true
+            case (DATA_CHANNEL_FAILURE, DATA_CHANNEL_FAILURE) => true
+            case (DTLS_FAILURE, DTLS_FAILURE) => true
+            case (FINGERPRINT_FAILURE, FINGERPRINT_FAILURE) => true
+            case (SCTP_FAILURE, SCTP_FAILURE) => true
+            case (SDP_SYNTAX_ERROR, SDP_SYNTAX_ERROR) => true
+            case (HARDWARE_ENCODER_NOT_AVAILABLE, HARDWARE_ENCODER_NOT_AVAILABLE) => true
+            case (HARDWARE_ENCODER_ERROR, HARDWARE_ENCODER_ERROR) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCErrorDetailType): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIRTCIceProtocol {
+extend FFIRTCIceProtocol <: ToString & Equatable<FFIRTCIceProtocol> {
     public static func GET(index: Int64): FFIRTCIceProtocol {
         return match (index) {
             case 0 => TCP
@@ -204,9 +234,27 @@ extend FFIRTCIceProtocol {
             case UDP => 1
         }
     }
+
+    public func toString(): String {
+        return match (this) {
+            case TCP => "TCP"
+            case UDP => "UDP"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCIceProtocol): Bool {
+        return match ((this, rhs)) {
+            case (TCP, TCP) => true
+            case (UDP, UDP) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCIceProtocol): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIRTCIceCandidateType {
+extend FFIRTCIceCandidateType <: ToString & Equatable<FFIRTCIceCandidateType> {
     public static func GET(index: Int64): FFIRTCIceCandidateType {
         return match (index) {
             case 0 => HOST
@@ -225,9 +273,31 @@ extend FFIRTCIceCandidateType {
             case SRFLX => 3
         }
     }
+
+    public func toString(): String {
+        return match (this) {
+            case HOST => "HOST"
+            case PRFLX => "PRFLX"
+            case RELAY => "RELAY"
+            case SRFLX => "SRFLX"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCIceCandidateType): Bool {
+        return match ((this, rhs)) {
+            case (HOST, HOST) => true
+            case (PRFLX, PRFLX) => true
+            case (RELAY, RELAY) => true
+            case (SRFLX, SRFLX) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCIceCandidateType): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIRTCIceTcpCandidateType {
+extend FFIRTCIceTcpCandidateType <: ToString & Equatable<FFIRTCIceTcpCandidateType> {
     public static func GET(index: Int64): FFIRTCIceTcpCandidateType {
         return match (index) {
             case 0 => ACTIVE
@@ -244,9 +314,29 @@ extend FFIRTCIceTcpCandidateType {
             case SO => 2
         }
     }
+
+    public func toString(): String {
+        return match (this) {
+            case ACTIVE => "ACTIVE"
+            case PASSIVE => "PASSIVE"
+            case SO => "SO"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCIceTcpCandidateType): Bool {
+        return match ((this, rhs)) {
+            case (ACTIVE,ACTIVE) => true
+            case (PASSIVE,PASSIVE) => true
+            case (SO,SO) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCIceTcpCandidateType): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIRTCIceComponent {
+extend FFIRTCIceComponent <: ToString & Equatable<FFIRTCIceComponent> {
     public static func GET(index: Int64): FFIRTCIceComponent {
         return match (index) {
             case 0 => RTP
@@ -261,9 +351,27 @@ extend FFIRTCIceComponent {
             case RTCP => 1
         }
     }
+
+    public func toString(): String {
+        return match (this) {
+            case RTP => "RTP"
+            case RTCP => "RTCP"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCIceComponent): Bool {
+        return match ((this, rhs)) {
+            case (RTP, RTP) => true
+            case (RTCP, RTCP) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCIceComponent): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIRTCIceGathererState {
+extend FFIRTCIceGathererState <: ToString & Equatable<FFIRTCIceGathererState> {
     public static func GET(index: Int64): FFIRTCIceGathererState {
         return match (index) {
             case 0 => COMPLETE
@@ -280,9 +388,29 @@ extend FFIRTCIceGathererState {
             case NEW => 2
         }
     }
+
+    public func toString(): String {
+        return match (this) {
+            case COMPLETE => "COMPLETE"
+            case GATHERING => "GATHERING"
+            case NEW => "NEW"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCIceGathererState): Bool {
+        return match ((this, rhs)) {
+            case (COMPLETE, COMPLETE) => true
+            case (GATHERING, GATHERING) => true
+            case (NEW, NEW) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCIceGathererState): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIRTCIceTransportState {
+extend FFIRTCIceTransportState <: ToString & Equatable<FFIRTCIceTransportState> {
     public static func GET(index: Int64): FFIRTCIceTransportState {
         return match (index) {
             case 0 => CHECKING
@@ -307,9 +435,37 @@ extend FFIRTCIceTransportState {
             case NEW => 6
         }
     }
+
+    public func toString(): String {
+        return match (this) {
+            case CHECKING => "CHECKING"
+            case CLOSED => "CLOSED"
+            case COMPLETED => "COMPLETED"
+            case CONNECTED => "CONNECTED"
+            case DISCONNECTED => "DISCONNECTED"
+            case FAILED => "FAILED"
+            case NEW => "NEW"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCIceTransportState): Bool {
+        return match ((this, rhs)) {
+            case (CHECKING, CHECKING) => true
+            case (CLOSED, CLOSED) => true
+            case (COMPLETED, COMPLETED) => true
+            case (CONNECTED, CONNECTED) => true
+            case (DISCONNECTED, DISCONNECTED) => true
+            case (FAILED, FAILED) => true
+            case (NEW, NEW) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCIceTransportState): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIRTCIceRole {
+extend FFIRTCIceRole <: ToString & Equatable<FFIRTCIceRole> {
     public static func GET(index: Int64): FFIRTCIceRole {
         return match (index) {
             case 0 => UNKNOWN
@@ -326,9 +482,29 @@ extend FFIRTCIceRole {
             case CONTROLLED => 2
         }
     }
+
+    public func toString(): String {
+        return match (this) {
+            case UNKNOWN => "UNKNOWN"
+            case CONTROLLING => "CONTROLLING"
+            case CONTROLLED => "CONTROLLED"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCIceRole): Bool {
+        return match ((this, rhs)) {
+            case (UNKNOWN, UNKNOWN) => true
+            case (CONTROLLING, CONTROLLING) => true
+            case (CONTROLLED, CONTROLLED) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCIceRole): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIRTCSdpType {
+extend FFIRTCSdpType <: ToString & Equatable<FFIRTCSdpType> {
     public static func GET(index: Int64): FFIRTCSdpType {
         return match (index) {
             case 0 => OFFER
@@ -347,9 +523,31 @@ extend FFIRTCSdpType {
             case ROLLBACK => 3
         }
     }
+
+    public func toString(): String {
+        return match (this) {
+            case OFFER => "OFFER"
+            case ANSWER => "ANSWER"
+            case PRANSWER => "PRANSWER"
+            case ROLLBACK => "ROLLBACK"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCSdpType): Bool {
+        return match ((this, rhs)) {
+            case (OFFER, OFFER) => true
+            case (ANSWER, ANSWER) => true
+            case (PRANSWER, PRANSWER) => true
+            case (ROLLBACK, ROLLBACK) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCSdpType): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIBinaryType {
+extend FFIBinaryType <: ToString & Equatable<FFIBinaryType> {
     public static func GET(index: Int64): FFIBinaryType {
         return match (index) {
             case 0 => BLOB
@@ -364,9 +562,27 @@ extend FFIBinaryType {
             case ARRAYBUFFER => 1
         }
     }
+
+    public func toString(): String {
+        return match (this) {
+            case BLOB => "BLOB"
+            case ARRAYBUFFER => "ARRAYBUFFER"
+        }
+    }
+
+    public operator func ==(rhs: FFIBinaryType): Bool {
+        return match ((this, rhs)) {
+            case (BLOB, BLOB) => true
+            case (ARRAYBUFFER, ARRAYBUFFER) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIBinaryType): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIDataChannelState {
+extend FFIDataChannelState <: ToString & Equatable<FFIDataChannelState> {
     public static func GET(index: Int64): FFIDataChannelState {
         return match (index) {
             case 0 => CLOSED
@@ -385,9 +601,32 @@ extend FFIDataChannelState {
             case OPEN => 3
         }
     }
+
+    public func toString(): String {
+        return match (this) {
+            case CLOSED => "CLOSED"
+            case CLOSING => "CLOSING"
+            case CONNECTING => "CONNECTING"
+            case OPEN => "OPEN"
+        }
+    }
+
+    public operator func ==(rhs: FFIDataChannelState): Bool {
+        return match ((this, rhs)) {
+            case (CLOSED, CLOSED) => true
+            case (CLOSING, CLOSING) => true
+            case (CONNECTING, CONNECTING) => true
+            case (OPEN, OPEN) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIDataChannelState): Bool {
+        return !(this == rhs)
+    }
+
 }
 
-extend FFIRTCDtlsTransportState {
+extend FFIRTCDtlsTransportState <: ToString & Equatable<FFIRTCDtlsTransportState> {
     public static func GET(index: Int64): FFIRTCDtlsTransportState {
         return match (index) {
             case 0 => NEW
@@ -408,9 +647,32 @@ extend FFIRTCDtlsTransportState {
             case FAILED => 4
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case NEW => "NEW"
+            case CONNECTING => "CONNECTING"
+            case CONNECTED => "CONNECTED"
+            case CLOSED => "CLOSED"
+            case FAILED => "FAILED"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCDtlsTransportState): Bool {
+        return match ((this, rhs)) {
+            case (NEW, NEW) => true
+            case (CONNECTING, CONNECTING) => true
+            case (CONNECTED, CONNECTED) => true
+            case (CLOSED, CLOSED) => true
+            case (FAILED, FAILED) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCDtlsTransportState): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIRTCIceGatheringState {
+extend FFIRTCIceGatheringState <: ToString & Equatable<FFIRTCIceGatheringState> {
     public static func GET(index: Int64): FFIRTCIceGatheringState {
         return match (index) {
             case 0 => NEW
@@ -427,9 +689,28 @@ extend FFIRTCIceGatheringState {
             case COMPLETE => 2
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case NEW => "NEW"
+            case GATHERING => "GATHERING"
+            case COMPLETE => "COMPLETE"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCIceGatheringState): Bool {
+        return match ((this, rhs)) {
+            case (NEW, NEW) => true
+            case (GATHERING, GATHERING) => true
+            case (COMPLETE, COMPLETE) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCIceGatheringState): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIRTCIceConnectionState {
+extend FFIRTCIceConnectionState <: ToString & Equatable<FFIRTCIceConnectionState> {
     public static func GET(index: Int64): FFIRTCIceConnectionState {
         return match (index) {
             case 0 => CHECKING
@@ -454,9 +735,36 @@ extend FFIRTCIceConnectionState {
             case NEW => 6
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case CHECKING => "CHECKING"
+            case CLOSED => "CLOSED"
+            case COMPLETED => "COMPLETED"
+            case CONNECTED => "CONNECTED"
+            case DISCONNECTED => "DISCONNECTED"
+            case FAILED => "FAILED"
+            case NEW => "NEW"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCIceConnectionState): Bool {
+        return match ((this, rhs)) {
+            case (CHECKING, CHECKING) => true
+            case (CLOSED, CLOSED) => true
+            case (COMPLETED, COMPLETED) => true
+            case (CONNECTED, CONNECTED) => true
+            case (DISCONNECTED, DISCONNECTED) => true
+            case (FAILED, FAILED) => true
+            case (NEW, NEW) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCIceConnectionState): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIRTCSignalingState {
+extend FFIRTCSignalingState <: ToString & Equatable<FFIRTCSignalingState> {
     public static func GET(index: Int64): FFIRTCSignalingState {
         return match (index) {
             case 0 => CLOSED
@@ -479,9 +787,34 @@ extend FFIRTCSignalingState {
             case STABLE => 5
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case CLOSED => "CLOSED"
+            case HAVE_LOCAL_OFFER => "HAVE_LOCAL_OFFER"
+            case HAVE_LOCAL_PRANSWER => "HAVE_LOCAL_PRANSWER"
+            case HAVE_REMOTE_OFFER => "HAVE_REMOTE_OFFER"
+            case HAVE_REMOTE_PRANSWER => "HAVE_REMOTE_PRANSWER"
+            case STABLE => "STABLE"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCSignalingState): Bool {
+        return match ((this, rhs)) {
+            case (CLOSED, CLOSED) => true
+            case (HAVE_LOCAL_OFFER, HAVE_LOCAL_OFFER) => true
+            case (HAVE_LOCAL_PRANSWER, HAVE_LOCAL_PRANSWER) => true
+            case (HAVE_REMOTE_OFFER, HAVE_REMOTE_OFFER) => true
+            case (HAVE_REMOTE_PRANSWER, HAVE_REMOTE_PRANSWER) => true
+            case (STABLE, STABLE) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCSignalingState): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIRTCPeerConnectionState {
+extend FFIRTCPeerConnectionState <: ToString & Equatable<FFIRTCPeerConnectionState> {
     public static func GET(index: Int64): FFIRTCPeerConnectionState {
         return match (index) {
             case 0 => CLOSED
@@ -504,9 +837,34 @@ extend FFIRTCPeerConnectionState {
             case NEW => 5
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case CLOSED => "CLOSED"
+            case CONNECTED => "CONNECTED"
+            case CONNECTING => "CONNECTING"
+            case DISCONNECTED => "DISCONNECTED"
+            case FAILED => "FAILED"
+            case NEW => "NEW"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCPeerConnectionState): Bool {
+        return match ((this, rhs)) {
+            case (CLOSED, CLOSED) => true
+            case (CONNECTED, CONNECTED) => true
+            case (CONNECTING, CONNECTING) => true
+            case (DISCONNECTED, DISCONNECTED) => true
+            case (FAILED, FAILED) => true
+            case (NEW, NEW) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCPeerConnectionState): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIRTCBundlePolicy {
+extend FFIRTCBundlePolicy <: ToString & Equatable<FFIRTCBundlePolicy> {
     public static func GET(index: Int64): FFIRTCBundlePolicy {
         return match (index) {
             case 0 => BALANCED
@@ -523,9 +881,28 @@ extend FFIRTCBundlePolicy {
             case MAX_COMPAT => 2
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case BALANCED => "BALANCED"
+            case MAX_BUNDLE => "MAX_BUNDLE"
+            case MAX_COMPAT => "MAX_COMPAT"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCBundlePolicy): Bool {
+        return match ((this, rhs)) {
+            case (BALANCED, BALANCED) => true
+            case (MAX_BUNDLE, MAX_BUNDLE) => true
+            case (MAX_COMPAT, MAX_COMPAT) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCBundlePolicy): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIRTCRtcpMuxPolicy {
+extend FFIRTCRtcpMuxPolicy <: ToString & Equatable<FFIRTCRtcpMuxPolicy> {
     public static func GET(index: Int64): FFIRTCRtcpMuxPolicy {
         return match (index) {
             case 0 => REQUIRE
@@ -538,9 +915,24 @@ extend FFIRTCRtcpMuxPolicy {
             case REQUIRE => 0
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case REQUIRE => "REQUIRE"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCRtcpMuxPolicy): Bool {
+        return match ((this, rhs)) {
+            case (REQUIRE, REQUIRE) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCRtcpMuxPolicy): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIRTCIceTransportPolicy {
+extend FFIRTCIceTransportPolicy <: ToString & Equatable<FFIRTCIceTransportPolicy> {
     public static func GET(index: Int64): FFIRTCIceTransportPolicy {
         return match (index) {
             case 0 => ALL
@@ -555,9 +947,26 @@ extend FFIRTCIceTransportPolicy {
             case RELAY => 1
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case ALL => "ALL"
+            case RELAY => "RELAY"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCIceTransportPolicy): Bool {
+        return match ((this, rhs)) {
+            case (ALL, ALL) => true
+            case (RELAY, RELAY) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCIceTransportPolicy): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIDegradationPreference {
+extend FFIDegradationPreference <: ToString & Equatable<FFIDegradationPreference> {
     public static func GET(index: Int64): FFIDegradationPreference {
         return match (index) {
             case 0 => BALANCED
@@ -574,9 +983,28 @@ extend FFIDegradationPreference {
             case MAINTAIN_RESOLUTION => 2
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case BALANCED => "BALANCED"
+            case MAINTAIN_FRAMERATE => "MAINTAIN_FRAMERATE"
+            case MAINTAIN_RESOLUTION => "MAINTAIN_RESOLUTION"
+        }
+    }
+
+    public operator func ==(rhs: FFIDegradationPreference): Bool {
+        return match ((this, rhs)) {
+            case (BALANCED, BALANCED) => true
+            case (MAINTAIN_FRAMERATE, MAINTAIN_FRAMERATE) => true
+            case (MAINTAIN_RESOLUTION, MAINTAIN_RESOLUTION) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIDegradationPreference): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIRTCRtpTransceiverDirection {
+extend FFIRTCRtpTransceiverDirection <: ToString & Equatable<FFIRTCRtpTransceiverDirection> {
     public static func GET(index: Int64): FFIRTCRtpTransceiverDirection {
         return match (index) {
             case 0 => INACTIVE
@@ -597,9 +1025,32 @@ extend FFIRTCRtpTransceiverDirection {
             case STOPPED => 4
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case INACTIVE => "INACTIVE"
+            case RECVONLY => "RECVONLY"
+            case SENDONLY => "SENDONLY"
+            case SENDRECV => "SENDRECV"
+            case STOPPED => "STOPPED"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCRtpTransceiverDirection): Bool {
+        return match ((this, rhs)) {
+            case (INACTIVE, INACTIVE) => true
+            case (RECVONLY, RECVONLY) => true
+            case (SENDONLY, SENDONLY) => true
+            case (SENDRECV, SENDRECV) => true
+            case (STOPPED, STOPPED) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCRtpTransceiverDirection): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIRTCSctpTransportState {
+extend FFIRTCSctpTransportState <: ToString & Equatable<FFIRTCSctpTransportState> {
     public static func GET(index: Int64): FFIRTCSctpTransportState {
         return match (index) {
             case 0 => CONNECTING
@@ -616,9 +1067,28 @@ extend FFIRTCSctpTransportState {
             case CLOSED => 2
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case CONNECTING => "CONNECTING"
+            case CONNECTED => "CONNECTED"
+            case CLOSED => "CLOSED"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCSctpTransportState): Bool {
+        return match ((this, rhs)) {
+            case (CONNECTING, CONNECTING) => true
+            case (CONNECTED, CONNECTED) => true
+            case (CLOSED, CLOSED) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCSctpTransportState): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIRTCStatsType {
+extend FFIRTCStatsType <: ToString & Equatable<FFIRTCStatsType> {
     public static func GET(index: Int64): FFIRTCStatsType {
         return match (index) {
             case 0 => CANDIDATE_PAIR
@@ -657,9 +1127,50 @@ extend FFIRTCStatsType {
             case TRANSPORT => 13
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case CANDIDATE_PAIR => "CANDIDATE_PAIR"
+            case CERTIFICATE => "CERTIFICATE"
+            case CODEC => "CODEC"
+            case DATA_CHANNEL => "DATA_CHANNEL"
+            case INBOUND_RTP => "INBOUND_RTP"
+            case LOCAL_CANDIDATE => "LOCAL_CANDIDATE"
+            case MEDIA_PLAYOUT => "MEDIA_PLAYOUT"
+            case MEDIA_SOURCE => "MEDIA_SOURCE"
+            case OUTBOUND_RTP => "OUTBOUND_RTP"
+            case PEER_CONNECTION => "PEER_CONNECTION"
+            case REMOTE_CANDIDATE => "REMOTE_CANDIDATE"
+            case REMOTE_INBOUND_RTP => "REMOTE_INBOUND_RTP"
+            case REMOTE_OUTBOUND_RTP => "REMOTE_OUTBOUND_RTP"
+            case TRANSPORT => "TRANSPORT"
+        }
+    }
+
+    public operator func ==(rhs: FFIRTCStatsType): Bool {
+        return match ((this, rhs)) {
+            case (CANDIDATE_PAIR, CANDIDATE_PAIR) => true
+            case (CERTIFICATE, CERTIFICATE) => true
+            case (CODEC, CODEC) => true
+            case (DATA_CHANNEL, DATA_CHANNEL) => true
+            case (INBOUND_RTP, INBOUND_RTP) => true
+            case (LOCAL_CANDIDATE, LOCAL_CANDIDATE) => true
+            case (MEDIA_PLAYOUT, MEDIA_PLAYOUT) => true
+            case (MEDIA_SOURCE, MEDIA_SOURCE) => true
+            case (OUTBOUND_RTP, OUTBOUND_RTP) => true
+            case (PEER_CONNECTION, PEER_CONNECTION) => true
+            case (REMOTE_CANDIDATE, REMOTE_CANDIDATE) => true
+            case (REMOTE_INBOUND_RTP, REMOTE_INBOUND_RTP) => true
+            case (REMOTE_OUTBOUND_RTP, REMOTE_OUTBOUND_RTP) => true
+            case (TRANSPORT, TRANSPORT) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIRTCStatsType): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIrtcstatsicecandidatepairstate {
+extend FFIrtcstatsicecandidatepairstate <: ToString & Equatable<FFIrtcstatsicecandidatepairstate> {
     public static func GET(index: Int64): FFIrtcstatsicecandidatepairstate {
         return match (index) {
             case 0 => FAILED
@@ -680,9 +1191,32 @@ extend FFIrtcstatsicecandidatepairstate {
             case WAITING => 4
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case FAILED => "FAILED"
+            case FROZEN => "FROZEN"
+            case IN_PROGRESS => "IN_PROGRESS"
+            case SUCCEEDED => "SUCCEEDED"
+            case WAITING => "WAITING"
+        }
+    }
+
+    public operator func ==(rhs: FFIrtcstatsicecandidatepairstate): Bool {
+        return match ((this, rhs)) {
+            case (FAILED, FAILED) => true
+            case (FROZEN, FROZEN) => true
+            case (IN_PROGRESS, IN_PROGRESS) => true
+            case (SUCCEEDED, SUCCEEDED) => true
+            case (WAITING, WAITING) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIrtcstatsicecandidatepairstate): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIMediaStreamTrackState {
+extend FFIMediaStreamTrackState <: ToString & Equatable<FFIMediaStreamTrackState> {
     public static func GET(index: Int64): FFIMediaStreamTrackState {
         return match (index) {
             case 0 => LIVE
@@ -697,9 +1231,26 @@ extend FFIMediaStreamTrackState {
             case ENDED => 1
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case LIVE => "LIVE"
+            case ENDED => "ENDED"
+        }
+    }
+
+    public operator func ==(rhs: FFIMediaStreamTrackState): Bool {
+        return match ((this, rhs)) {
+            case (LIVE, LIVE) => true
+            case (ENDED, ENDED) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIMediaStreamTrackState): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIMediaDeviceKind {
+extend FFIMediaDeviceKind <: ToString & Equatable<FFIMediaDeviceKind> {
     public static func GET(index: Int64): FFIMediaDeviceKind {
         return match (index) {
             case 0 => AUDIOINPUT
@@ -716,9 +1267,28 @@ extend FFIMediaDeviceKind {
             case VIDEOINPUT => 2
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case AUDIOINPUT => "AUDIOINPUT"
+            case AUDIOOUTPUT => "AUDIOOUTPUT"
+            case VIDEOINPUT => "VIDEOINPUT"
+        }
+    }
+
+    public operator func ==(rhs: FFIMediaDeviceKind): Bool {
+        return match ((this, rhs)) {
+            case (AUDIOINPUT, AUDIOINPUT) => true
+            case (AUDIOOUTPUT, AUDIOOUTPUT) => true
+            case (VIDEOINPUT, VIDEOINPUT) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIMediaDeviceKind): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIMediaSourceState {
+extend FFIMediaSourceState <: ToString & Equatable<FFIMediaSourceState> {
     public static func GET(index: Int64): FFIMediaSourceState {
         return match (index) {
             case 0 => INITIALIZING
@@ -737,9 +1307,30 @@ extend FFIMediaSourceState {
             case MUTED => 3
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case INITIALIZING => "INITIALIZING"
+            case LIVE => "LIVE"
+            case ENDED => "ENDED"
+            case MUTED => "MUTED"
+        }
+    }
+
+    public operator func ==(rhs: FFIMediaSourceState): Bool {
+        return match ((this, rhs)) {
+            case (INITIALIZING, INITIALIZING) => true
+            case (LIVE, LIVE) => true
+            case (ENDED, ENDED) => true
+            case (MUTED, MUTED) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIMediaSourceState): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIVideoFacingModeEnum {
+extend FFIVideoFacingModeEnum <: ToString & Equatable<FFIVideoFacingModeEnum> {
     public static func GET(index: Int64): FFIVideoFacingModeEnum {
         return match (index) {
             case 0 => USER
@@ -758,9 +1349,30 @@ extend FFIVideoFacingModeEnum {
             case RIGHT => 3
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case USER => "USER"
+            case ENVIRONMENT => "ENVIRONMENT"
+            case LEFT => "LEFT"
+            case RIGHT => "RIGHT"
+        }
+    }
+
+    public operator func ==(rhs: FFIVideoFacingModeEnum): Bool {
+        return match ((this, rhs)) {
+            case (USER, USER) => true
+            case (ENVIRONMENT, ENVIRONMENT) => true
+            case (LEFT, LEFT) => true
+            case (RIGHT, RIGHT) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIVideoFacingModeEnum): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIVideoResizeModeEnum {
+extend FFIVideoResizeModeEnum <: ToString & Equatable<FFIVideoResizeModeEnum> {
     public static func GET(index: Int64): FFIVideoResizeModeEnum {
         return match (index) {
             case 0 => NONE
@@ -775,9 +1387,26 @@ extend FFIVideoResizeModeEnum {
             case CROP_AND_SCALE => 1
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case NONE => "NONE"
+            case CROP_AND_SCALE => "CROP_AND_SCALE"
+        }
+    }
+
+    public operator func ==(rhs: FFIVideoResizeModeEnum): Bool {
+        return match ((this, rhs)) {
+            case (NONE, NONE) => true
+            case (CROP_AND_SCALE, CROP_AND_SCALE) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIVideoResizeModeEnum): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIAudioErrorType {
+extend FFIAudioErrorType <: ToString & Equatable<FFIAudioErrorType> {
     public static func GET(index: Int64): FFIAudioErrorType {
         return match (index) {
             case 0 => INIT
@@ -796,9 +1425,30 @@ extend FFIAudioErrorType {
             case GENERAL => 3
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case INIT => "INIT"
+            case START_EXCEPTION => "START_EXCEPTION"
+            case START_STATE_MISMATCH => "START_STATE_MISMATCH"
+            case GENERAL => "GENERAL"
+        }
+    }
+
+    public operator func ==(rhs: FFIAudioErrorType): Bool {
+        return match ((this, rhs)) {
+            case (INIT, INIT) => true
+            case (START_EXCEPTION, START_EXCEPTION) => true
+            case (START_STATE_MISMATCH, START_STATE_MISMATCH) => true
+            case (GENERAL, GENERAL) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIAudioErrorType): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIAudioState {
+extend FFIAudioState <: ToString & Equatable<FFIAudioState> {
     public static func GET(index: Int64): FFIAudioState {
         return match (index) {
             case 0 => START
@@ -813,9 +1463,26 @@ extend FFIAudioState {
             case STOP => 1
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case START => "START"
+            case STOP => "STOP"
+        }
+    }
+
+    public operator func ==(rhs: FFIAudioState): Bool {
+        return match ((this, rhs)) {
+            case (START, START) => true
+            case (STOP, STOP) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIAudioState): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIScreenCaptureMode {
+extend FFIScreenCaptureMode <: ToString & Equatable<FFIScreenCaptureMode> {
     public static func GET(index: Int64): FFIScreenCaptureMode {
         return match (index) {
             case 0 => HOME_SCREEN
@@ -832,9 +1499,28 @@ extend FFIScreenCaptureMode {
             case SPECIFIED_WINDOW => 2
         }
     }
+    public func toString(): String {
+        return match (this) {
+            case HOME_SCREEN => "HOME_SCREEN"
+            case SPECIFIED_SCREEN => "SPECIFIED_SCREEN"
+            case SPECIFIED_WINDOW => "SPECIFIED_WINDOW"
+        }
+    }
+
+    public operator func ==(rhs: FFIScreenCaptureMode): Bool {
+        return match ((this, rhs)) {
+            case (HOME_SCREEN, HOME_SCREEN) => true
+            case (SPECIFIED_SCREEN, SPECIFIED_SCREEN) => true
+            case (SPECIFIED_WINDOW, SPECIFIED_WINDOW) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIScreenCaptureMode): Bool {
+        return !(this == rhs)
+    }
 }
 
-extend FFIScreenCaptureAudioFilterEnum {
+extend FFIScreenCaptureAudioFilterEnum <: ToString & Equatable<FFIScreenCaptureAudioFilterEnum> {
     public static func GET(index: Int64): FFIScreenCaptureAudioFilterEnum {
         return match (index) {
             case 0 => CURRENT_APP
@@ -849,5 +1535,21 @@ extend FFIScreenCaptureAudioFilterEnum {
             case NOTIFICATION => 1
         }
     }
-}
+    public func toString(): String {
+        return match (this) {
+            case CURRENT_APP => "CURRENT_APP"
+            case NOTIFICATION => "NOTIFICATION"
+        }
+    }
 
+    public operator func ==(rhs: FFIScreenCaptureAudioFilterEnum): Bool {
+        return match ((this, rhs)) {
+            case (CURRENT_APP, CURRENT_APP) => true
+            case (NOTIFICATION, NOTIFICATION) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: FFIScreenCaptureAudioFilterEnum): Bool {
+        return !(this == rhs)
+    }
+}

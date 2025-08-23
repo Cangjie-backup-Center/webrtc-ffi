@@ -106,8 +106,8 @@ extern "C" {
     
     void peerConnection_setLocalDescription(int64_t cpp_ptr, CJ_RTCSessionDescription description, void (*pe)(int64_t cj_id, CJ_ErrorMessage msg));
     void peerConnection_setRemoteDescription(int64_t cpp_ptr, CJ_RTCSessionDescription description, void (*pe)(int64_t cj_id, CJ_ErrorMessage msg));
-    void peerConnection_createOffer(int64_t cpp_ptr, bool iceRestart);
-    void peerConnection_createAnswer(int64_t cpp_ptr);
+    CJ_FFICreateSdpObserver_result peerConnection_createOffer(int64_t cpp_ptr, bool iceRestart);
+    CJ_FFICreateSdpObserver_result peerConnection_createAnswer(int64_t cpp_ptr);
     void peerConnection_addIceCandidate(int64_t cpp_ptr, CJ_RTCIceCandidateInit candidate); 
     void peerConnection_SetAddIceCandidate(int64_t cpp_ptr, void (*pe)(int64_t id,const  char* msg));
     

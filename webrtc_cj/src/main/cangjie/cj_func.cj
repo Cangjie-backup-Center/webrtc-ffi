@@ -81,6 +81,12 @@ public class PeerConnectionFactory <: WebrtcClass {
     public func startAecDump(fd: Int32, max_size_bytes: Int32): Bool {
         return unsafe {ffi_StartAecDump(this.getID(), fd, max_size_bytes)}
     }
+
+    public func stopAecDump() {
+        unsafe {
+            ffi_StopAecDump(this.getID())
+        }
+    }
 }
 
 public class AudioSource <: WebrtcClass {
@@ -255,11 +261,11 @@ foreign {
     func ffi_webrtc_ffiMediaStreamTrack_ToJson(ffiMediaStreamTrackPtr: Int64): CJ_ffiMediaStreamTrackJson
     func ffi_webrtc_ffiMediaStreamTrack_GetSource(ffiMediaStreamTrackPtr: Int64): Int64
 
-
+    func peerConnection_addTrack(cpp_ptr: Int64, ffiMST_ptr: Int64, streamVec: CJ_ArrayMediaStream): Int64
     func peerConnection_setLocalDescription(cpp_ptr: Int64, description: CJ_RTCSessionDescription, pe: CFunc<(Int64, CJ_ErrorMessage) -> Unit>): Unit
     func peerConnection_setRemoteDescription(cpp_ptr: Int64, description: CJ_RTCSessionDescription, pe: CFunc<(Int64, CJ_ErrorMessage) -> Unit>): Unit
-    func peerConnection_createOffer(cpp_ptr: Int64, iceRestart: Bool): Unit
-    func peerConnection_createAnswer(cpp_ptr: Int64, iceRestart: Bool): Unit
+    func peerConnection_createOffer(cpp_ptr: Int64, iceRestart: Bool): CJ_FFICreateSdpObserver_result
+    func peerConnection_createAnswer(cpp_ptr: Int64, iceRestart: Bool): CJ_FFICreateSdpObserver_result
     // func peerConnection_addIceCandidate(cpp_ptr: Int64, candidate: CJ_RTCIceCandidateInit): Unit
     // func peerConnection_set_cj_func_call_addIceCandidate_(cpp_ptr: Int64, pe: CFunc<(that: Int64, id: Int64, candidate: CJ_RTCIceCandidateInit) -> Unit>): Unit
     func peerConnection_createDataChannel(cpp_ptr: Int64, label: CString, dataChannelDict: CJ_RTCDataChannelInit): Int64
@@ -270,7 +276,7 @@ foreign {
     func peerConnection_setConfiguration(cpp_ptr: Int64, configuration: CJ_RTCConfiguration): Unit
     func peerConnection_close(cpp_ptr: Int64): Unit
     func peerConnection_setAudioRecording(cpp_ptr: Int64, recording: Bool): Unit
-    func peerConnection_setVideoRecording(cpp_ptr: Int64, playout: Bool): Unit
+    func peerConnection_setAudioPlayout(cpp_ptr: Int64, playout: Bool): Unit
 }
 //
 //public func cj_newNativeVideoRenderer(surfaceId: Int64): Int64 {

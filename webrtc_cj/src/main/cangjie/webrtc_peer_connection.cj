@@ -13,6 +13,7 @@ foreign func peerConnection_set_cj_func_call_SetOnRenegotiationNeeded_(cpp_ptr: 
 foreign func peerConnection_set_cj_func_call_SetOnStandardizedIceConnectionChange_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
 foreign func peerConnection_set_cj_func_call_SetOnIceGatheringChange_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_Event) -> Unit>): Unit
 foreign func peerConnection_set_cj_func_call_SetOnIceCandidate_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: CJ_OnIceCandidateEvent) -> Unit>): Unit
+foreign func peerConnection_SetAddIceCandidate(cpp_ptr: Int64, fn: CFunc<(id: Int64, msg: CString) -> Unit>): Unit
 
 foreign func peerConnection_GetCanTrickleIceCandidates(cpp_ptr: Int64): Bool
 foreign func peerConnection_GetSignalingState(cpp_ptr: Int64): Int64
@@ -224,8 +225,8 @@ public class RTCPeerConnection <: WebrtcClass {
     public prop iceConnectionState: Int64 {
         get() {unsafe{peerConnection_GetIceConnectionState(this.ID)}}
     }
-    public prop connectionState: Int64 {
-        get() {unsafe{peerConnection_GetConnectionState(this.ID)}}
+    public prop connectionState: FFIRTCIceConnectionState {
+        get() {FFIRTCIceConnectionState.GET(unsafe{peerConnection_GetConnectionState(this.ID)})}
     }
     public prop localDescription: Option<CJ_RTCSessionDescription> {
         get() {
@@ -326,15 +327,47 @@ public class RTCPeerConnection <: WebrtcClass {
         }
     }
 
-    public func createOffer
-    public func stopAecDump
-    public func close
-    public func setAudioPlayout
-    public func setAudioRecording
-    public func setLocalDescription
-    public func addTrack
-    public func getTransceivers
-    public func createAnswer
-    public func addIceCandidate
+    public func close(): Unit {
+        unsafe {
+            peerConnection_close(this.getID())
+        }
+    }
+
+    public func setAudioPlayout(playout: Bool): Unit{
+        unsafe {
+            peerConnection_setAudioPlayout(this.getID(), playout)
+        }
+
+    }
+
+    public func setAudioRecording(recording: Bool): Unit{
+        unsafe {
+            peerConnection_setAudioRecording(this.getID(), recording)
+        }
+    }
+
+    public func addTrack(cpp_ptr: Int64, ffiMST_ptr: Int64, streamVec: CJ_ArrayMediaStream): Int64 {
+        unsafe {
+            return peerConnection_addTrack(cpp_ptr, ffiMST_ptr, streamVec)
+        }
+    }
+
+    public func getTransceivers(cpp_ptr: Int64): CPointer<Int64> {
+        unsafe {
+            return peerConnection_getTransceivers(cpp_ptr)
+        }
+    }
+
+    public func createOffer(iceRestart!: Bool = false): CJ_FFICreateSdpObserver_result {
+        unsafe {
+            return peerConnection_createOffer(this.getID(), iceRestart)
+        }
+    }
+
+    public func createAnswer(cpp_ptr: Int64, iceRestart: Bool): CJ_FFICreateSdpObserver_result {
+        unsafe {
+            return peerConnection_createAnswer(cpp_ptr, iceRestart)
+        }
+    }
 
 }

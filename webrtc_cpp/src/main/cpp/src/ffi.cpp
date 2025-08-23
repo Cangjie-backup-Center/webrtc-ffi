@@ -291,12 +291,12 @@ void peerConnection_setRemoteDescription(int64_t cpp_ptr, CJ_RTCSessionDescripti
     ((webrtc::ffiPeerConnection*)cpp_ptr)->setRemoteDescription(description, pe);
 }
 
-void peerConnection_createOffer(int64_t cpp_ptr, bool iceRestart){
-    ((webrtc::ffiPeerConnection*)cpp_ptr)->createOffer(iceRestart);
+CJ_FFICreateSdpObserver_result peerConnection_createOffer(int64_t cpp_ptr, bool iceRestart){
+    return ((webrtc::ffiPeerConnection*)cpp_ptr)->createOffer(iceRestart);
 }
 
-void peerConnection_createAnswer(int64_t cpp_ptr){
-    ((webrtc::ffiPeerConnection*)cpp_ptr)->createAnswer();
+CJ_FFICreateSdpObserver_result peerConnection_createAnswer(int64_t cpp_ptr){
+    return ((webrtc::ffiPeerConnection*)cpp_ptr)->createAnswer();
 }
 
 int64_t peerConnection_createDataChannel(int64_t cpp_ptr, char* label, CJ_RTCDataChannelInit dataChannelDict){
