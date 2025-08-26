@@ -14,6 +14,10 @@ import ohos.ability_access_ctrl.AbilityAccessCtrl
 import std.collection.*
 import std.math.*
 import std.sync.*
+
+import stdx.serialization.serialization.*
+import stdx.encoding.json.*
+
 import std.random.Random
 import kit.AbilityKit.*
 import ohos.concurrency.launch
@@ -36,6 +40,49 @@ func getContext(): AbilityContext {
         case _ => throw Exception("can not get globalAbilityContext")
     }
 }
+
+
+
+class MessageData <: Serializable<MessageData> {
+    var sdp: ?RTCSessionDescription
+    var ice: ?RTCIceCandidateInit
+    var hasSdp: Bool = false
+
+    public init(sdp: ?RTCSessionDescription, ice: ?RTCIceCandidateInit ) {
+        this.sdp = sdp
+        this.ice = ice
+        this.hasSdp = sdp.isSome()
+    }
+
+    /* 实现 Serializable 接口的序列化方法 */
+    public func serialize(): DataModel {
+        return DataModelStruct()
+                .add(field<?RTCSessionDescription>("sdp", sdp))
+                .add(field<?RTCIceCandidateInit>("ice", ice))
+                .add(field<Bool>("hasSdp", hasSdp))
+    }
+
+    /* 实现反序列化方法 */
+    public static func deserialize(dm: DataModel): MessageData {
+        let dms = match (dm) {
+            case data: DataModelStruct => data
+            case _ => throw Exception("this data is not DataModelStruct")
+        }
+        if (Bool.deserialize(dms.get("hasSdp"))) {
+            return MessageData(
+                RTCSessionDescription.deserialize(dms.get("sdp")),
+                Option<RTCIceCandidateInit>.None,
+            )
+        }else {
+            return MessageData(
+                Option<RTCSessionDescription>.None,
+                RTCIceCandidateInit.deserialize(dms.get("ice"))
+            )
+        }
+    }
+
+}
+
 
 @Entry
 @Component

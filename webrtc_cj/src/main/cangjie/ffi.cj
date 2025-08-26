@@ -3,6 +3,8 @@
  */
 package webrtc_cj
 
+import stdx.serialization.serialization.*
+
 foreign func setThrowCangjieException(f: CFunc<(CString) -> Unit>): Unit
 
 public class Webrtc4cjException <: Exception {
@@ -404,7 +406,14 @@ public struct CJ_RTCIceCandidateInit {
     }
 }
 
-public class RTCIceCandidateInit{
+public class RTCIceCandidateInit <: Serializable<RTCIceCandidateInit> {
+
+    var isBuild_: Bool = false
+    var candidate_: String = ""
+    var sdpMLineIndex_: Int32 = 0
+    var sdpMid_: String = ""
+    var usernameFragment_: String = ""
+
     public prop isBuild: Bool {get() {this.cpp.isBuild}}
     public prop candidate: String {get() {this.cpp.candidate.toString()}}
     public prop sdpMLineIndex: Int32{get() {this.cpp.sdpMLineIndex}}
@@ -414,6 +423,12 @@ public class RTCIceCandidateInit{
 
     public init(cpp: CJ_RTCIceCandidateInit){
         this.cpp =cpp
+        this.isBuild_ = cpp.isBuild
+        this.candidate_ = cpp.candidate.toString()
+        this.sdpMLineIndex_ = cpp.sdpMLineIndex
+        this.sdpMid_ = cpp.sdpMid.toString()
+        this.usernameFragment_ = cpp.usernameFragment.toString()
+
     }
 
     public init(isBuild: Bool, candidate: String, sdpMLineIndex: Int32, sdpMid: String, usernameFragment: String) {
@@ -434,6 +449,32 @@ public class RTCIceCandidateInit{
                 LibC.free(this.cpp.usernameFragment)
             }
         }
+    }
+
+    /* 实现 Serializable 接口的序列化方法 */
+    public func serialize(): DataModel {
+        return DataModelStruct()
+                .add(field<Bool>("isBuild_", isBuild_))
+                .add(field<String>("candidate_", candidate_))
+                .add(field<Int32>("sdpMLineIndex_", sdpMLineIndex_))
+                .add(field<String>("sdpMid_", sdpMid_))
+                .add(field<String>("usernameFragment_", usernameFragment_))
+    }
+
+    /* 实现反序列化方法 JSON.*/
+    public static func deserialize(dm: DataModel): RTCIceCandidateInit {
+        let dms = match (dm) {
+            case data: DataModelStruct => data
+            case _ => throw Exception("this data is not DataModelStruct")
+        }
+        let result = RTCIceCandidateInit(
+            Bool.deserialize(dms.get("isBuild_")),
+            String.deserialize(dms.get("candidate_")),
+            Int32.deserialize(dms.get("sdpMLineIndex_")),
+            String.deserialize(dms.get("sdpMid_")),
+            String.deserialize(dms.get("usernameFragment_")),
+        )
+        return result
     }
 }
 
@@ -462,15 +503,15 @@ public struct CJ_FFICreateSdpObserver_result {
     let msg: CString = unsafe{zeroValue<CString>()}
 }
 
-public class RTCSessionDescription {
-    private var sdp_: ?String = None
-    private var RTCSdpType_: ?String = None
+public class RTCSessionDescription <: Serializable<RTCSessionDescription> {
+    private var sdp_: String = ""
+    private var RTCSdpType_: String = ""
     public prop sdp: String {
         get() {
             if (let Some(v) <- cpp) {
                 return v.sdp.toString()
             } else {
-                return sdp_.getOrThrow()
+                return sdp_
             }
         }
     }
@@ -480,7 +521,7 @@ public class RTCSessionDescription {
             if (let Some(v) <- cpp) {
                 return v.RTCSdpType.toString()
             }else {
-                return RTCSdpType_.getOrThrow()
+                return RTCSdpType_
             }
         }
     }
@@ -488,11 +529,14 @@ public class RTCSessionDescription {
     var cpp: ?CJ_RTCSessionDescription = None
     public init(cpp: CJ_RTCSessionDescription) {
         this.cpp = cpp
+        this.sdp_ = cpp.sdp.toString()
+        this.RTCSdpType_ = cpp.RTCSdpType.toString()
     }
 
     public init(sdp: String, RTCSdpType: String) {
         this.sdp_ = sdp
         this.RTCSdpType_ = RTCSdpType
+        this.cpp = CJ_RTCSessionDescription(sdp, RTCSdpType)
     }
 
     ~init() {
@@ -504,6 +548,21 @@ public class RTCSessionDescription {
                 }
             }
         }
+    }
+
+    /* 实现 Serializable 接口的序列化方法 */
+    public func serialize(): DataModel {
+        return DataModelStruct().add(field<String>("sdp_", sdp_)).add(field<String>("RTCSdpType_", RTCSdpType_))
+    }
+
+    /* 实现反序列化方法 */
+    public static func deserialize(dm: DataModel): RTCSessionDescription {
+        let dms = match (dm) {
+            case data: DataModelStruct => data
+            case _ => throw Exception("this data is not DataModelStruct")
+        }
+        let result = RTCSessionDescription(String.deserialize(dms.get("sdp_")), String.deserialize(dms.get("RTCSdpType_")))
+        return result
     }
 }
 
