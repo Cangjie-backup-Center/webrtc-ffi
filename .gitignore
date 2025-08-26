@@ -26,3 +26,4 @@
 /webrtc_cj/libs/arm64-v8a/
 *.so
 *lock*
+/log.txt
