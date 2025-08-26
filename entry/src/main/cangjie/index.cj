@@ -291,7 +291,7 @@ class EntryView {
                 case _ => match (data) {
                     case Some(value) =>
                         AppLog.error("${Index_WebRTC_TAG} websocket receive message: ${value}")
-                        if (value.toString() == "HELLO".toAsciiLower()) {
+                        if (value.toString() == "HELLO") {
                             this.setStatus("Registered with server, waiting for call")
                             this.createPeerConnection()
                         } else if (value.toString() == 'SESSION_OK') {
@@ -468,7 +468,7 @@ class EntryView {
 
     func getRandomId(): String {
         let random = Random().nextFloat64()
-        return floor(random * (9000.0 - 10.0) + 10.0).toString()
+        return Int64(floor(random * (9000.0 - 10.0) + 10.0)).toString()
     }
 
     func setStatus(text: String): Unit {

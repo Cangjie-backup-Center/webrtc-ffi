@@ -102,10 +102,10 @@ rtc::scoped_refptr<rtc::RTCCertificate> ffiPeerConnection::certificate_ = rtc::s
 
 bool CangjieToNativeIceServer(CJ_RTCIceServer cjrs, webrtc::PeerConnectionInterface::IceServer& iceServer){
     if (cjrs.urls_size) {
-        // for (int64_t i = 0; i < cjrs.urls_size; i++) {
-            // std::string tmp(cjrs.urls);
-            // iceServer.urls.push_back(tmp);
-        // }
+         for (int64_t i = 0; i < cjrs.urls_size; i++) {
+             std::string tmp(cjrs.urls[i]);
+             iceServer.urls.push_back(tmp);
+         }
     } else {
         RTC_LOG(LS_WARNING) << "urls is not string nor array";
     }

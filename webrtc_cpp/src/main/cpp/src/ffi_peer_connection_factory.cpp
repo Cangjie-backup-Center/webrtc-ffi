@@ -26,6 +26,7 @@
 #include "video_decoder_factory.h"
 #include "audio_processing_factory.h"
 #include "utils/marcos.h"
+#include <cstdint>
 
 
 namespace webrtc{
@@ -118,7 +119,7 @@ int64_t ffiPeerConnectionFactory::ffiCreatePeerConnection(CJ_RTCConfiguration co
     
     ffipc_ = new ffiPeerConnection(config, wrapper_);
     
-    return 0;
+    return (int64_t) ffipc_;
 }
 
 int64_t ffiPeerConnectionFactory::ffiCreateAudioSource(FFIAudioOptions ffi_audioOptions){

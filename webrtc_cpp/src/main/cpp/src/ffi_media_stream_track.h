@@ -29,17 +29,22 @@ public:
 
     void RemoveVideoSink(rtc::VideoSinkInterface<VideoFrame>* sink);
     void AddVideoSink(rtc::VideoSinkInterface<VideoFrame>* sink);
-    
+    char* GetKind();
+    char* GetId();
+    bool GetEnabled();
+    FFIMediaStreamTrackState GetReadyState();
+    void Stop();
     CJ_ffiMediaStreamTrackJson ToJson();
     int64_t GetSource();
-    
+    bool IsAudioTrack() const;
+    bool IsVideoTrack() const;
     rtc::scoped_refptr<MediaStreamTrackInterface> Get() const
     {
         return track_;
     }
 
 protected:
-
+    void RemoveAllVideoSinks();
 private:
     std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
     rtc::scoped_refptr<MediaStreamTrackInterface> track_;

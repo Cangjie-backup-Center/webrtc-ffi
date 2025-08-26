@@ -52,6 +52,102 @@ void ffiMediaStreamTrack::AddVideoSink(rtc::VideoSinkInterface<VideoFrame>* sink
     videoTrack->AddOrUpdateSink(sink,rtc::VideoSinkWants());
 }
 
+char* ffiMediaStreamTrack::GetKind() {
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+
+    if (!track_) {
+        CANGJIE_THROW("Illegal state");
+    }
+
+    return track_->kind().data();
+}
+char* ffiMediaStreamTrack::GetId() {
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+
+    if (!track_) {
+        CANGJIE_THROW("Illegal state");
+    }
+
+    return track_->id().data();
+}
+bool ffiMediaStreamTrack::GetEnabled() {
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+
+    if (!track_) {
+        CANGJIE_THROW("Illegal state");
+    }
+
+    return track_->enabled();
+}
+FFIMediaStreamTrackState ffiMediaStreamTrack::GetReadyState() {
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+
+    if (!track_) {
+        CANGJIE_THROW("Illegal state");
+    }
+
+    auto state = track_->state();
+    switch (state) {
+        case MediaStreamTrackInterface::kLive:
+            return FFIMediaStreamTrackState::LIVE;
+        case MediaStreamTrackInterface::kEnded:
+            return FFIMediaStreamTrackState::ENDED;
+        default:
+            break;
+    }
+
+    CANGJIE_THROW("Illegal state");
+}
+void ffiMediaStreamTrack::Stop() {
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+
+    if (!track_) {
+        CANGJIE_THROW("Illegal state");
+    }
+
+    auto state = track_->state();
+    if (state == MediaStreamTrackInterface::kEnded) {
+        RTC_LOG(LS_VERBOSE) << "The track is already ended";
+        return;
+    }
+
+    RemoveAllVideoSinks();
+
+    return;
+}
+
+bool ffiMediaStreamTrack::IsVideoTrack() const
+{
+    return (track_->kind() == MediaStreamTrackInterface::kVideoKind);
+}
+bool ffiMediaStreamTrack::IsAudioTrack() const
+{
+    return (track_->kind() == MediaStreamTrackInterface::kAudioKind);
+}
+
+
+void ffiMediaStreamTrack::RemoveAllVideoSinks()
+{
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+
+    if (!IsVideoTrack()) {
+        return;
+    }
+
+    std::set<rtc::VideoSinkInterface<VideoFrame>*> sinks;
+    {
+        UNUSED std::lock_guard<std::mutex> lock(sinksMutex_);
+        videoSinks_.swap(sinks);
+    }
+
+    auto videoTrack = static_cast<VideoTrackInterface*>(track_.get());
+    for (auto& sink : sinks) {
+        if (sink) {
+            videoTrack->RemoveSink(sink);
+        }
+    }
+}
+
 CJ_ffiMediaStreamTrackJson ffiMediaStreamTrack::ToJson(){
     CJ_ffiMediaStreamTrackJson js;
     if (track_) {

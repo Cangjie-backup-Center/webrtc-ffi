@@ -36,6 +36,8 @@ extern "C" {
     int64_t ffi_createAudioTrack(int64_t ffiPCF_int64 , char* ffi_audioId);
     int64_t ffi_createVideoSource(int64_t ffiPCF_int64 , FFICreateVideoSourceParameters fficvsp);
     int64_t ffi_createVideoTrack(int64_t ffiPCF_int64 , char* ffi_videoId);
+//     func ffiPeerConnectionFactory_ffiCreatePeerConnection(cpp_ptr: Int64, config: CJ_RTCConfiguration): Int64
+    int64_t ffiPeerConnectionFactory_ffiCreatePeerConnection (int64_t ffiPCF_int64, CJ_RTCConfiguration config);
     void ffi_SetDefault(int64_t ffiPCF_int64);
     bool ffi_StartAecDump(int64_t ffiPCF_int64, int fd, int max_size_bytes);
     void ffi_StopAecDump(int64_t ffiPCF_int64);
@@ -75,6 +77,11 @@ extern "C" {
     // webrtc::ffiMediaStreamTrack
     CJ_ffiMediaStreamTrackJson ffi_webrtc_ffiMediaStreamTrack_ToJson(int64_t ffiMediaStreamTrackPtr);
     int64_t ffi_webrtc_ffiMediaStreamTrack_GetSource(int64_t ffiMediaStreamTrackPtr);
+    char* ffiMediaStreamTrack_GetKind(int64_t cpp_ptr);
+    char* ffiMediaStreamTrack_GetId(int64_t cpp_ptr);
+    bool ffiMediaStreamTrack_GetEnabled(int64_t cpp_ptr);
+    int64_t ffiMediaStreamTrack_GetReadyState(int64_t cpp_ptr);
+    void ffiMediaStreamTrack_Stop(int64_t cpp_ptr);
 
     // peerConnection
     void peerConnection_set_class_key(int64_t cpp_ptr, int64_t classKey);  // 设置到对应的cpp类中仓颉类的randomid. 
@@ -120,13 +127,15 @@ extern "C" {
     void peerConnection_close(int64_t cpp_ptr);
     void peerConnection_setAudioRecording(int64_t cpp_ptr, bool recording);
     void peerConnection_setAudioPlayout(int64_t cpp_ptr, bool playout); 
-    
+
+    void peerConnection_CPP_FREE(int64_t cpp_ptr);
+
     // DataChannel
     void dataConnection_set_class_key(int64_t cpp_ptr, int64_t classKey);  // 设置到对应的cpp类中仓颉类的randomid.
     void dataConnection_set_cj_func_Onopen_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event event));
     void dataConnection_set_cj_func_Onclosing_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event event));
     void dataConnection_set_cj_func_Onclose_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event event));
-    void dataConnection_set_cj_func_Onmessage_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_Event event));
+    void dataConnection_set_cj_func_Onmessage_(int64_t cpp_ptr, void (*pe)(int64_t id, CJ_MessageEvent event));
     char * dataConnection_get_label_(int64_t cpp_ptr);
     bool dataConnection_get_ordered_(int64_t cpp_ptr);
     int64_t dataConnection_get_maxPacketLifeTime_(int64_t cpp_ptr);

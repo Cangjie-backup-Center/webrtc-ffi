@@ -264,7 +264,7 @@ public class RTCConfiguration {
             for (i in 0..arr1.size) {
                 arr1[i] = iceServers[i].cpp
             }
-            let arr2 = Array<CJ_RTCCertificate>(iceServers.size, repeat: zeroValue<CJ_RTCCertificate>())
+            let arr2 = Array<CJ_RTCCertificate>(certificates.size, repeat: zeroValue<CJ_RTCCertificate>())
             for (i in 0..arr2.size) {
                 arr2[i] = certificates[i].cpp
             }

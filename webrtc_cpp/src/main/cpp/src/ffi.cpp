@@ -91,6 +91,10 @@ int64_t ffi_createVideoTrack(int64_t ffiPCF_int64 , char* ffi_videoId) {
     return ffiMST;
 }
 
+int64_t ffiPeerConnectionFactory_ffiCreatePeerConnection (int64_t ffiPCF_int64, CJ_RTCConfiguration config){
+    return ((webrtc::ffiPeerConnectionFactory*)ffiPCF_int64)->ffiCreatePeerConnection(config);
+}
+
 void ffi_SetDefault(int64_t ffiPCF_int64) {
     webrtc::ffiPeerConnectionFactory* ffiPCF_ptr = (webrtc::ffiPeerConnectionFactory*)ffiPCF_int64;
     webrtc::ffiPeerConnectionFactory::SetDefault(ffiPCF_ptr);
@@ -192,6 +196,22 @@ CJ_ffiMediaStreamTrackJson ffi_webrtc_ffiMediaStreamTrack_ToJson(int64_t ffiMedi
 
 int64_t ffi_webrtc_ffiMediaStreamTrack_GetSource(int64_t ffiMediaStreamTrackPtr){
     return ((webrtc::ffiMediaStreamTrack*)ffiMediaStreamTrackPtr)->GetSource();
+}
+
+char* ffiMediaStreamTrack_GetKind(int64_t cpp_ptr) {
+    return ((webrtc::ffiMediaStreamTrack*)cpp_ptr)->GetKind();
+}
+char* ffiMediaStreamTrack_GetId(int64_t cpp_ptr) {
+    return ((webrtc::ffiMediaStreamTrack*)cpp_ptr)->GetId();
+}
+bool ffiMediaStreamTrack_GetEnabled(int64_t cpp_ptr){
+    return ((webrtc::ffiMediaStreamTrack*)cpp_ptr)->GetEnabled();
+}
+int64_t ffiMediaStreamTrack_GetReadyState(int64_t cpp_ptr) {
+    return (int64_t)((webrtc::ffiMediaStreamTrack*)cpp_ptr)->GetReadyState();
+}
+void ffiMediaStreamTrack_Stop(int64_t cpp_ptr){
+    ((webrtc::ffiMediaStreamTrack*)cpp_ptr)->Stop();
 }
 
 void peerConnection_set_class_key(int64_t cpp_ptr, int64_t classKey){
@@ -341,6 +361,10 @@ void peerConnection_setAudioRecording(int64_t cpp_ptr, bool recording){
 
 void peerConnection_setAudioPlayout(int64_t cpp_ptr, bool playout){
     ((webrtc::ffiPeerConnection*)cpp_ptr)->setAudioPlayout(playout);
+}
+
+void peerConnection_CPP_FREE(int64_t cpp_ptr){
+    delete ((webrtc::ffiPeerConnection*)cpp_ptr);
 }
 
 // dataConnection
