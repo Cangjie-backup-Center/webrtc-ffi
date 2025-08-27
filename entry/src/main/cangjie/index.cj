@@ -42,10 +42,9 @@ func getContext(): AbilityContext {
 }
 
 
-
-class MessageData <: Serializable<MessageData> {
-    var sdp: ?RTCSessionDescription
-    var ice: ?RTCIceCandidateInit
+class CJ_MessageData <: Serializable<CJ_MessageData> {
+    public var sdp: ?RTCSessionDescription
+    public var ice: ?RTCIceCandidateInit
     var hasSdp: Bool = false
 
     public init(sdp: ?RTCSessionDescription, ice: ?RTCIceCandidateInit ) {
@@ -63,18 +62,18 @@ class MessageData <: Serializable<MessageData> {
     }
 
     /* 实现反序列化方法 */
-    public static func deserialize(dm: DataModel): MessageData {
+    public static func deserialize(dm: DataModel): CJ_MessageData {
         let dms = match (dm) {
             case data: DataModelStruct => data
             case _ => throw Exception("this data is not DataModelStruct")
         }
         if (Bool.deserialize(dms.get("hasSdp"))) {
-            return MessageData(
+            return CJ_MessageData(
                 RTCSessionDescription.deserialize(dms.get("sdp")),
                 Option<RTCIceCandidateInit>.None,
             )
         }else {
-            return MessageData(
+            return CJ_MessageData(
                 Option<RTCSessionDescription>.None,
                 RTCIceCandidateInit.deserialize(dms.get("ice"))
             )
@@ -347,20 +346,26 @@ class EntryView {
                         } else if (value.toString() == 'OFFER_REQUEST') {
                             this.sendOffer()
                         } else {
-                            if (value
-                                .toString()
-                                .startsWith('ERROR')) {
+                            if (value.toString().startsWith('ERROR')) {
                                 this.handleIncomingError(value.toString())
                             } else {
                                 try {
-                                    let msgData: String = value.toString()
-                                    if (msgData.contains("sdp")) {
-                                        this.receiveSdp(msgData)
-                                    } else if (msgData.contains("ice")) {
-                                        this.receiveIce(msgData)
-                                    } else {
-                                        AppLog.error('${Index_WebRTC_TAG} receive unknown message: ' + value.toString())
-                                        this.handleIncomingError("Unknown incoming JSON")
+                                    match (value) {
+                                        case STRING_DATA(stringdata) =>
+                                            var jv = JsonValue.fromStr(stringdata)
+                                            var dm = DataModel.fromJson(jv)
+                                            let msgData: CJ_MessageData = CJ_MessageData.deserialize(dm)
+                                            if (msgData.sdp.isSome()) {
+                                                this.receiveSdp(msgData)
+                                            } else if (msgData.ice.isSome()) {
+                                                this.receiveIce(msgData)
+                                            }
+                                        case ARRAY_DATA(arraydata) =>
+                                            AppLog.error('${Index_WebRTC_TAG} receive unknown message: ' + value.toString())
+                                            this.handleIncomingError("Unknown incoming JSON")
+                                        case _ =>
+                                            AppLog.error('${Index_WebRTC_TAG} receive unknown message: ' + value.toString())
+                                            this.handleIncomingError("Unknown incoming JSON")
                                     }
                                 } catch (error: Exception) {
                                     AppLog.error('${Index_WebRTC_TAG} receive invalid message: ' + value.toString())
@@ -779,22 +784,29 @@ class EntryView {
         }
     }
 
-    func receiveSdp(sdp: String): Future<Unit> {
+
+    func receiveSdp(cjmsg: CJ_MessageData): Future<Unit> {
         spawn {
-            CJ_RTCSessionDescription.GET(sdp)
+            // CJ_RTCSessionDescription.GET()
+            var sdp = cjmsg.sdp.getOrThrow()
+             if (sdp.RTCSdpType == "offer") {
+                    AppLog.info("receive offer")
+                    this.pc?.setRemoteDescription(sdp, {_ =>})
+                    this.setStatus("Remote SDP set")
+                    this.sendAnswer()
+             } else if (sdp.RTCSdpType == "answer") {
+                    AppLog.info("receive answer")
+                    this.pc?.setRemoteDescription(sdp, {_ =>})
+                    this.setStatus("Remote SDP set");
+             }
         }
     }
 
-    func receiveIce(ice: String): Future<Unit> {
+    func receiveIce(cjmsg: CJ_MessageData): Future<Unit> {
         spawn {
             AppLog.error('${Index_WebRTC_TAG} receive icecandidate')
-            try {
-                let iceCandidate = RTCIceCandidateInit(true, ice, 0, "", "")
-                this.pc.getOrThrow().addIceCandidate(iceCandidate)
-            } catch(e: Exception) {
-                AppLog.error("${Index_WebRTC_TAG} add ice candidate error: ${e}" )
-                this.setError(e.message)
-            }
+            var ice = cjmsg.ice.getOrThrow()
+            this.pc?.addIceCandidate(ice)
         }
     }
 }
