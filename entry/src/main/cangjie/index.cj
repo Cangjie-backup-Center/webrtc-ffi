@@ -490,7 +490,11 @@ class EntryView {
                 match (offer.result) {
                     case Ok(v) =>
                         this.pc?.setLocalDescription(v)
-                        this.sendMessage(v.sdp)
+//                        this.sendMessage(v.sdp)
+                        let cjmsg = CJ_MessageData(v, Option<RTCIceCandidateInit>.None)
+                        let dm = cjmsg.serialize()
+                        let obj: JsonValue = dm.toJson()
+                        this.sendMessage(obj.toString())
                     case Error(str) => AppLog.error("${Index_WebRTC_TAG} str: ${str}")
                 }
              } catch (e: Exception) {
@@ -569,14 +573,14 @@ class EntryView {
 
     func prepareLocalMedia(): Future<Unit> {
         spawn {
-            if (this.localAudioTrack?.getID() == 0) {
+            if (this.localAudioTrack.isNone()) {
                 var ffiao: FFIAudioOptions = FFIAudioOptions()
                 ffiao.noise_suppression = true
                 ffiao.echo_cancellation = true
                 this.localAudioSource = AudioSource(this.pcf.getOrThrow(), ffiao)
                 this.localAudioTrack = AudioTrack(this.pcf.getOrThrow(), "audio")
             }
-            if (this.localCameraVideoTrack?.getID() == 0) {
+            if (this.localCameraVideoTrack.isNone()) {
                 let ffiCVSP: CreateVideoSourceParameters = CreateVideoSourceParameters(1280.0, 720.0, "user", false)
                 this.localVideoSource = VideoSource(this.pcf.getOrThrow(), ffiCVSP)
                 this.localCameraVideoTrack = VideoTrack(this.pcf.getOrThrow(), "video")
@@ -606,16 +610,16 @@ class EntryView {
                 }
             )
 
-            let audioTracks = this.displayMediaStream.getAudioTracks()
-            if (audioTracks.size > 0) {
+//            let audioTracks = this.displayMediaStream.getAudioTracks()
+//            if (audioTracks.size > 0) {
                 // TODO.. 考虑暂不加
                 // this.localAudioTrack = audioTracks[0]
                 // AppLog.error('${Index_WebRTC_TAG} audioTrack: ${this.localAudioTrack}')
-            }
-            if (audioTracks.size > 1) {
+//            }
+//            if (audioTracks.size > 1) {
                 // this.localAudioTrack2 = audioTracks[1]
                 // AppLog.error('${Index_WebRTC_TAG} audioTrack2: ${this.localAudioTrack}')
-            }
+//            }
         }
     }
 

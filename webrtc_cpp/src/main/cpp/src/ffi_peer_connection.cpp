@@ -69,6 +69,9 @@ protected:
 class FFICreateSdpObserver : public CreateSessionDescriptionObserver {
 public:
     CJ_FFICreateSdpObserver_result ret;
+    std::mutex mtx;
+    std::condition_variable cv;
+
     FFICreateSdpObserver() { 
         ret = CJ_FFICreateSdpObserver_result{};
     }
@@ -76,6 +79,7 @@ public:
 protected:
     void OnSuccess(SessionDescriptionInterface* desc) override
     {
+        UNUSED std::unique_lock<std::mutex> lock(mtx);
         RTC_LOG(LS_INFO) << "CreateSessionDescription success: " << desc;
 
         std::string sdp;
@@ -84,17 +88,23 @@ protected:
         std::string sdptype = webrtc::SdpTypeToString(desc->GetType());
 
         this->ret.isFail = false;
-        this->ret.sdp = sdp.data();
-        this->ret.RTCSdpType = sdptype.data();
+        this->ret.sdp = new char[sdp.size()+1];
+        this->ret.RTCSdpType = new char[sdptype.size()+1];
+        strncpy(this->ret.sdp, sdp.data(), sdp.size());
+        strncpy(this->ret.RTCSdpType, sdptype.data(), sdptype.size());
         delete desc;
+        cv.notify_one();
     }
 
     void OnFailure(RTCError error) override
     {
+        UNUSED std::unique_lock<std::mutex> lock(mtx);
         RTC_LOG(LS_ERROR) << "CreateSessionDescription failed";
-        const char* message = error.message();
         this->ret.isFail = true;
-        strcpy(this->ret.msg , message);
+        std::string str = error.message();
+        this->ret.msg = new char[str.size()+1];
+        strncpy(this->ret.msg , str.data(), str.size());
+        cv.notify_one();
     }
 };
 
@@ -792,7 +802,10 @@ CJ_FFICreateSdpObserver_result ffiPeerConnection::createOffer(bool iceRestart){
     PeerConnectionInterface::RTCOfferAnswerOptions options;
     options.ice_restart = iceRestart;
     auto observer = rtc::make_ref_counted<FFICreateSdpObserver>();
+    auto obs = observer.get();
+    std::unique_lock<std::mutex> lock(obs->mtx);
     pc_->CreateOffer(observer.get(), options);
+    obs->cv.wait(lock);
     return observer.get()->ret;
 }
 
