@@ -359,33 +359,6 @@ public class RTCPeerConnection <: WebrtcClass {
     }
 
 
-/**
-    public class FFICreateSdpObserverResult {
-    public prop result: WebrtcResult<RTCSessionDescription> {
-        get() {
-             result_
-        }
-    }
-    var result_: WebrtcResult<RTCSessionDescription>
-    public init(cpp: CJ_FFICreateSdpObserver_result) {
-        if (cpp.isFail) {
-            this.result_ = WebrtcResult.Error(cpp.msg.toString())
-         } else {
-            this.result_ = WebrtcResult.Ok(RTCSessionDescription(cpp.sdp.toString(), cpp.RTCSdpType.toString()))
-         }
-        unsafe {
-            if (cpp.isFail) {
-                LibC.free(cpp.msg)
-            } else {
-                LibC.free(cpp.sdp)
-                LibC.free(cpp.RTCSdpType)
-            }
-        }
-    }
-}
-
-    */
-
     public func createOffer(iceRestart!: Bool = false): WebrtcResult<RTCSessionDescription> {
         unsafe {
             let cpp = peerConnection_createOffer(this.getID(), iceRestart)
@@ -405,9 +378,21 @@ public class RTCPeerConnection <: WebrtcClass {
     }
 
 
-    public func createAnswer(iceRestart!: Bool = false): FFICreateSdpObserverResult {
+    public func createAnswer(iceRestart!: Bool = false): WebrtcResult<RTCSessionDescription>  {
         unsafe {
-            return FFICreateSdpObserverResult(peerConnection_createAnswer(this.getID(), iceRestart))
+            let cpp = peerConnection_createAnswer(this.getID(), iceRestart)
+            let result = if (cpp.isFail) {
+                WebrtcResult<RTCSessionDescription>.Error(cpp.msg.toString())
+            } else {
+                WebrtcResult<RTCSessionDescription>.Ok(RTCSessionDescription(cpp.sdp.toString(), cpp.RTCSdpType.toString()))
+            }
+            if (cpp.isFail) {
+                LibC.free(cpp.msg)
+            } else {
+                LibC.free(cpp.sdp)
+                LibC.free(cpp.RTCSdpType)
+            }
+            return result
         }
     }
 

@@ -115,7 +115,7 @@ class EntryView {
     private var pc: ?RTCPeerConnection = Option<RTCPeerConnection>.None
     private var recvChannel: ?RTCDataChannel = Option<RTCDataChannel>.None
     private var sendChannel: ?RTCDataChannel = Option<RTCDataChannel>.None
-    private var displayMediaStream: MediaStream = MediaStream(-1)
+    private var displayMediaStream: MediaStream = MediaStream()
     private var mediaDevices: MediaDevices = MediaDevices()
     private var onDataChannelMessageReceived: (RTCDataChannel, MessageEvent) -> Unit = {pc, event =>}
     private var localCameraVideoTrack: ?VideoTrack = Option<VideoTrack>.None
@@ -593,7 +593,7 @@ class EntryView {
     }
 
     func prepareDisplayMedia(): Unit {
-        if (this.displayMediaStream.getID() == 0) {
+        if (this.displayMediaStream.isNone()) {
             var captureVideo: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(CJ_MediaTrackConstraintSet(width: 720.0, height: 1280.0, ohosScreenCaptureAudioFilter: "current-app"))
             var captureAudio: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(true)
             var captureohosSystemAudio: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(true)
@@ -775,11 +775,14 @@ class EntryView {
             try {
                 let desc = this.pc.getOrThrow().createAnswer()
     //            AppLog.error('${Index_WebRTC_TAG} Success to create answer: ${desc}')
-                match (desc.result) {
+                match (desc) {
                     case Ok(v) =>
                         this.pc?.setLocalDescription(v)
+                        let cjmsg = CJ_MessageData(v, Option<RTCIceCandidateInit>.None)
+                        let dm = cjmsg.serialize()
+                        let obj: JsonValue = dm.toJson()
                         this.setStatus("Sending SDP answer")
-                        this.sendMessage(this.pc.getOrThrow().localDescription.sdp)
+                        this.sendMessage(obj.toString())
                     case Error(str) => AppLog.error("${Index_WebRTC_TAG} str: ${str}")
                 }
             } catch (e: Exception) {

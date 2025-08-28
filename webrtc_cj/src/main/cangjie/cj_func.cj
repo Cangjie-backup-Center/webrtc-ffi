@@ -40,13 +40,22 @@ sealed abstract class WebrtcClass {
         WebRtcGlobal.OBJECT_POOL.add(id, that)
     }
 
-//   TODO 释放资源
-//    ~init() {
-//
-//    }
+    protected init(that: WebrtcClass) {
+        this.ID = -1
+    }
 
-    public func getID(): Int64{
+    func getID(): Int64{
         return ID
+    }
+
+    public func isNone(): Bool {
+        return this.ID == -1
+    }
+
+    protected func checkThis():Unit {
+        if (isNone()) {
+            throw NoneValueException("The C++class corresponding to class is empty")
+        }
     }
 }
 
@@ -152,7 +161,12 @@ public class MediaStream <: WebrtcClass {
         super(id, this)
     }
 
+    public init() {
+        super(this)
+    }
+
     public func getTracks(): Array<MediaStreamTrack> {
+        checkThis()
         unsafe {
             let ret:CJ_ReturnArray = ffi_webrtc_FFIMediaStream_GetTracks(this.ID)
             let arr = Array<MediaStreamTrack>(ret.size, repeat: unsafe {zeroValue<MediaStreamTrack>()})
@@ -164,6 +178,7 @@ public class MediaStream <: WebrtcClass {
     }
 
     public func getAudioTracks(): Array<MediaStreamTrack> {
+        checkThis()
         unsafe {
             let ret:CJ_ReturnArray = ffi_webrtc_FFIMediaStream_GetAudioTracks(this.ID)
             let arr = Array<MediaStreamTrack>(ret.size, repeat: unsafe {zeroValue<MediaStreamTrack>()})

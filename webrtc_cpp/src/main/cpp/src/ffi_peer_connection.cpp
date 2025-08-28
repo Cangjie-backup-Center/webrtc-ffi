@@ -812,8 +812,11 @@ CJ_FFICreateSdpObserver_result ffiPeerConnection::createOffer(bool iceRestart){
 CJ_FFICreateSdpObserver_result ffiPeerConnection::createAnswer() {
     RTC_LOG(LS_INFO) << __FUNCTION__;
     auto observer = rtc::make_ref_counted<FFICreateSdpObserver>();
+    auto obs = observer.get();
+    std::unique_lock<std::mutex> lock(obs->mtx);
     PeerConnectionInterface::RTCOfferAnswerOptions options;
     pc_->CreateAnswer(observer.get(), options);
+    obs->cv.wait(lock);
     return observer.get()->ret;
 }
 

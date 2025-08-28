@@ -85,51 +85,40 @@ struct CJ_RTCIceCandidate {
 }
 
 public class RTCIceCandidate {
-    public prop undefined: Bool {get() {this.cpp.undefined}}
-    public prop candidate: String {get() {this.cpp.candidate.toString()}}
-    public prop sdpMid: String {get() {this.cpp.sdpMid.toString()}}
-    public prop sdpMLineIndex: Int64 {get() {this.cpp.sdpMLineIndex}}
-    public prop foundation: String {get() {this.cpp.foundation.toString()}}
-    public prop component: Int64 {get() {this.cpp.component}}
-    public prop priority: Int64 {get() {this.cpp.priority}}
-    public prop address: String {get() {this.cpp.address.toString()}}
-    public prop iceProtocol: String {get() {this.cpp.iceProtocol.toString()}}
-    public prop port: Int64 {get() {this.cpp.port}}
-    public prop iceCandidateType: Int64 {get() {this.cpp.iceCandidateType}}
-    public prop iceTcpCandidateType: String {get() {this.cpp.iceTcpCandidateType.toString()}}
-    public prop relatedAddress: String {get() {this.cpp.relatedAddress.toString()}}
-    public prop relatedPort: Int64 {get() {this.cpp.relatedPort}}
-    public prop usernameFragment: String {get() {this.cpp.usernameFragment.toString()}}
-//    public prop adapterType: String {get() {this.cpp.adapterType.toString()}}
-//    public prop serverUrl: String {get() {this.cpp.serverUrl.toString()}}
-    var cpp: CJ_RTCIceCandidate
+    public var candidate: String
+    public var sdpMid: String
+    public var sdpMLineIndex: Int64
+    public var foundation: String
+    public var component: Int64
+    public var priority: Int64
+    public var address: String
+    public var iceProtocol: String
+    public var port: Int64
+    public var iceCandidateType: Int64
+    public var iceTcpCandidateType: String
+    public var relatedAddress: String
+    public var relatedPort: Int64
+    public var usernameFragment: String
     init(cpp: CJ_RTCIceCandidate) {
-        this.cpp = cpp
-    }
-    ~init() {
-        unsafe {
-            if (!this.cpp.undefined) {
-                LibC.free(this.cpp.candidate)
-                LibC.free(this.cpp.sdpMid)
-                LibC.free(this.cpp.foundation)
-                LibC.free(this.cpp.address)
-                LibC.free(this.cpp.iceProtocol)
-                LibC.free(this.cpp.iceTcpCandidateType)
-                LibC.free(this.cpp.relatedAddress)
-                LibC.free(this.cpp.usernameFragment)
-                LibC.free(this.cpp.adapterType)
-                LibC.free(this.cpp.serverUrl)
-            }
-        }
+        this.candidate = cpp.candidate.toString()
+        this.sdpMid = cpp.sdpMid.toString()
+        this.sdpMLineIndex = cpp.sdpMLineIndex
+        this.foundation = cpp.foundation.toString()
+        this.component = cpp.component
+        this.priority = cpp.priority
+        this.address = cpp.address.toString()
+        this.iceProtocol = cpp.iceProtocol.toString()
+        this.port = cpp.port
+        this.iceCandidateType = cpp.iceCandidateType
+        this.iceTcpCandidateType = cpp.iceTcpCandidateType.toString()
+        this.relatedAddress = cpp.relatedAddress.toString()
+        this.relatedPort = cpp.relatedPort
+        this.usernameFragment = cpp.usernameFragment.toString()
     }
 
     @OverflowWrapping
-    public func toJson(): ?RTCIceCandidateInit {
-        if (undefined) {
-            return None
-        } else {
-            return RTCIceCandidateInit(true, candidate, Int32(sdpMLineIndex), sdpMid, usernameFragment)
-        }
+    public func toJson(): RTCIceCandidateInit {
+        return RTCIceCandidateInit(true, candidate, Int32(sdpMLineIndex), sdpMid, usernameFragment)
     }
 }
 
@@ -139,22 +128,15 @@ struct CJ_RTCPeerConnectionIceEvent {
     let candidate: CJ_RTCIceCandidate = unsafe {zeroValue<CJ_RTCIceCandidate>()}
 }
 
-
 public class RTCPeerConnectionIceEvent {
-    public prop TYPE: String {get(){this.cpp.TYPE.toString()}}
+    public var TYPE: String = ""
     public var candidate: ?RTCIceCandidate = None
     public var url: ?String = None
-    let cpp: CJ_RTCPeerConnectionIceEvent
     init(cpp: CJ_RTCPeerConnectionIceEvent) {
-        this.cpp = cpp
-        if(!this.cpp.candidate.undefined) {
-            this.candidate = RTCIceCandidate(this.cpp.candidate)
-            this.url = this.cpp.candidate.serverUrl.toString()
-        }
-    }
-    ~init() {
-        unsafe {
-            LibC.free(this.cpp.TYPE)
+        if(!cpp.candidate.undefined) {
+            this.candidate = RTCIceCandidate(cpp.candidate)
+            this.url = cpp.candidate.serverUrl.toString()
+            this.TYPE = cpp.TYPE.toString()
         }
     }
 }
