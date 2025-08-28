@@ -566,33 +566,3 @@ public class RTCSessionDescription <: Serializable<RTCSessionDescription> {
     }
 }
 
-
-
-public class FFICreateSdpObserverResult {
-    public prop result: WebrtcResult<RTCSessionDescription> {
-        get() {
-             if (this.cpp.isFail) {
-                return WebrtcResult.Error(this.cpp.msg.toString())
-             } else {
-                return WebrtcResult.Ok(RTCSessionDescription(this.cpp.sdp.toString(), this.cpp.RTCSdpType.toString()))
-             }
-        }
-    }
-
-    let cpp: CJ_FFICreateSdpObserver_result
-    public init(cpp: CJ_FFICreateSdpObserver_result) {
-        this.cpp = cpp
-    }
-
-    ~init() {
-        unsafe {
-            if (this.cpp.isFail) {
-                LibC.free(this.cpp.msg)
-            } else {
-                LibC.free(this.cpp.sdp)
-                LibC.free(this.cpp.RTCSdpType)
-            }
-        }
-    }
-
-}

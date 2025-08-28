@@ -487,7 +487,7 @@ class EntryView {
              try {
                 let offer = this.pc.getOrThrow().createOffer()
                 // AppLog.error("${Index_WebRTC_TAG} createOffer: ${offer}")
-                match (offer.result) {
+                match (offer) {
                     case Ok(v) =>
                         this.pc?.setLocalDescription(v)
 //                        this.sendMessage(v.sdp)
