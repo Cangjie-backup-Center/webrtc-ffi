@@ -84,7 +84,7 @@ struct CJ_RTCIceCandidate {
     let serverUrl: CString = unsafe {zeroValue<CString>()}
 }
 
-public class RTCIceCandidate {
+public class RTCIceCandidate <: Serializable<RTCIceCandidate> {
     public var candidate: String
     public var sdpMid: String
     public var sdpMLineIndex: Int64
@@ -116,9 +116,75 @@ public class RTCIceCandidate {
         this.usernameFragment = cpp.usernameFragment.toString()
     }
 
-    @OverflowWrapping
-    public func toJson(): RTCIceCandidateInit {
-        return RTCIceCandidateInit(true, candidate, Int32(sdpMLineIndex), sdpMid, usernameFragment)
+
+    init(candidate: String, sdpMid: String, sdpMLineIndex: Int64, foundation: String, component: Int64, priority: Int64, address: String, iceProtocol: String, port: Int64, iceCandidateType: Int64, iceTcpCandidateType: String, relatedAddress: String, relatedPort: Int64, usernameFragment: String) {
+        this.candidate = candidate
+        this.sdpMid = sdpMid
+        this.sdpMLineIndex = sdpMLineIndex
+        this.foundation = foundation
+        this.component = component
+        this.priority = priority
+        this.address = address
+        this.iceProtocol = iceProtocol
+        this.port = port
+        this.iceCandidateType = iceCandidateType
+        this.iceTcpCandidateType = iceTcpCandidateType
+        this.relatedAddress = relatedAddress
+        this.relatedPort = relatedPort
+        this.usernameFragment = usernameFragment
+    }
+
+//    @OverflowWrapping
+//    public func toJson(): RTCIceCandidateInit {
+//        return RTCIceCandidateInit(true, candidate, Int32(sdpMLineIndex), sdpMid, usernameFragment)
+//    }
+
+     /* 实现 Serializable 接口的序列化方法 */
+    public func serialize(): DataModel {
+        return DataModelStruct().add(field<String>("candidate", candidate))
+                                .add(field<String>("sdpMid", sdpMid))
+                                .add(field<Int64>("sdpMLineIndex", sdpMLineIndex))
+                                .add(field<String>("foundation", foundation))
+                                .add(field<Int64>("component", component))
+                                .add(field<Int64>("priority", priority))
+                                .add(field<String>("address", address))
+                                .add(field<String>("iceProtocol", iceProtocol))
+                                .add(field<Int64>("port", port))
+                                .add(field<Int64>("iceCandidateType", iceCandidateType))
+                                .add(field<String>("iceTcpCandidateType", iceTcpCandidateType))
+                                .add(field<String>("relatedAddress", relatedAddress))
+                                .add(field<Int64>("relatedPort", relatedPort))
+                                .add(field<String>("usernameFragment", usernameFragment))
+    }
+
+    public func toRTCIceCandidateInit(): RTCIceCandidateInit {
+        //     public init(isBuild: Bool, candidate: String, sdpMLineIndex: Int32, sdpMid: String, usernameFragment: String) {
+        return RTCIceCandidateInit(true, this.candidate, Int32(this.sdpMLineIndex), this.sdpMid, this.usernameFragment)
+    }
+
+    /* 实现反序列化方法 */
+    public static func deserialize(dm: DataModel): RTCIceCandidate {
+        let dms = match (dm) {
+            case data: DataModelStruct => data
+            case _ => throw Exception("this data is not DataModelStruct")
+        }
+        let result = RTCIceCandidate(
+                            String.deserialize(dms.get("candidate")),
+                            String.deserialize(dms.get("sdpMid")),
+                            Int64.deserialize(dms.get("sdpMLineIndex")),
+                            String.deserialize(dms.get("foundation")),
+                            Int64.deserialize(dms.get("component")),
+                            Int64.deserialize(dms.get("priority")),
+                            String.deserialize(dms.get("address")),
+                            String.deserialize(dms.get("iceProtocol")),
+                            Int64.deserialize(dms.get("port")),
+                            Int64.deserialize(dms.get("iceCandidateType")),
+                            String.deserialize(dms.get("iceTcpCandidateType")),
+                            String.deserialize(dms.get("relatedAddress")),
+                            Int64.deserialize(dms.get("relatedPort")),
+                            String.deserialize(dms.get("usernameFragment"))
+                )
+        return result
     }
 }
 
@@ -165,7 +231,7 @@ public class RTCTrackEvent {
     public RTCTrackEvent( TYPE: String,  streams: Array<Int64>, MediaStreamTrack_ptr: Int64, RtpReceiver_ptr: Int64, RtpTransceiver_ptr: Int64) {
         this.TYPE = TYPE
         this.streams = streams
-        this.track = MediaTrack(MediaStreamTrack_ptr)
+        this.track = VideoTrack(MediaStreamTrack_ptr)
         this.transceiver = RtpTransceiver(RtpTransceiver_ptr)
     }
 }

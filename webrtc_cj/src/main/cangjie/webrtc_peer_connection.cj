@@ -300,7 +300,7 @@ public class RTCPeerConnection <: WebrtcClass {
     public func setRemoteDescription(description: RTCSessionDescription, pe: (ErrorMessage) -> Unit): Unit {
         unsafe {
             this.setRemoteDescription_callback_ = pe;
-            peerConnection_setLocalDescription(this.ID, description.cpp.getOrThrow(), {id: Int64, msg: CJ_ErrorMessage =>
+            peerConnection_setRemoteDescription(this.ID, description.cpp.getOrThrow(), {id: Int64, msg: CJ_ErrorMessage =>
                 let obj = GetObject<RTCPeerConnection>(id)
                 obj.setRemoteDescription_callback_(ErrorMessage(msg))
             })
@@ -380,7 +380,7 @@ public class RTCPeerConnection <: WebrtcClass {
 
     public func createAnswer(iceRestart!: Bool = false): WebrtcResult<RTCSessionDescription>  {
         unsafe {
-            let cpp = peerConnection_createAnswer(this.getID(), iceRestart)
+            let cpp = peerConnection_createAnswer(this.getID())
             let result = if (cpp.isFail) {
                 WebrtcResult<RTCSessionDescription>.Error(cpp.msg.toString())
             } else {

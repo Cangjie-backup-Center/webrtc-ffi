@@ -44,17 +44,15 @@ namespace webrtc {
                               int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack)); 
             
     
-            void getDisplayMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video, 
+            int64_t getDisplayMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video, 
                                  CJ_TO_CPP_DisplayMediaStreamOptions* audio, 
-                                 CJ_TO_CPP_DisplayMediaStreamOptions* systemAudio, 
-                                 int64_t id,  
-                                void (*pe)(int64_t that, int64_t localVideoTrack));
+                                 CJ_TO_CPP_DisplayMediaStreamOptions* systemAudio
+                                 );
           
         private:
             void getUserMedia(MediaTrackConstraints video, MediaTrackConstraints audio, int64_t id, 
                               void (*pe)(int64_t that, int64_t localVideoTrack)); 
-            void getDisplayMedia(MediaTrackConstraints video, MediaTrackConstraints audio, MediaTrackConstraints systemAudio, int64_t id,  
-                                            void (*pe)(int64_t that, int64_t localVideoTrack));// return MediaStream*
+            int64_t getDisplayMedia(MediaTrackConstraints video, MediaTrackConstraints audio, MediaTrackConstraints systemAudio);// return MediaStream*
         protected:
             rtc::scoped_refptr<AudioTrackInterface> CreateAudioTrack(std::string* errorMessage);
             rtc::scoped_refptr<AudioTrackInterface> CreateSystemAudioTrack(std::shared_ptr<SystemAudioReceiver> systemAudioReceiver, std::string* errorMessage);

@@ -99,12 +99,14 @@ namespace webrtc {
         if (dataChannel_->state() != DataChannelInterface::kOpen) {
             CANGJIE_THROW("Datachannel state is not open");
         }
-        dataChannel_->SendAsync(DataBuffer(rtc::CopyOnWriteBuffer((uint8_t*)data, size), true), [&](RTCError err) {
+        void* ptr = malloc(size);
+        memcpy(ptr, data, size);
+        dataChannel_->SendAsync(DataBuffer(rtc::CopyOnWriteBuffer((uint8_t*)ptr, size), true), [&](RTCError err) {
             if (!err.ok()) {
                 RTC_LOG(LS_ERROR) << "send array buffer error: " << err.type() << ", " << err.message();
             }
-            delete data;
-            data = nullptr;
+            free(ptr);
+            ptr = nullptr;
         });
     }
 

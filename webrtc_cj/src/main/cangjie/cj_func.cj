@@ -107,7 +107,12 @@ public class AudioSource <: WebrtcClass {
 //    }
 }
 
-public class MediaTrack <: MediaStreamTrack {
+public class VideoTrack <: MediaStreamTrack {
+
+    public init(pcf: PeerConnectionFactory, tag: String) {
+        super( unsafe {ffi_createVideoTrack(pcf.ID,LibC.mallocCString(tag))}, this)
+    }
+
     public init(id: Int64) {
         super(id, this)
     }
@@ -127,18 +132,8 @@ public class VideoSource <: WebrtcClass {
 
 }
 
-public class VideoTrack <: WebrtcClass {
-
-    public init(pcf: PeerConnectionFactory, tag: String) {
-        super( unsafe {ffi_createVideoTrack(pcf.ID,LibC.mallocCString(tag))}, this)
-    }
-
-//    public func createVideoTrackID(pcf: PeerConnectionFactory, tag: CString) {
-//        this.ID = cj_createVideoTrack(pcf.ID, tag)
-//    }
-}
-
 public open class MediaStreamTrack <: WebrtcClass {
+
     protected  init(id: Int64, t:MediaStreamTrack) {
         super(id, t)
     }
@@ -171,7 +166,7 @@ public class MediaStream <: WebrtcClass {
             let ret:CJ_ReturnArray = ffi_webrtc_FFIMediaStream_GetTracks(this.ID)
             let arr = Array<MediaStreamTrack>(ret.size, repeat: unsafe {zeroValue<MediaStreamTrack>()})
             for (i in 0..ret.size) {
-                arr[i] = MediaTrack(ret.ptr.read(i))
+                arr[i] = VideoTrack(ret.ptr.read(i))
             }
             return arr
         }
@@ -183,7 +178,7 @@ public class MediaStream <: WebrtcClass {
             let ret:CJ_ReturnArray = ffi_webrtc_FFIMediaStream_GetAudioTracks(this.ID)
             let arr = Array<MediaStreamTrack>(ret.size, repeat: unsafe {zeroValue<MediaStreamTrack>()})
             for (i in 0..ret.size) {
-                arr[i] = MediaTrack(ret.ptr.read(i))
+                arr[i] = VideoTrack(ret.ptr.read(i))
             }
             return arr
         }
@@ -194,7 +189,7 @@ public class MediaStream <: WebrtcClass {
             let ret:CJ_ReturnArray = ffi_webrtc_FFIMediaStream_GetVideoTracks(this.ID)
             let arr = Array<MediaStreamTrack>(ret.size, repeat: unsafe {zeroValue<MediaStreamTrack>()})
             for (i in 0..ret.size) {
-                arr[i] = MediaTrack(ret.ptr.read(i))
+                arr[i] = VideoTrack(ret.ptr.read(i))
             }
             return arr
         }
@@ -203,24 +198,15 @@ public class MediaStream <: WebrtcClass {
 
 
 public class MediaDevices <: WebrtcClass {
-    var call: Option<(mediaStream: MediaStream) -> Unit> = None
     public init() {
         super(unsafe {ffi_webrtc_mediaDevices_create()}, this)
     }
 
     public func getDisplayMedia(video: CJ_TO_CPP_DisplayMediaStreamOptions,
                                 audio:CJ_TO_CPP_DisplayMediaStreamOptions,
-                                systemAudio:CJ_TO_CPP_DisplayMediaStreamOptions, callback: (mediaStream: MediaStream) -> Unit): Unit {
-        this.call = callback
-        let f : CFunc<(that: Int64, localVideoTrack: Int64) -> Unit> = {id: Int64, localVideoTrack: Int64 =>
-            let that: MediaDevices = ((WebRtcGlobal.map.get(id) ?? return) as MediaDevices) ?? return
-            let track = MediaStream(localVideoTrack)
-            if (let Some(v) <- that.call) {
-                v(track)
-            }
-        }
+                                systemAudio:CJ_TO_CPP_DisplayMediaStreamOptions): MediaStream {
         unsafe {
-            ffi_webrtc_mediaDevices_getDisplayMedia(this.ID, video, audio,systemAudio, this.randomid, f)
+             return MediaStream(ffi_webrtc_mediaDevices_getDisplayMedia(this.ID, video, audio,systemAudio))
         }
     }
 }
@@ -258,11 +244,9 @@ foreign {
     func ffi_webrtc_mediaDevices_create(): Int64
     func ffi_webrtc_mediaDevices_getDisplayMedia(mediaDevicesPtr: Int64, video: CJ_TO_CPP_DisplayMediaStreamOptions,
                                                         audio:CJ_TO_CPP_DisplayMediaStreamOptions,
-                                                        systemAudio:CJ_TO_CPP_DisplayMediaStreamOptions,
-                                                        id: Int64, pe: CFunc<(that: Int64, localVideoTrack: Int64) -> Unit>): Int64
+                                                        systemAudio:CJ_TO_CPP_DisplayMediaStreamOptions): Int64
     func ffi_webrtc_mediaDevices_getUserMedia(mediaDevicesPtr: Int64, video: CJ_TO_CPP_DisplayMediaStreamOptions,
-                                                        audio:CJ_TO_CPP_DisplayMediaStreamOptions,
-                                                        id: Int64, pe: CFunc<(that: Int64, localVideoTrack: Int64) -> Unit>): Int64
+                                                        audio:CJ_TO_CPP_DisplayMediaStreamOptions): Int64  // TODO
     func ffi_webrtc_mediaDevices_enumerateDevices(mediaDevicesPtr: Int64): CJ_ReturnEnumerateDevicesInfo
     func ffi_webrtc_mediaDevices_getSupportedConstraints(mediaDevicesPtr: Int64): Int64
     // webrtc::FFIMediaStream
@@ -280,7 +264,7 @@ foreign {
     func peerConnection_setLocalDescription(cpp_ptr: Int64, description: CJ_RTCSessionDescription, pe: CFunc<(Int64, CJ_ErrorMessage) -> Unit>): Unit
     func peerConnection_setRemoteDescription(cpp_ptr: Int64, description: CJ_RTCSessionDescription, pe: CFunc<(Int64, CJ_ErrorMessage) -> Unit>): Unit
     func peerConnection_createOffer(cpp_ptr: Int64, iceRestart: Bool): CJ_FFICreateSdpObserver_result
-    func peerConnection_createAnswer(cpp_ptr: Int64, iceRestart: Bool): CJ_FFICreateSdpObserver_result
+    func peerConnection_createAnswer(cpp_ptr: Int64): CJ_FFICreateSdpObserver_result
     func peerConnection_addIceCandidate(cpp_ptr: Int64, candidate: CJ_RTCIceCandidateInit): Unit
     // func peerConnection_set_cj_func_call_addIceCandidate_(cpp_ptr: Int64, pe: CFunc<(that: Int64, id: Int64, candidate: CJ_RTCIceCandidateInit) -> Unit>): Unit
     func peerConnection_createDataChannel(cpp_ptr: Int64, label: CString, dataChannelDict: CJ_RTCDataChannelInit): Int64

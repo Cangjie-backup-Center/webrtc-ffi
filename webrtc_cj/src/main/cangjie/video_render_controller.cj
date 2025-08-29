@@ -38,9 +38,9 @@ public class VideoRenderController <: XComponentController {
         renderer = unsafe {ffi_newNativeVideoRenderer(Int64.parse(mySurfaceId))}
     }
 
-    public func setVideoTrack(mst : VideoTrack): Unit {
-        unsafe {ffi_setVideoTrack(renderer, mst.getID())}
-    }
+//    public func setVideoTrack(mst : VideoTrack): Unit {
+//        unsafe {ffi_setVideoTrack(renderer, mst.getID())}
+//    }
 
     public func setVideoTrack(mst : MediaStreamTrack): Unit {
         unsafe {ffi_setVideoTrack(renderer, mst.getID())}

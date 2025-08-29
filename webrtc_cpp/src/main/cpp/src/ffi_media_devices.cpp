@@ -163,10 +163,9 @@ void FFIMediaDevices::getUserMedia(MediaTrackConstraints video, MediaTrackConstr
 }
 
 
-void FFIMediaDevices::getDisplayMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video, 
+int64_t FFIMediaDevices::getDisplayMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video, 
                                       CJ_TO_CPP_DisplayMediaStreamOptions* audio, 
-                                      CJ_TO_CPP_DisplayMediaStreamOptions* systemAudio, 
-                                      int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack)){
+                                      CJ_TO_CPP_DisplayMediaStreamOptions* systemAudio){
     MediaTrackConstraints audio_;
     MediaTrackConstraints systemAudio_;
     MediaTrackConstraints video_;
@@ -230,12 +229,11 @@ void FFIMediaDevices::getDisplayMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video
         constraints.Initialize(basic, advanced);
         systemAudio_ = constraints;
     }
-    getDisplayMedia(video_, audio_, systemAudio_, id, pe);
+    return getDisplayMedia(video_, audio_, systemAudio_);
 }
 
 
-void FFIMediaDevices::getDisplayMedia(MediaTrackConstraints video, MediaTrackConstraints audio, MediaTrackConstraints systemAudio, int64_t id,  
-                                            void (*pe)(int64_t that, int64_t localVideoTrack)){
+int64_t FFIMediaDevices::getDisplayMedia(MediaTrackConstraints video, MediaTrackConstraints audio, MediaTrackConstraints systemAudio){
 
     audioConstraints_ = std::move(audio);
     systemAudioConstraints_ = std::move(systemAudio);
@@ -247,7 +245,7 @@ void FFIMediaDevices::getDisplayMedia(MediaTrackConstraints video, MediaTrackCon
     if (!systemAudioConstraints_.IsNull()) {
         if (videoConstraints_.IsNull()) {
             CANGJIE_THROW("System audio should not be enabled individually");
-            return;
+            return 0;
         }
 
         // Use default options
@@ -258,7 +256,7 @@ void FFIMediaDevices::getDisplayMedia(MediaTrackConstraints video, MediaTrackCon
             display_media_stream_->AddTrack(audioTrack);
         } else {
             CANGJIE_THROW(errorMessage);
-            return;
+            return 0;
         }
     }
 
@@ -272,20 +270,21 @@ void FFIMediaDevices::getDisplayMedia(MediaTrackConstraints video, MediaTrackCon
         }
     }
     
-    cj_func_call_back1_ = pe; // cangjie func
-    Cangjie_CallBack(new CallbackData{this, id},
-                     [](uv_work_t *work) {
-        CallbackData* t = static_cast<CallbackData *>(work->data);
-        FFIMediaDevices* that = t->md;
-        that->ffiDisplayMediaStream_ = new FFIMediaStream(that->factory_, that->display_media_stream_);
-        if(that->cj_func_call_back1_) {
-            that->cj_func_call_back1_(t->id, (int64_t)that->ffiDisplayMediaStream_); // call cangjie func 
-        }
-    }, 
-    [](uv_work_t *work, int status) {
-        free(work->data);
-    });
-    return;
+//    cj_func_call_back1_ = pe; // cangjie func
+//    Cangjie_CallBack(new CallbackData{this, id},
+//                     [](uv_work_t *work) {
+//        CallbackData* t = static_cast<CallbackData *>(work->data);
+//        FFIMediaDevices* that = t->md;
+//        that->ffiDisplayMediaStream_ = new FFIMediaStream(that->factory_, that->display_media_stream_);
+//        if(that->cj_func_call_back1_) {
+//            that->cj_func_call_back1_(t->id, (int64_t)that->ffiDisplayMediaStream_); // call cangjie func 
+//        }
+//    }, 
+//    [](uv_work_t *work, int status) {
+//        free(work->data);
+//    });
+    this->ffiDisplayMediaStream_ = new FFIMediaStream(this->factory_, this->display_media_stream_);
+    return (int64_t)this->ffiDisplayMediaStream_;
 }
 
 // DisplayMedia

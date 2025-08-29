@@ -3,7 +3,7 @@
  */
 package webrtc_cj
 
-import stdx.serialization.serialization.*
+internal import stdx.serialization.serialization.*
 
 foreign func setThrowCangjieException(f: CFunc<(CString) -> Unit>): Unit
 
@@ -434,6 +434,11 @@ public class RTCIceCandidateInit <: Serializable<RTCIceCandidateInit> {
     public init(isBuild: Bool, candidate: String, sdpMLineIndex: Int32, sdpMid: String, usernameFragment: String) {
         if (isBuild) {
             unsafe {
+                this.isBuild_ = isBuild
+                this.candidate_ = candidate
+                this.sdpMLineIndex_ = sdpMLineIndex
+                this.sdpMid_ = sdpMid
+                this.usernameFragment_ = usernameFragment
                 this.cpp = CJ_RTCIceCandidateInit(isBuild, LibC.mallocCString(candidate), sdpMLineIndex, LibC.mallocCString(sdpMid), LibC.mallocCString(usernameFragment))
             }
         } else {
