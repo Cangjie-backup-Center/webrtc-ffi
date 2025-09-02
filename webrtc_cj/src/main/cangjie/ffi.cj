@@ -166,11 +166,6 @@ public struct CJ_RTCSessionDescription {
     }
 }
 
-
-//typedef struct{
-//    int64_t rtcErrorDetailType;
-//    const char* msg;
-//}CJ_ErrorMessage;
 @C
 struct CJ_ErrorMessage {
     let rtcErrorDetailType: Int64 = 0
