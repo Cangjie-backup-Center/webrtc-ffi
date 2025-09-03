@@ -1,7 +1,7 @@
 [ffi]
   [ffi.c]
     [ffi.c.webrtc_cpp]
-      path = "../webrtc_cpp/build/default/intermediates/cmake/default/obj/arm64-v8a."
+      path = "../webrtc_cpp/build/default/intermediates/cmake/default/obj/arm64-v8a"
 
 [package]
   compile-option = "--dy-std "
