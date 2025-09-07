@@ -42,17 +42,15 @@ public:
 
     void copyVauleCreateAudioSource(FFIAudioOptions ffi_audioOptions);
     void copyVauleCreateAudioTrack(std::string ffi_id);
-    void copyVauleCreateVideoSource(FFICreateVideoSourceParameters ffi_videoSource);
     void copyVauleCreateVideoTrack(std::string ffi_videoId);
 
-    FFICreateVideoSourceParameters getCreateVideosSource();
     rtc::scoped_refptr<OhosVideoTrackSource> getVideoSource();
     rtc::scoped_refptr<VideoTrackInterface> getVideoTrack();
 
     int64_t ffiCreatePeerConnection(CJ_RTCConfiguration config);
     int64_t ffiCreateAudioSource(FFIAudioOptions ffi_audioOptions);
     int64_t ffiCreateAudioTrack(std::string ffi_audioId_str);
-    int64_t ffiCreateVideoSource(FFICreateVideoSourceParameters ffi_videoSource);
+    int64_t ffiCreateVideoSource(CJ_TO_CPP_DisplayMediaStreamOptions ffi_videoSource, bool isScreencast);
     int64_t ffiCreateVideoTrack(std::string ffi_videoId_str);
 
     std::shared_ptr<PeerConnectionFactoryWrapper> GetWrapper() const
@@ -86,7 +84,6 @@ private:
     rtc::scoped_refptr<VideoTrackInterface> videoTrack_;
     rtc::scoped_refptr<AudioTrackInterface> audioTrack_;
 
-    FFICreateVideoSourceParameters createVideosSource_;
     std::string audioId_;
     std::string videoId_;
     FFIAudioOptions audioOptions_;
@@ -97,18 +94,21 @@ private:
 
 };
 
-void ffiVideoReceiveParameters(FFICreateVideoSourceParameters createVideosSource,MediaTrackConstraints& nativeTrackConstraints);
-bool ffiValidateAndCopyConstraintSet(FFICreateVideoSourceParameters createVideosSource, NakedValueDisposition nakedTreatment , MediaTrackConstraintSet& trackConstraints,std::string& errorMessage);
+void ffiVideoReceiveParameters(CJ_TO_CPP_DisplayMediaStreamOptions createVideosSource,MediaTrackConstraints& nativeTrackConstraints);
+bool ffiValidateAndCopyConstraintSet(CJ_TO_CPP_DisplayMediaStreamOptions createVideosSource, NakedValueDisposition nakedTreatment , MediaTrackConstraintSet& trackConstraints,std::string& errorMessage);
 
 bool ffiValidateAndCopyConstraint(char* ffiCreateVideoSourceChar, NakedValueDisposition nakedTreatment, StringConstraint& constraint,std::string& errorMessage);
 void ffiValidateAndCopyConstraint(double ffiCreateVideoSourceDouble, NakedValueDisposition nakedTreatment, LongConstraint& constraint);
+void ffiValidateAndCopyConstraint(double ffiCreateVideoSourceDouble, NakedValueDisposition nakedTreatment, DoubleConstraint& constraint);
 
 void ffiCopyLongConstraint(double value,NakedValueDisposition nakedTreatment, LongConstraint& constraint);
+void ffiCopyDoubleConstraint(double value,NakedValueDisposition nakedTreatment, DoubleConstraint& constraint);
+
 bool ffiValidateAndCopyStringConstraint(char* ffiCreateVideoSourceChar, NakedValueDisposition nakedTreatment, StringConstraint& constraint,std::string& errorMessage);
 bool ffiValidateStringConstraint(char* ffiCreateVideoSourceChar, std::string& errorMessage);
 
 bool ffiValidateAndCopyConstraintSetExtension(CJ_MediaTrackConstraintSet cjMediaTrackConstraintSet, NakedValueDisposition nakedTreatment, MediaTrackConstraintSet& trackConstraints, std::string& errorMessage);
-bool ffiValidateAndCopyConstraintSet(CJ_MediaTrackConstraintSet cjMediaTrackConstraintSet, NakedValueDisposition nakedTreatment, MediaTrackConstraintSet& trackConstraints, std::string& errorMessage);
+bool ffiValidateAndCopyConstraintSet(CJ_TO_CPP_DisplayMediaStreamOptions cjMediaTrackConstraintSet, NakedValueDisposition nakedTreatment, MediaTrackConstraintSet& trackConstraints, std::string& errorMessage);
 void ffiValidateAndCopyConstraint(bool ffiCreateVideoSourceBool, NakedValueDisposition nakedTreatment, BooleanConstraint& constraint);
 void ffiValidateAndCopyBooleanConstraint(bool ffiCreateVideoSourceBool, NakedValueDisposition nakedTreatment, BooleanConstraint& constraint);
 

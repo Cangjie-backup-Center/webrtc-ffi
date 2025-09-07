@@ -590,8 +590,8 @@ class EntryView {
                 this.localAudioTrack = AudioTrack(this.pcf.getOrThrow(), "audio")
             }
             if (this.localCameraVideoTrack.isNone()) {
-                let ffiCVSP: CreateVideoSourceParameters = CreateVideoSourceParameters(1280.0, 720.0, "user", false)
-                this.localVideoSource = VideoSource(this.pcf.getOrThrow(), ffiCVSP)
+                var ffiCVSP: CJ_TO_CPP_DisplayMediaStreamOptions =  CJ_TO_CPP_DisplayMediaStreamOptions(CJ_MediaTrackConstraintSet(width:1280.0, height:720.0, facingMode:"user"))
+                this.localVideoSource = VideoSource(this.pcf.getOrThrow(), ffiCVSP, false)
                 this.localCameraVideoTrack = VideoTrack(this.pcf.getOrThrow(), "video")
                 this.mXComponentController1.newNativeVideoRenderer()
                 this.mXComponentController1.setVideoTrack(this.localCameraVideoTrack.getOrThrow())

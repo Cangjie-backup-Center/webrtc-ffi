@@ -82,7 +82,7 @@ void FFIMediaDevices::getUserMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video,
     } else {
         std::string errorMessage;
         MediaTrackConstraintSet basic;
-        if (!ffiValidateAndCopyConstraintSet(video->obj,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
+        if (!ffiValidateAndCopyConstraintSet(*video,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
             LOGI("Failed to parse track constraints: ", errorMessage.c_str());
             video_ = MediaTrackConstraints();
         }
@@ -103,7 +103,7 @@ void FFIMediaDevices::getUserMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video,
     } else { 
         std::string errorMessage;
         MediaTrackConstraintSet basic;
-        if (!ffiValidateAndCopyConstraintSet(audio->obj,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
+        if (!ffiValidateAndCopyConstraintSet(*audio,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
             LOGI("Failed to parse track constraints: ", errorMessage.c_str());
             audio_ = MediaTrackConstraints();
         }
@@ -180,7 +180,7 @@ int64_t FFIMediaDevices::getDisplayMedia(CJ_TO_CPP_DisplayMediaStreamOptions* vi
     } else {
         std::string errorMessage;
         MediaTrackConstraintSet basic;
-        if (!ffiValidateAndCopyConstraintSet(video->obj,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
+        if (!ffiValidateAndCopyConstraintSet(*video,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
             LOGI("Failed to parse track constraints: ", errorMessage.c_str());
             video_ = MediaTrackConstraints();
         }
@@ -200,7 +200,7 @@ int64_t FFIMediaDevices::getDisplayMedia(CJ_TO_CPP_DisplayMediaStreamOptions* vi
     } else {
         std::string errorMessage;
         MediaTrackConstraintSet basic;
-        if (!ffiValidateAndCopyConstraintSet(audio->obj,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
+        if (!ffiValidateAndCopyConstraintSet(*audio,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
             LOGI("Failed to parse track constraints: ", errorMessage.c_str());
             audio_ = MediaTrackConstraints();
         }
@@ -220,7 +220,7 @@ int64_t FFIMediaDevices::getDisplayMedia(CJ_TO_CPP_DisplayMediaStreamOptions* vi
     } else {
         std::string errorMessage;
         MediaTrackConstraintSet basic;
-        if (!ffiValidateAndCopyConstraintSet(systemAudio->obj,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
+        if (!ffiValidateAndCopyConstraintSet(*systemAudio,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
             LOGI("Failed to parse track constraints: ", errorMessage.c_str());
             systemAudio_ = MediaTrackConstraints();
         }

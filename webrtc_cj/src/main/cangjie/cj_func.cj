@@ -126,8 +126,8 @@ public class AudioTrack <: MediaStreamTrack {
 }
 
 public class VideoSource <: WebrtcClass {
-    public init(pcf: PeerConnectionFactory, ffiCVSP: CreateVideoSourceParameters) {
-        super(unsafe{ffi_createVideoSource(pcf.ID, ffiCVSP.cpp)}, this)
+    public init(pcf: PeerConnectionFactory, ffiCVSP: CJ_TO_CPP_DisplayMediaStreamOptions, isScreen: Bool) {
+        super(unsafe{ffi_createVideoSource(pcf.ID, ffiCVSP, isScreen)}, this)
     }
 
 }
@@ -226,7 +226,7 @@ foreign {
     func ffi_newPeerConnectionFactory(ffiADM_int64: Int64, ffiHVEF_int64: Int64 , ffiHVDF_int64: Int64): Int64
     func ffi_createAudioSource(ffiPCF_int64: Int64, ffiao: FFIAudioOptions): Int64
     func ffi_createAudioTrack(ffiPCF_int64: Int64, ffi_audioId: CString): Int64
-    func ffi_createVideoSource(ffiPCF_int64: Int64, ffiCVSP: FFICreateVideoSourceParameters): Int64
+    func ffi_createVideoSource(ffiPCF_int64: Int64, ffiCVSP: CJ_TO_CPP_DisplayMediaStreamOptions, isScreen: Bool): Int64
     func ffi_createVideoTrack(ffiPCF_int64: Int64, ffi_videoId: CString): Int64
     func ffi_SetDefault(ffiPCF_int64: Int64): Unit
     func ffi_StartAecDump(ffiPCF_int64: Int64, fd: Int32, max_size_bytes: Int32): Bool

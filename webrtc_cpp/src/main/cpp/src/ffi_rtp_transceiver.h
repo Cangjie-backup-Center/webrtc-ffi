@@ -26,6 +26,7 @@ public:
         if (!factory || !pc || !transceiver) {
             CANGJIE_THROW("Invalid argument");
         }
+        return new ffiRtpTransceiver(factory, pc, transceiver);
     } 
     
     ffiRtpTransceiver(std::shared_ptr<PeerConnectionFactoryWrapper> factory, 

@@ -79,9 +79,9 @@ int64_t ffi_createAudioTrack(int64_t ffiPCF_int64, char* ffi_audioId) {
     return ffiPCF_ptr->ffiCreateAudioTrack(ffi_id_str);
 }
 
-int64_t ffi_createVideoSource(int64_t ffiPCF_int64 , FFICreateVideoSourceParameters fficvsp) {
+int64_t ffi_createVideoSource(int64_t ffiPCF_int64 , CJ_TO_CPP_DisplayMediaStreamOptions fficvsp, bool isScreencast) {
     webrtc::ffiPeerConnectionFactory* ffiPCF_ptr = (webrtc::ffiPeerConnectionFactory*)ffiPCF_int64;
-    return ffiPCF_ptr->ffiCreateVideoSource(fficvsp);
+    return ffiPCF_ptr->ffiCreateVideoSource(fficvsp, isScreencast);
 } 
 
 int64_t ffi_createVideoTrack(int64_t ffiPCF_int64 , char* ffi_videoId) {

@@ -96,16 +96,7 @@ void ffiPeerConnectionFactory::copyVauleCreateVideoTrack(std::string ffi_videoId
     videoId_ = ffi_videoId;
 }
 
-void ffiPeerConnectionFactory::copyVauleCreateVideoSource(FFICreateVideoSourceParameters ffi_videoSource){
-    createVideosSource_.width = ffi_videoSource.width;
-    createVideosSource_.height = ffi_videoSource.height;
-    createVideosSource_.facingMode = ffi_videoSource.facingMode;
-    createVideosSource_.isScreencast = ffi_videoSource.isScreencast;
-}
 
-FFICreateVideoSourceParameters ffiPeerConnectionFactory::getCreateVideosSource(){
-    return createVideosSource_; 
-}
 
 rtc::scoped_refptr<OhosVideoTrackSource> ffiPeerConnectionFactory::getVideoSource(){
     return videoSource_;
@@ -125,6 +116,7 @@ int64_t ffiPeerConnectionFactory::ffiCreatePeerConnection(CJ_RTCConfiguration co
 int64_t ffiPeerConnectionFactory::ffiCreateAudioSource(FFIAudioOptions ffi_audioOptions){
     copyVauleCreateAudioSource(ffi_audioOptions);
     cricket::AudioOptions options;
+
     options.echo_cancellation = audioOptions_.echo_cancellation;
     options.noise_suppression = audioOptions_.noise_suppression;
 
@@ -150,26 +142,39 @@ int64_t ffiPeerConnectionFactory::ffiCreateAudioTrack(std::string ffi_audioId_st
     return 0;
 }
 
-int64_t ffiPeerConnectionFactory::ffiCreateVideoSource(FFICreateVideoSourceParameters ffi_videoSource){
-    copyVauleCreateVideoSource(ffi_videoSource);
-
-    std::unique_ptr<VideoCapturer> videoCapturer;
-    CameraCaptureSettings selectedSetting;
-    std::string failedConstraintName;
+int64_t ffiPeerConnectionFactory::ffiCreateVideoSource(CJ_TO_CPP_DisplayMediaStreamOptions ffi_videoSource, bool isScreencast){
     MediaTrackConstraints video;
-
-    bool isScreencast = false;
-    ffiVideoReceiveParameters(this->getCreateVideosSource(),video);
-
-    if (!SelectSettingsForVideo(CameraEnumerator::GetDevices(), 
-                                video, kDefaultWidth, kDefaultHeight, kDefaultFrameRate,
-                                selectedSetting, failedConstraintName))
-    {
-        LOGI("SelectSettingsForVideo fail");
-        return 0;
+    if (true) {
+        ffiVideoReceiveParameters(ffi_videoSource,video);
+    } else {
+        video.Initialize();
     }
 
-    videoCapturer = CameraCapturer::Create(selectedSetting.deviceId, selectedSetting.profile);
+    std::unique_ptr<VideoCapturer> videoCapturer;
+    if (isScreencast) {
+        ScreenCaptureOptions options;
+        GetScreenCaptureOptionsFromConstraints(video, options);
+        videoCapturer = ScreenCapturer::Create(std::move(options));
+        if (!videoCapturer){
+            CANGJIE_THROW("Create ScreenCapturer fail");
+        }
+    } else {
+        CameraCaptureSettings selectedSetting;
+        std::string failedConstraintName;
+        if (!SelectSettingsForVideo(CameraEnumerator::GetDevices(), 
+                                video, kDefaultWidth, kDefaultHeight, kDefaultFrameRate,
+                                selectedSetting, failedConstraintName))
+        {
+            CANGJIE_THROW("SelectSettingsForVideo fail");
+            return 0;
+        }
+
+        videoCapturer = CameraCapturer::Create(selectedSetting.deviceId, selectedSetting.profile);
+        if (!videoCapturer) {
+            CANGJIE_THROW("Create CameraCapturer fail");
+        }
+    }
+    
     videoSource_ = wrapper_->CreateVideoSource(std::move(videoCapturer));
     videoSourcePtr_ = &videoSource_;
 
@@ -215,10 +220,10 @@ void ffiPeerConnectionFactory::SetDefault(ffiPeerConnectionFactory* pcf){
 }
 
 
-void ffiVideoReceiveParameters(FFICreateVideoSourceParameters createVideosSource,MediaTrackConstraints& video){
+void ffiVideoReceiveParameters(CJ_TO_CPP_DisplayMediaStreamOptions createVideosSource,MediaTrackConstraints& video){
     std::string errorMessage;
     MediaTrackConstraintSet basic;
-    ffiValidateAndCopyConstraintSet(createVideosSource, NakedValueDisposition::kTreatAsIdeal , basic , errorMessage);
+    ffiValidateAndCopyConstraintSet(createVideosSource, NakedValueDisposition::kTreatAsIdeal, basic, errorMessage);
 
     std::vector<MediaTrackConstraintSet> advanced; 
     video.Initialize(basic, advanced);
@@ -237,8 +242,14 @@ bool ffiValidateAndCopyConstraint(char* ffiCreateVideoSourceChar, NakedValueDisp
 }
 
 void ffiValidateAndCopyConstraint(double ffiCreateVideoSourceDouble, NakedValueDisposition nakedTreatment, LongConstraint& constraint){
-    if(ffiCreateVideoSourceDouble != 0 && NapiMediaConstraints::IsConstraintSupported(constraint.GetName())){
+    if(ffiCreateVideoSourceDouble != 0.0 && NapiMediaConstraints::IsConstraintSupported(constraint.GetName())){
         ffiCopyLongConstraint(ffiCreateVideoSourceDouble,nakedTreatment,constraint);
+    }
+}
+
+void ffiValidateAndCopyConstraint(double ffiCreateVideoSourceDouble, NakedValueDisposition nakedTreatment,DoubleConstraint& constraint){
+    if(ffiCreateVideoSourceDouble != 0.0 && NapiMediaConstraints::IsConstraintSupported(constraint.GetName())){
+        ffiCopyDoubleConstraint(ffiCreateVideoSourceDouble,nakedTreatment,constraint);
     }
 }
 
@@ -248,6 +259,17 @@ void ffiCopyLongConstraint(double value,NakedValueDisposition nakedTreatment, Lo
             constraint.SetIdeal(value);
             break;
     
+        case NakedValueDisposition::kTreatAsExact:
+            constraint.SetExact(value);
+            break;
+    }
+}
+
+void ffiCopyDoubleConstraint(double value,NakedValueDisposition nakedTreatment, DoubleConstraint& constraint){
+    switch (nakedTreatment){
+        case NakedValueDisposition::kTreatAsIdeal:
+            constraint.SetIdeal(value);
+            break;
         case NakedValueDisposition::kTreatAsExact:
             constraint.SetExact(value);
             break;
@@ -279,16 +301,6 @@ bool ffiValidateStringConstraint(char* ffiCreateVideoSourceChar, std::string& er
     return ret_ValidateString;
 }
 
-bool ffiValidateAndCopyConstraintSet(FFICreateVideoSourceParameters createVideosSource, NakedValueDisposition nakedTreatment , MediaTrackConstraintSet& trackConstraints,std::string& errorMessage){
-    ffiValidateAndCopyConstraint(createVideosSource.width,nakedTreatment,trackConstraints.width);
-    ffiValidateAndCopyConstraint(createVideosSource.height,nakedTreatment,trackConstraints.height);
-    if (!ffiValidateAndCopyConstraint(createVideosSource.facingMode,nakedTreatment,trackConstraints.facingMode,errorMessage)){
-        return false;
-    }
-
-    return true;
-}
-
 void ffiValidateAndCopyBooleanConstraint(bool ffiCreateVideoSourceBool, NakedValueDisposition nakedTreatment, BooleanConstraint& constraint){
     switch (nakedTreatment) {
         case NakedValueDisposition::kTreatAsIdeal:
@@ -300,12 +312,12 @@ void ffiValidateAndCopyBooleanConstraint(bool ffiCreateVideoSourceBool, NakedVal
     }
 }
 
-
 void ffiValidateAndCopyConstraint(bool ffiCreateVideoSourceBool, NakedValueDisposition nakedTreatment, BooleanConstraint& constraint){
     if(NapiMediaConstraints::IsConstraintSupported(constraint.GetName())){
         ffiValidateAndCopyBooleanConstraint(ffiCreateVideoSourceBool, nakedTreatment, constraint);
     }
 }
+
 
 bool ffiValidateAndCopyConstraintSetExtension(CJ_MediaTrackConstraintSet cjMediaTrackConstraintSet, NakedValueDisposition nakedTreatment, MediaTrackConstraintSet& trackConstraints, std::string& errorMessage){
     ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.ohosScreenCaptureDisplayId, nakedTreatment, trackConstraints.ohosScreenCaptureDisplayId);
@@ -340,13 +352,40 @@ bool ffiValidateAndCopyConstraintSetExtension(CJ_MediaTrackConstraintSet cjMedia
 }
 
 
-bool ffiValidateAndCopyConstraintSet(CJ_MediaTrackConstraintSet cjMediaTrackConstraintSet, NakedValueDisposition nakedTreatment, MediaTrackConstraintSet& trackConstraints, std::string& errorMessage){
-    ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.width, nakedTreatment, trackConstraints.width);
-    ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.height, nakedTreatment, trackConstraints.width); 
+bool ffiValidateAndCopyConstraintSet(CJ_TO_CPP_DisplayMediaStreamOptions cjMediaTrackConstraintSet, NakedValueDisposition nakedTreatment, MediaTrackConstraintSet& trackConstraints, std::string& errorMessage){
+    ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.obj.width, nakedTreatment, trackConstraints.width);
+    ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.obj.height, nakedTreatment, trackConstraints.width); 
+    ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.obj.aspectRatio, nakedTreatment, trackConstraints.aspectRatio);
+    ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.obj.frameRate, nakedTreatment, trackConstraints.frameRate);
+    ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.obj.sampleRate, nakedTreatment, trackConstraints.sampleRate);
+    ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.obj.sampleSize, nakedTreatment, trackConstraints.sampleSize);
+    ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.obj.echoCancellation, nakedTreatment, trackConstraints.echoCancellation);
+    ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.obj.autoGainControl, nakedTreatment, trackConstraints.autoGainControl);
+    ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.obj.noiseSuppression, nakedTreatment, trackConstraints.noiseSuppression);
+    ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.obj.latency, nakedTreatment, trackConstraints.latency);
+    ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.obj.channelCount, nakedTreatment, trackConstraints.channelCount);
+    ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.obj.ohosScreenCaptureDisplayId, nakedTreatment, trackConstraints.ohosScreenCaptureDisplayId);
 
-    if (!ffiValidateAndCopyConstraintSetExtension(cjMediaTrackConstraintSet, nakedTreatment, trackConstraints, errorMessage)){
+    if (!ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.obj.facingMode, nakedTreatment, trackConstraints.facingMode, errorMessage)) {
         return false;
     }
+    
+    if (!ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.obj.resizeMode, nakedTreatment, trackConstraints.resizeMode, errorMessage)) {
+        return false;
+    }
+
+    if (!ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.obj.deviceId, nakedTreatment, trackConstraints.deviceId, errorMessage)) {
+        return false;
+    }
+
+    if (!ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.obj.groupId, nakedTreatment, trackConstraints.groupId, errorMessage)) {
+        return false;
+    }
+
+    if (!ffiValidateAndCopyConstraintSetExtension(cjMediaTrackConstraintSet.obj, nakedTreatment, trackConstraints, errorMessage)){
+        return false;
+    }
+
     return true;
 }
 

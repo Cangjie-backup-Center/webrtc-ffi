@@ -76,17 +76,17 @@ public struct CJ_MediaTrackConstraintSet{
     public var frameRate: Float64
     public var facingMode: CString
     public var resizeMode: CString
-    public var sampleRate: Int64
-    public var sampleSize: Int64
+    public var sampleRate: Float64
+    public var sampleSize: Float64
     public var echoCancellation: Bool
     public var autoGainControl: Bool
     public var noiseSuppression: Bool
     public var latency: Float64
-    public var channelCount: Int64
+    public var channelCount: Float64
     public var deviceId: CString
     public var groupId: CString
     public var ohosScreenCaptureMode: CString
-    public var ohosScreenCaptureDisplayId: Int64
+    public var ohosScreenCaptureDisplayId: Float64
     public var ohosScreenCaptureMissionId: CString
     public var ohosScreenCaptureWindowFilter: CString
     public var ohosScreenCaptureAudioFilter: CString
@@ -96,17 +96,17 @@ public struct CJ_MediaTrackConstraintSet{
     public init(width!: Float64 = 0.0, height!: Float64 = 0.0, aspectRatio!: Float64 = 0.0, frameRate!: Float64 = 0.0,
         facingMode!: String = "",
         resizeMode!: String = "",
-        sampleRate!: Int64 = 0,
-        sampleSize!: Int64 = 0,
+        sampleRate!: Float64 = 0.0,
+        sampleSize!: Float64 = 0.0,
         echoCancellation!: Bool = false,
         autoGainControl!: Bool = false,
         noiseSuppression!: Bool = false,
         latency!: Float64 = 0.0,
-        channelCount!: Int64 = 0,
+        channelCount!: Float64 = 0.0,
         deviceId!: String = "",
         groupId!: String = "",
         ohosScreenCaptureMode!: String = "",
-        ohosScreenCaptureDisplayId!: Int64 = 0,
+        ohosScreenCaptureDisplayId!: Float64 = 0.0,
         ohosScreenCaptureMissionId!: String = "",
         ohosScreenCaptureWindowFilter!: String = "",
         ohosScreenCaptureAudioFilter!: String = "",

@@ -34,7 +34,8 @@ extern "C" {
     int64_t ffi_newPeerConnectionFactory(int64_t ffiADM_int64 , int64_t ffiHVEF_int64 , int64_t ffiHVDF_int64);
     int64_t ffi_createAudioSource(int64_t ffiPCF_int64 , FFIAudioOptions ffiao);
     int64_t ffi_createAudioTrack(int64_t ffiPCF_int64 , char* ffi_audioId);
-    int64_t ffi_createVideoSource(int64_t ffiPCF_int64 , FFICreateVideoSourceParameters fficvsp);
+    int64_t ffi_createVideoSource(int64_t ffiPCF_int64 , CJ_TO_CPP_DisplayMediaStreamOptions fficvsp, bool isScreencast);
+
     int64_t ffi_createVideoTrack(int64_t ffiPCF_int64 , char* ffi_videoId);
 //     func ffiPeerConnectionFactory_ffiCreatePeerConnection(cpp_ptr: Int64, config: CJ_RTCConfiguration): Int64
     int64_t ffiPeerConnectionFactory_ffiCreatePeerConnection (int64_t ffiPCF_int64, CJ_RTCConfiguration config);
