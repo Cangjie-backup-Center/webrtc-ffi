@@ -15,7 +15,24 @@ ffiMediaStreamTrack::ffiMediaStreamTrack(
     track_ = track;
 }
 
-ffiMediaStreamTrack::~ffiMediaStreamTrack() = default;
+ffiMediaStreamTrack::~ffiMediaStreamTrack() {
+    if (kind_){
+        delete[] kind_;
+        kind_ = nullptr;
+    }
+
+    if (id_){
+        delete[] id_;
+        id_ = nullptr;
+    }
+
+    if (readyState_) {
+        delete[] readyState_;
+        readyState_ = nullptr;
+    }
+    
+    
+}
 
 void ffiMediaStreamTrack::AddSink(rtc::VideoSinkInterface<VideoFrame>* sink) {
     this->AddVideoSink(sink);
@@ -59,8 +76,13 @@ char* ffiMediaStreamTrack::GetKind() {
         CANGJIE_THROW("Illegal state");
     }
 
-    return track_->kind().data();
+    auto retKind = track_->kind();
+    kind_ = new char[retKind.size() + 1];
+    strncpy(kind_, retKind.c_str(), retKind.size() + 1);
+
+    return kind_;
 }
+
 char* ffiMediaStreamTrack::GetId() {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 
@@ -68,8 +90,13 @@ char* ffiMediaStreamTrack::GetId() {
         CANGJIE_THROW("Illegal state");
     }
 
-    return track_->id().data();
+    auto retId = track_->id();
+    id_ = new char[retId.size() + 1];
+    strncpy(id_, retId.c_str(), retId.size() + 1);
+
+    return id_;
 }
+
 bool ffiMediaStreamTrack::GetEnabled() {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 
@@ -79,25 +106,37 @@ bool ffiMediaStreamTrack::GetEnabled() {
 
     return track_->enabled();
 }
-FFIMediaStreamTrackState ffiMediaStreamTrack::GetReadyState() {
+
+char* ffiMediaStreamTrack::GetReadyState() {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 
     if (!track_) {
         CANGJIE_THROW("Illegal state");
     }
 
+    const std::string mediaStreamTrackStateLive = "live";
+    const std::string mediaStreamTrackStateEnded = "ended";
+
     auto state = track_->state();
     switch (state) {
-        case MediaStreamTrackInterface::kLive:
-            return FFIMediaStreamTrackState::LIVE;
-        case MediaStreamTrackInterface::kEnded:
-            return FFIMediaStreamTrackState::ENDED;
-        default:
+        case MediaStreamTrackInterface::kLive: {
+            readyState_ = new char[mediaStreamTrackStateLive.size() + 1];
+            strncpy(readyState_, mediaStreamTrackStateLive.c_str(), mediaStreamTrackStateLive.size() + 1);
+            return readyState_;
+        }
+        case MediaStreamTrackInterface::kEnded: {
+            readyState_ = new char[mediaStreamTrackStateEnded.size() + 1];
+            strncpy(readyState_, mediaStreamTrackStateEnded.c_str(), mediaStreamTrackStateEnded.size() + 1);
+            return readyState_;
+        }
+        default: {
             break;
+        }
     }
 
     CANGJIE_THROW("Illegal state");
 }
+
 void ffiMediaStreamTrack::Stop() {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 
@@ -120,6 +159,7 @@ bool ffiMediaStreamTrack::IsVideoTrack() const
 {
     return (track_->kind() == MediaStreamTrackInterface::kVideoKind);
 }
+
 bool ffiMediaStreamTrack::IsAudioTrack() const
 {
     return (track_->kind() == MediaStreamTrackInterface::kAudioKind);
@@ -177,19 +217,20 @@ int64_t ffiMediaStreamTrack::GetSource(){
         CANGJIE_THROW("Illegal state");
     }
     
-    if (track_->kind() == MediaStreamTrackInterface::kAudioKind) {
-        audiosource_ = factory_->GetAudioSource(track_);
-        audiosource_ptr_ = &audiosource_;
-        if (audiosource_) {
-            return (int64_t)audiosource_ptr_;
-        }
-    } else if (track_->kind() == MediaStreamTrackInterface::kVideoKind) {
-        videosource_ = factory_->GetVideoSource(track_);
-        videosource_ptr_ = &videosource_;
-        if (videosource_) {
-            return (int64_t)videosource_ptr_;
+    if (IsAudioTrack()) {
+        auto audioSource = factory_->GetAudioSource(track_);
+        if (audioSource) {
+//            return (int64_t)FFIAudioSource::NewInstance(audioSource);
+            return 0;
+        } 
+    } else if (IsVideoTrack()) {
+        auto videoSource = factory_->GetVideoSource(track_);
+        if (videoSource) {
+//            return (int64_t)FFIVideoSource::NewInstance(videoSource);
+            return 0;
         }
     }
+
     return -1;
 }
 

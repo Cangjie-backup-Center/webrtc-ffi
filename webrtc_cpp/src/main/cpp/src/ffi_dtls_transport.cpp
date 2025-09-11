@@ -16,7 +16,17 @@ FFIRTCDtlsTransportState ffiDtlsTransport::GetState() {
     CANGJIE_THROW("TODO");
 } 
     
-void ffiDtlsTransport::OnStateChange(DtlsTransportInformation info) {}
+void ffiDtlsTransport::OnStateChange(DtlsTransportInformation info) {
+    // auto dtlsTransportState = info.state();
+    // Dispatch(CallbackEvent<ffiDtlsTransport>::Create([this, dtlsTransportState](ffiDtlsTransport& target){
+    //     RTC_DCHECK_EQ(this, &target);
+    //     auto env = target.Env();
+
+    //     if (dtlsTransportState == DtlsTransportState::kClosed) {
+    //         target.Stop();
+    //     }
+    // }))
+}
 void ffiDtlsTransport::OnError(RTCError error) {}
 
 }

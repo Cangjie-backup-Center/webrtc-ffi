@@ -197,18 +197,22 @@ int64_t ffi_webrtc_ffiMediaStreamTrack_GetSource(int64_t ffiMediaStreamTrackPtr)
     return ((webrtc::ffiMediaStreamTrack*)ffiMediaStreamTrackPtr)->GetSource();
 }
 
-char* ffiMediaStreamTrack_GetKind(int64_t cpp_ptr) {
+char* ffiMediaStreamTrack_getKind(int64_t cpp_ptr){
     return ((webrtc::ffiMediaStreamTrack*)cpp_ptr)->GetKind();
 }
-char* ffiMediaStreamTrack_GetId(int64_t cpp_ptr) {
-    return ((webrtc::ffiMediaStreamTrack*)cpp_ptr)->GetId();
-}
-bool ffiMediaStreamTrack_GetEnabled(int64_t cpp_ptr){
+
+bool ffiMediaStreamTrack_getEnabled(int64_t cpp_ptr){
     return ((webrtc::ffiMediaStreamTrack*)cpp_ptr)->GetEnabled();
 }
-int64_t ffiMediaStreamTrack_GetReadyState(int64_t cpp_ptr) {
-    return (int64_t)((webrtc::ffiMediaStreamTrack*)cpp_ptr)->GetReadyState();
+
+char* ffiMediaStreamTrack_getReadyState(int64_t cpp_ptr){
+    return ((webrtc::ffiMediaStreamTrack*)cpp_ptr)->GetReadyState();
 }
+
+char* ffiMediaStreamTrack_getId(int64_t cpp_ptr){
+    return ((webrtc::ffiMediaStreamTrack*)cpp_ptr)->GetId();
+}
+
 void ffiMediaStreamTrack_Stop(int64_t cpp_ptr){
     ((webrtc::ffiMediaStreamTrack*)cpp_ptr)->Stop();
 }
@@ -459,3 +463,10 @@ void ffiDtmfSender_set_OnToneChange(int64_t cpp_ptr, void (*pe)(int64_t id, cons
 }   
 
 
+void deleteCJMediaStreamTrack(CJ_MediaStreamTrack* cjMST){
+    if (cjMST) {
+        delete cjMST->kind;
+        delete cjMST->id;
+        delete cjMST->readyState;
+    }
+}

@@ -2,6 +2,7 @@
  * Created on 2025/8/13
  */
 package webrtc_cj
+import ohos.base.throwNativeError
 
 public open class Event {
     Event(public let TYPE: String) {}
@@ -212,6 +213,15 @@ public class OnIceCandidateEvent {
 }
 
 @C
+public struct CJ_MediaStreamTrack {
+    let ptr_id: Int64 = -1
+    let kind: CString = unsafe {zeroValue<CString>()}
+    let id: CString = unsafe {zeroValue<CString>()}
+    let enabled: Bool = false
+    let readyState: CString = unsafe {zeroValue<CString>()}
+}
+
+@C
 struct CJ_RTCTrackEvent {
     let TYPE: CString = unsafe {zeroValue<CString>()}
     let streams: CPointer<Int64> = unsafe {zeroValue<CPointer<Int64>>()}
@@ -228,10 +238,11 @@ public class RTCTrackEvent {
 //    public let receiver: RtpReceiver // TODO
     public let transceiver: RtpTransceiver
 
-    public RTCTrackEvent( TYPE: String,  streams: Array<Int64>, MediaStreamTrack_ptr: Int64, RtpReceiver_ptr: Int64, RtpTransceiver_ptr: Int64) {
+    public RTCTrackEvent( TYPE: String,  streams: Array<Int64>, mediaStreamTrack_ptr: Int64, RtpReceiver_ptr: Int64, RtpTransceiver_ptr: Int64) {
+        var tmpMST: CJ_MediaStreamTrack
         this.TYPE = TYPE
         this.streams = streams
-        this.track = VideoTrack(MediaStreamTrack_ptr)
+        this.track = VideoTrack(mediaStreamTrack_ptr)
         this.transceiver = RtpTransceiver(RtpTransceiver_ptr)
     }
 }

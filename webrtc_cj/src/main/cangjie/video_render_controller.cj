@@ -34,7 +34,7 @@ public class VideoRenderController <: XComponentController {
         }
     }
 
-    public func newNativeVideoRenderer(): Unit {
+    private func newNativeVideoRenderer(): Unit {
         renderer = unsafe {ffi_newNativeVideoRenderer(Int64.parse(mySurfaceId))}
     }
 
@@ -43,6 +43,9 @@ public class VideoRenderController <: XComponentController {
 //    }
 
     public func setVideoTrack(mst : MediaStreamTrack): Unit {
+        if (renderer == 0) {
+            newNativeVideoRenderer()
+        }
         unsafe {ffi_setVideoTrack(renderer, mst.getID())}
     }
 

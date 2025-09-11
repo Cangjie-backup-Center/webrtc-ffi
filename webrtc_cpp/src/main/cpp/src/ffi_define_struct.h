@@ -238,11 +238,19 @@ typedef struct {
     const char *type;
 } CJ_Event;
 
+typedef struct{
+    int64_t ptr_id;
+    char* kind;
+    char* id;
+    bool enabled;
+    char* readyState;
+} CJ_MediaStreamTrack;
+
 typedef struct {
     const char *type;
     int64_t *streams;
     int64_t streams_size;
-    int64_t MediaStreamTrack_ptr; // ffiMediaStreamTrack
+    int64_t MediaStreamTrack_ptr; // CJ_MediaStreamTrack
     int64_t RtpReceiver_ptr;      // ffiRtpReceiver
     int64_t RtpTransceiver_ptr;   // ffiRtpTransceiver
 } CJ_RTCTrackEvent;
@@ -358,13 +366,6 @@ typedef struct {
     char* sdpMid = "";
     char* usernameFragment;
 } CJ_RTCIceCandidateInit;
-
-typedef struct{
-    char* kind;
-    char* id;
-    bool enabled;
-    char* readyState;
-}CJ_MediaStreamTrack;
 
 
 typedef struct{

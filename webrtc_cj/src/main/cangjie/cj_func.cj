@@ -31,6 +31,11 @@ struct FFICreateVideoSourceParameters{
 sealed abstract class WebrtcClass {
     protected var ID: Int64 // ptr
     protected let randomid = WebRtcGlobal.getCurrentId()
+
+    protected init() {
+        this.ID = -1
+    }
+
     protected init(id: Int64, that: WebrtcClass) {
         if (WebRtcGlobal.OBJECT_POOL.contains(id)) {
             throw Webrtc4cjFFIException("The Cangjie mapping object of C++objects does not allow the creation of secondary objects.")
@@ -113,6 +118,10 @@ public class VideoTrack <: MediaStreamTrack {
         super( unsafe {ffi_createVideoTrack(pcf.ID,LibC.mallocCString(tag))}, this)
     }
 
+    public init(ffiMST: CJ_MediaStreamTrack) {
+        super(ffiMST)
+    }
+
     public init(id: Int64) {
         super(id, this)
     }
@@ -133,9 +142,27 @@ public class VideoSource <: WebrtcClass {
 }
 
 public open class MediaStreamTrack <: WebrtcClass {
+    public var kind: String = ""
+    public var id: String = ""
+    public var enabled: Bool = false
+    public var readyState: String = ""
 
-    protected  init(id: Int64, t:MediaStreamTrack) {
+    protected init() {}
+
+    protected init(id: Int64, t:MediaStreamTrack) {
         super(id, t)
+        this.kind = unsafe {ffiMediaStreamTrack_getKind(id).toString()}
+        this.id = unsafe {ffiMediaStreamTrack_getId(id).toString()}
+        this.readyState = unsafe {ffiMediaStreamTrack_getReadyState(id).toString()}
+        this.enabled = unsafe {ffiMediaStreamTrack_getEnabled(id)}
+    }
+
+    protected init(ffiMST: CJ_MediaStreamTrack) {
+        this.kind = ffiMST.kind.toString()
+        this.ID = ffiMST.ptr_id
+        this.enabled = ffiMST.enabled
+        this.readyState = ffiMST.readyState.toString()
+        this.id = ffiMST.id.toString()
     }
 }
 
@@ -276,6 +303,13 @@ foreign {
     func peerConnection_close(cpp_ptr: Int64): Unit
     func peerConnection_setAudioRecording(cpp_ptr: Int64, recording: Bool): Unit
     func peerConnection_setAudioPlayout(cpp_ptr: Int64, playout: Bool): Unit
+
+    func ffiMediaStreamTrack_getKind(cpp_ptr: Int64): CString
+    func ffiMediaStreamTrack_getEnabled(cpp_ptr: Int64): Bool
+    func ffiMediaStreamTrack_getReadyState(cpp_ptr: Int64): CString
+    func ffiMediaStreamTrack_getId(cpp_ptr: Int64): CString
+
+    func deleteChar(ch: CString): Unit
 }
 //
 //public func cj_newNativeVideoRenderer(surfaceId: Int64): Int64 {

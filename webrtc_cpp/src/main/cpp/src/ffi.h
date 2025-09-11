@@ -165,7 +165,13 @@ extern "C" {
     bool ffiDtmfSender_InsertDTMF(int64_t cpp_ptr, const char* tones, int64_t duration, int64_t interToneGap);
     void ffiDtmfSender_set_OnToneChange(int64_t cpp_ptr, void (*pe)(int64_t id, const char* tone) ); 
     
-    
+    char* ffiMediaStreamTrack_getKind(int64_t cpp_ptr);
+    bool ffiMediaStreamTrack_getEnabled(int64_t cpp_ptr);
+    char* ffiMediaStreamTrack_getReadyState(int64_t cpp_ptr);
+    char* ffiMediaStreamTrack_getId(int64_t cpp_ptr);
+
+    // void deleteCJMediaStreamTrack(CJ_MediaStreamTrack* cjMST);
+
 }
 
 

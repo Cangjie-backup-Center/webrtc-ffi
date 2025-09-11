@@ -674,6 +674,19 @@ void ffiPeerConnection::SetOnTrack(void (*pe)(int64_t that, CJ_RTCTrackEvent loc
     cj_func_call_OnTrack_ = pe;
 }
 
+char* copyStringToChar(const std::string str) {
+    if (str.empty()) {
+        CANGJIE_THROW("str is empty");
+        return nullptr;
+    }
+    char* copy = new char[str.size() + 1];
+    strncpy(copy, str.c_str(), str.size()+1);
+    return copy;
+}
+
+
+
+
 void ffiPeerConnection::OnTrack(rtc::scoped_refptr<RtpTransceiverInterface> transceiver) {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
     Dispatch(CallbackEvent<ffiPeerConnection>::Create(

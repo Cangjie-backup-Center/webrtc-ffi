@@ -593,7 +593,6 @@ class EntryView {
                 var ffiCVSP: CJ_TO_CPP_DisplayMediaStreamOptions =  CJ_TO_CPP_DisplayMediaStreamOptions(CJ_MediaTrackConstraintSet(width:1280.0, height:720.0, facingMode:"user"))
                 this.localVideoSource = VideoSource(this.pcf.getOrThrow(), ffiCVSP, false)
                 this.localCameraVideoTrack = VideoTrack(this.pcf.getOrThrow(), "video")
-                this.mXComponentController1.newNativeVideoRenderer()
                 this.mXComponentController1.setVideoTrack(this.localCameraVideoTrack.getOrThrow())
                 this.mXComponentController1.setMirror(true)
                 this.mXComponentController1.setScalingMode(ScalingMode().aspectFit)
@@ -610,7 +609,6 @@ class EntryView {
 
                 this.displayMediaStream = mediaDevices.getDisplayMedia(captureVideo, captureAudio, captureohosSystemAudio)
                 this.retVideoTrack = this.displayMediaStream.getVideoTracks()
-                this.mXComponentController1.newNativeVideoRenderer()
                 this.localVideoTrack = this.retVideoTrack[0]
                 this.mXComponentController1.setVideoTrack(this.retVideoTrack[0])
                 this.mXComponentController1.setScalingMode(ScalingMode().aspectFit)
@@ -642,14 +640,13 @@ class EntryView {
                 pc, event =>
                     // TODO.. 需要实现 ToString 接口
                     //              AppLog.info('${Index_WebRTC_TAG} ontrack: ${event}')
-                    //              // TODO.. kind 需实现
-//                     if (event.track.kind == 'video') {
-                    this.remoteVideoTrack = event.track
-                    this.mXComponentController2.setVideoTrack(event.track)
-                    //              // TODO.. kind 需实现
-                    //              } else if (event.track.kind == 'audio') {
-                    this.remoteAudioTrack = event.track
-            }
+                    if (event.track.kind == 'video') {
+                        this.remoteVideoTrack = event.track
+                        this.mXComponentController2.setVideoTrack(event.track)
+                    } else if (event.track.kind == 'audio') {
+                        this.remoteAudioTrack = event.track
+                    }
+                }
         this.pc?.onSignalingChange = {
             pc, event => AppLog.info('${Index_WebRTC_TAG} onsignalingstatechange: ${this.pc?.signalingState}')
         }

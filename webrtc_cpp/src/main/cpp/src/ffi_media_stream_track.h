@@ -32,7 +32,7 @@ public:
     char* GetKind();
     char* GetId();
     bool GetEnabled();
-    FFIMediaStreamTrackState GetReadyState();
+    char* GetReadyState();
     void Stop();
     CJ_ffiMediaStreamTrackJson ToJson();
     int64_t GetSource();
@@ -48,10 +48,16 @@ protected:
 private:
     std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
     rtc::scoped_refptr<MediaStreamTrackInterface> track_;
-    rtc::scoped_refptr<OhosLocalAudioSource> audiosource_;
-    rtc::scoped_refptr<OhosVideoTrackSource> videosource_;
-    rtc::scoped_refptr<OhosLocalAudioSource>* audiosource_ptr_ = nullptr;
-    rtc::scoped_refptr<OhosVideoTrackSource>* videosource_ptr_ = nullptr;
+    // rtc::scoped_refptr<OhosLocalAudioSource> audiosource_;
+    // rtc::scoped_refptr<OhosVideoTrackSource> videosource_;
+    // rtc::scoped_refptr<OhosLocalAudioSource>* audiosource_ptr_ = nullptr;
+    // rtc::scoped_refptr<OhosVideoTrackSource>* videosource_ptr_ = nullptr;
+
+    char* kind_ = nullptr;
+    char* id_ = nullptr;
+    bool enabled_ = false;
+    char* readyState_ = nullptr;
+
     std::mutex sinksMutex_;
     std::set<rtc::VideoSinkInterface<VideoFrame>*> videoSinks_;
 };
