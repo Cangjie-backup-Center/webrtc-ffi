@@ -234,13 +234,31 @@ int64_t FFIMediaDevices::getDisplayMedia(CJ_TO_CPP_DisplayMediaStreamOptions* vi
 
 
 int64_t FFIMediaDevices::getDisplayMedia(MediaTrackConstraints video, MediaTrackConstraints audio, MediaTrackConstraints systemAudio){
-
     audioConstraints_ = std::move(audio);
     systemAudioConstraints_ = std::move(systemAudio);
     videoConstraints_ = std::move(video);
     
     display_media_stream_ = factory_->GetFactory()->CreateLocalMediaStream(rtc::CreateRandomUuid());
+    if (!display_media_stream_) {
+        CANGJIE_THROW("Failed to create display media stream");
+        return 0;
+    }
     
+    if(!audioConstraints_.IsNull()) {
+        if(videoConstraints_.IsNull()) {
+            CANGJIE_THROW("Audio should not be enabled individually");
+            return 0;
+        } 
+        std::string errorMessage;
+        auto audioTrack = CreateAudioTrack(&errorMessage);
+        if (audioTrack) {
+            display_media_stream_->AddTrack(audioTrack);
+        } else {
+            CANGJIE_THROW(errorMessage);
+            return 0;
+        }
+    }
+
     std::shared_ptr<SystemAudioReceiver> systemAudioReceiver;
     if (!systemAudioConstraints_.IsNull()) {
         if (videoConstraints_.IsNull()) {
@@ -270,19 +288,6 @@ int64_t FFIMediaDevices::getDisplayMedia(MediaTrackConstraints video, MediaTrack
         }
     }
     
-//    cj_func_call_back1_ = pe; // cangjie func
-//    Cangjie_CallBack(new CallbackData{this, id},
-//                     [](uv_work_t *work) {
-//        CallbackData* t = static_cast<CallbackData *>(work->data);
-//        FFIMediaDevices* that = t->md;
-//        that->ffiDisplayMediaStream_ = new FFIMediaStream(that->factory_, that->display_media_stream_);
-//        if(that->cj_func_call_back1_) {
-//            that->cj_func_call_back1_(t->id, (int64_t)that->ffiDisplayMediaStream_); // call cangjie func 
-//        }
-//    }, 
-//    [](uv_work_t *work, int status) {
-//        free(work->data);
-//    });
     this->ffiDisplayMediaStream_ = new FFIMediaStream(this->factory_, this->display_media_stream_);
     return (int64_t)this->ffiDisplayMediaStream_;
 }

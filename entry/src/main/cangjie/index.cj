@@ -604,25 +604,22 @@ class EntryView {
         spawn {
             if (this.displayMediaStream.isNone()) {
                 var captureVideo: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(CJ_MediaTrackConstraintSet(width: 720.0, height: 1280.0, ohosScreenCaptureAudioFilter: "current-app"))
-                var captureAudio: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(true)
-                var captureohosSystemAudio: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(true)
 
-                this.displayMediaStream = mediaDevices.getDisplayMedia(captureVideo, captureAudio, captureohosSystemAudio)
+                this.displayMediaStream = mediaDevices.getDisplayMedia(captureVideo, true, true)
                 this.retVideoTrack = this.displayMediaStream.getVideoTracks()
                 this.localVideoTrack = this.retVideoTrack[0]
                 this.mXComponentController1.setVideoTrack(this.retVideoTrack[0])
                 this.mXComponentController1.setScalingMode(ScalingMode().aspectFit)
 
-                // TODO.. 考虑暂不加
-    //            let audioTracks = this.displayMediaStream.getAudioTracks()
-    //            if (audioTracks.size > 0) {
-                    // this.localAudioTrack = audioTracks[0]
-                    // AppLog.error('${Index_WebRTC_TAG} audioTrack: ${this.localAudioTrack}')
-    //            }
-    //            if (audioTracks.size > 1) {
-                    // this.localAudioTrack2 = audioTracks[1]
-                    // AppLog.error('${Index_WebRTC_TAG} audioTrack2: ${this.localAudioTrack}')
-    //            }
+                let audioTracks = this.displayMediaStream.getAudioTracks()
+                if (audioTracks.size > 0) {
+                     this.localAudioTrack = audioTracks[0]
+                     AppLog.error('${Index_WebRTC_TAG} audioTrack: ${this.localAudioTrack.getOrThrow().getID()}')
+                }
+                if (audioTracks.size > 1) {
+                     this.localAudioTrack2 = audioTracks[1]
+                     AppLog.error('${Index_WebRTC_TAG} audioTrack2: ${this.localAudioTrack.getOrThrow().getID()}')
+                }
             }
         }
     }
@@ -638,8 +635,7 @@ class EntryView {
             }
             this.pc?.onTrack = {
                 pc, event =>
-                    // TODO.. 需要实现 ToString 接口
-                    //              AppLog.info('${Index_WebRTC_TAG} ontrack: ${event}')
+                  AppLog.info('${Index_WebRTC_TAG} ontrack: ${event.track.kind}')
                     if (event.track.kind == 'video') {
                         this.remoteVideoTrack = event.track
                         this.mXComponentController2.setVideoTrack(event.track)
@@ -722,16 +718,21 @@ class EntryView {
         }
         if (let Some(v) <- this.localAudioTrack) {
              let rtpSender1 = this.pc?.addTrack(v)
-            // AppLog.info('${Index_WebRTC_TAG} rtpSender1: ${rtpSender1}')
+             AppLog.info('${Index_WebRTC_TAG} rtpSender1: ${rtpSender1}')
         }
         if (let Some(v) <- this.localAudioTrack2) {
              let rtpSender2 = this.pc?.addTrack(v)
-            // AppLog.info('${Index_WebRTC_TAG} rtpSender2: ${rtpSender2}')
+             AppLog.info('${Index_WebRTC_TAG} rtpSender2: ${rtpSender2}')
         }
         if (let Some(v) <- this.localVideoTrack) {
              let rtpSender3 = this.pc?.addTrack(v)
-            // AppLog.info('${Index_WebRTC_TAG} rtpSender3: ${rtpSender3}')
+             AppLog.info('${Index_WebRTC_TAG} rtpSender3: ${rtpSender3}')
         }
+        if (let Some(v) <- this.localCameraVideoTrack) {
+             let rtpSender4 = this.pc?.addTrack(v)
+             AppLog.info('${Index_WebRTC_TAG} rtpSender3: ${rtpSender4}')
+        }
+
 //         AppLog.info('${Index_WebRTC_TAG} transceivers: ${this.pc?.getTransceivers()}')
         this.sendChannel = this.pc?.createDataChannel("send")
 //         AppLog.info('${Index_WebRTC_TAG} sendChannel: ${this.sendChannel}')

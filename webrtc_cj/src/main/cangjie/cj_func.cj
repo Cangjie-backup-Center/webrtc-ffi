@@ -49,7 +49,7 @@ sealed abstract class WebrtcClass {
         this.ID = -1
     }
 
-    func getID(): Int64{
+    public func getID(): Int64{
         return ID
     }
 
@@ -230,10 +230,13 @@ public class MediaDevices <: WebrtcClass {
     }
 
     public func getDisplayMedia(video: CJ_TO_CPP_DisplayMediaStreamOptions,
-                                audio:CJ_TO_CPP_DisplayMediaStreamOptions,
-                                systemAudio:CJ_TO_CPP_DisplayMediaStreamOptions): MediaStream {
+                                audio: Bool,
+                                systemAudio: Bool): MediaStream {
+        var captureAudio: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(audio)
+        var captureohosSystemAudio: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(systemAudio)
+
         unsafe {
-             return MediaStream(ffi_webrtc_mediaDevices_getDisplayMedia(this.ID, video, audio,systemAudio))
+             return MediaStream(ffi_webrtc_mediaDevices_getDisplayMedia(this.ID, video, captureAudio, captureohosSystemAudio))
         }
     }
 }
@@ -293,11 +296,9 @@ foreign {
     func peerConnection_createOffer(cpp_ptr: Int64, iceRestart: Bool): CJ_FFICreateSdpObserver_result
     func peerConnection_createAnswer(cpp_ptr: Int64): CJ_FFICreateSdpObserver_result
     func peerConnection_addIceCandidate(cpp_ptr: Int64, candidate: CJ_RTCIceCandidateInit): Unit
-    // func peerConnection_set_cj_func_call_addIceCandidate_(cpp_ptr: Int64, pe: CFunc<(that: Int64, id: Int64, candidate: CJ_RTCIceCandidateInit) -> Unit>): Unit
     func peerConnection_createDataChannel(cpp_ptr: Int64, label: CString, dataChannelDict: CJ_RTCDataChannelInit): Int64
     func peerConnection_getSenders(cpp_ptr: Int64): CPointer<Int64>
     func peerConnection_getTransceivers(cpp_ptr: Int64): CPointer<Int64>
-//    func peerConnection_getTransceivers(cpp_ptr: Int64): CPointer<Int64>
     func peerConnection_restartIce(cpp_ptr: Int64): Unit
     func peerConnection_setConfiguration(cpp_ptr: Int64, configuration: CJ_RTCConfiguration): Unit
     func peerConnection_close(cpp_ptr: Int64): Unit
