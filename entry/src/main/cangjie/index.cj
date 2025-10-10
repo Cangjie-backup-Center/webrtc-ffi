@@ -600,30 +600,30 @@ class EntryView {
         }
     }
 
-    func prepareDisplayMedia(): Future<Unit> {
-        spawn {
-            if (this.displayMediaStream.isNone()) {
-                var captureVideo: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(CJ_MediaTrackConstraintSet(width: 720.0, height: 1280.0, ohosScreenCaptureAudioFilter: "current-app"))
-                this.displayMediaStream = mediaDevices.getDisplayMedia(captureVideo, true, true)
-                this.retVideoTrack = this.displayMediaStream.getVideoTracks()
-                this.localVideoTrack = this.retVideoTrack[0]
-                this.mXComponentController1.setVideoTrack(this.retVideoTrack[0])
-                this.mXComponentController1.setScalingMode(ScalingMode().aspectFit)
+//    func prepareDisplayMedia(): Future<Unit> {
+//        spawn {
+//            if (this.displayMediaStream.isNone()) {
+//                var captureVideo: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(CJ_MediaTrackConstraintSet(width: 720.0, height: 1280.0, ohosScreenCaptureAudioFilter: "current-app"))
+//                this.displayMediaStream = mediaDevices.getDisplayMedia(captureVideo, true, true)
+//                this.retVideoTrack = this.displayMediaStream.getVideoTracks()
+//                this.localVideoTrack = this.retVideoTrack[0]
+//                this.mXComponentController1.setVideoTrack(this.retVideoTrack[0])
+//                this.mXComponentController1.setScalingMode(ScalingMode().aspectFit)
+//
+//                let audioTracks = this.displayMediaStream.getAudioTracks()
+//                if (audioTracks.size > 0) {
+//                     this.localAudioTrack = audioTracks[0]
+//                     AppLog.error('${Index_WebRTC_TAG} audioTrack: ${this.localAudioTrack.getOrThrow().getID()}')
+//                }
+//                if (audioTracks.size > 1) {
+//                     this.localAudioTrack2 = audioTracks[1]
+//                     AppLog.error('${Index_WebRTC_TAG} audioTrack2: ${this.localAudioTrack.getOrThrow().getID()}')
+//                }
+//            }
+//        }
+//    }
 
-                let audioTracks = this.displayMediaStream.getAudioTracks()
-                if (audioTracks.size > 0) {
-                     this.localAudioTrack = audioTracks[0]
-                     AppLog.error('${Index_WebRTC_TAG} audioTrack: ${this.localAudioTrack.getOrThrow().getID()}')
-                }
-                if (audioTracks.size > 1) {
-                     this.localAudioTrack2 = audioTracks[1]
-                     AppLog.error('${Index_WebRTC_TAG} audioTrack2: ${this.localAudioTrack.getOrThrow().getID()}')
-                }
-            }
-        }
-    }
-
-    func prepareDisplayMedia2(): Unit {
+    func prepareDisplayMedia(): Unit {
         if (this.displayMediaStream.isNone()) {
             var captureVideo: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(CJ_MediaTrackConstraintSet(width: 720.0, height: 1280.0, ohosScreenCaptureAudioFilter: "current-app"))
             let that = this
@@ -653,7 +653,7 @@ class EntryView {
     func createPeerConnection(): Future<Unit> {
         spawn {
             // prepareLocalMedia().get()
-            prepareDisplayMedia().get()
+            prepareDisplayMedia()
             this.pc = this.pcf?.createPeerConnection(RTCConfiguration(iceServers: [RTCIceServer(urls: [STUN_SERVER])]))
             if (this.pc.isNone()) {
                 AppLog.error('${Index_WebRTC_TAG} failed to create RTCPeerConnection')
