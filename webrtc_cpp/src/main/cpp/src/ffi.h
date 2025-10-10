@@ -58,6 +58,12 @@ extern "C" {
                                                   CJ_TO_CPP_DisplayMediaStreamOptions audio, 
                                                   CJ_TO_CPP_DisplayMediaStreamOptions systemAudio);
 
+    void ffi_webrtc_mediaDevices_getDisplayMedia_CallBack(int64_t mediaDevicesPtr, 	
+                                                        CJ_TO_CPP_DisplayMediaStreamOptions video, 	
+                                                        CJ_TO_CPP_DisplayMediaStreamOptions audio, 	
+                                                        CJ_TO_CPP_DisplayMediaStreamOptions systemAudio, 	
+                                                        int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack));
+
     void ffi_webrtc_mediaDevices_getUserMedia(int64_t mediaDevicesPtr, 
                                                CJ_TO_CPP_DisplayMediaStreamOptions video, 
                                                CJ_TO_CPP_DisplayMediaStreamOptions audio, 

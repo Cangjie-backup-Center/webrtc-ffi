@@ -192,10 +192,10 @@ bool CangjieToNativeConfiguration(
 }
 
 ffiPeerConnection::ffiPeerConnection(CJ_RTCConfiguration config, std::shared_ptr<PeerConnectionFactoryWrapper> factory)  {
-    if(factory) {
+    if(factory.get()) {
         factory_ = factory;
     } else {
-        CANGJIE_THROW("---");
+        CANGJIE_THROW("ffiPeerConnection build fail factory is null");
     }
     PeerConnectionDependencies deps(this);
     
@@ -727,7 +727,7 @@ void ffiPeerConnection::OnRemoveTrack(rtc::scoped_refptr<RtpReceiverInterface> r
 //}
 
 
-int64_t ffiPeerConnection::addTrack(ffiMediaStreamTrack* track, std::vector<webrtc::FFIMediaStream*> streamVec){
+int64_t ffiPeerConnection::addTrack(ffiMediaStreamTrack* track, std::vector<webrtc::FFIMediaStream*> streamVec) {
     RTC_LOG(LS_INFO) << __FUNCTION__;
 
     std::vector<std::string> streamIds;
@@ -745,7 +745,7 @@ int64_t ffiPeerConnection::addTrack(ffiMediaStreamTrack* track, std::vector<webr
     auto peerconnection_track = track->Get();
     auto result = pc_->AddTrack(peerconnection_track, streamIds);
     if (!result.ok()) {
-        CANGJIE_THROW("AddTrack error");
+        CANGJIE_THROW(std::string("AddTrack error ") + result.error().message());
     }
 
     if (peerconnection_track && peerconnection_track->kind() == MediaStreamTrackInterface::kAudioKind) {

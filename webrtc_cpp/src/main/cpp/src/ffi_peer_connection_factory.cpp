@@ -352,7 +352,7 @@ bool ffiValidateAndCopyConstraintSetExtension(CJ_MediaTrackConstraintSet cjMedia
 }
 
 
-bool ffiValidateAndCopyConstraintSet(CJ_TO_CPP_DisplayMediaStreamOptions cjMediaTrackConstraintSet, NakedValueDisposition nakedTreatment, MediaTrackConstraintSet& trackConstraints, std::string& errorMessage){
+bool ffiValidateAndCopyConstraintSet(const CJ_TO_CPP_DisplayMediaStreamOptions cjMediaTrackConstraintSet, NakedValueDisposition nakedTreatment, MediaTrackConstraintSet& trackConstraints, std::string& errorMessage){
     ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.obj.width, nakedTreatment, trackConstraints.width);
     ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.obj.height, nakedTreatment, trackConstraints.width); 
     ffiValidateAndCopyConstraint(cjMediaTrackConstraintSet.obj.aspectRatio, nakedTreatment, trackConstraints.aspectRatio);

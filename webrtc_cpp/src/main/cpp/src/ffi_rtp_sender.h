@@ -31,12 +31,14 @@ public:
         rtc::scoped_refptr<RtpSenderInterface> sender) {
         return new ffiRtpSender(factory, pc,sender);
     }
+
     ffiRtpSender(std::shared_ptr<PeerConnectionFactoryWrapper> factory, rtc::scoped_refptr<PeerConnectionInterface> pc,
         rtc::scoped_refptr<RtpSenderInterface> sender) {
         factory_= factory;
         pc_= pc;
         rtpSender_ = sender;
     }
+    
     ~ffiRtpSender() override ;
     rtc::scoped_refptr<RtpSenderInterface> Get() const {
         return rtpSender_;

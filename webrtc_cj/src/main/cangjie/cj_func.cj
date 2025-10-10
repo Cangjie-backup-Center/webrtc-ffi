@@ -225,18 +225,41 @@ public class MediaStream <: WebrtcClass {
 
 
 public class MediaDevices <: WebrtcClass {
+    var call: Option<(mediaStream: MediaStream) -> Unit> = None
     public init() {
         super(unsafe {ffi_webrtc_mediaDevices_create()}, this)
     }
 
     public func getDisplayMedia(video: CJ_TO_CPP_DisplayMediaStreamOptions,
                                 audio: Bool,
-                                systemAudio: Bool): MediaStream {
+                                systemAudio: Bool): MediaStream
+    {
         var captureAudio: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(audio)
         var captureohosSystemAudio: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(systemAudio)
 
         unsafe {
              return MediaStream(ffi_webrtc_mediaDevices_getDisplayMedia(this.ID, video, captureAudio, captureohosSystemAudio))
+        }
+    }
+
+    public func getDisplayMedia(video: CJ_TO_CPP_DisplayMediaStreamOptions,
+                                audio: Bool,
+                                systemAudio: Bool,
+                                callback: (mediaStream: MediaStream)-> Unit): Unit
+    {
+        var captureAudio: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(audio)
+        var captureohosSystemAudio: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(systemAudio)
+        this.call = callback
+        let f : CFunc<(that: Int64, localVideoTrack: Int64) -> Unit> = {id: Int64, localVideoTrack: Int64 =>
+            let that: MediaDevices = ((WebRtcGlobal.map.get(id) ?? return) as MediaDevices) ?? return
+            let track = MediaStream(localVideoTrack)
+            if (let Some(v) <- that.call) {
+                v(track)
+            }
+        }
+
+        unsafe {
+            ffi_webrtc_mediaDevices_getDisplayMedia_CallBack(this.ID, video, captureAudio, captureohosSystemAudio, this.randomid, f)
         }
     }
 }
@@ -275,6 +298,12 @@ foreign {
     func ffi_webrtc_mediaDevices_getDisplayMedia(mediaDevicesPtr: Int64, video: CJ_TO_CPP_DisplayMediaStreamOptions,
                                                         audio:CJ_TO_CPP_DisplayMediaStreamOptions,
                                                         systemAudio:CJ_TO_CPP_DisplayMediaStreamOptions): Int64
+
+    func ffi_webrtc_mediaDevices_getDisplayMedia_CallBack(mediaDevicesPtr: Int64, video: CJ_TO_CPP_DisplayMediaStreamOptions,
+                                                        audio:CJ_TO_CPP_DisplayMediaStreamOptions,
+                                                        systemAudio:CJ_TO_CPP_DisplayMediaStreamOptions,
+                                                        id: Int64, pe: CFunc<(that: Int64, localVideoTrack: Int64) -> Unit>): Unit
+
     func ffi_webrtc_mediaDevices_getUserMedia(mediaDevicesPtr: Int64, video: CJ_TO_CPP_DisplayMediaStreamOptions,
                                                         audio:CJ_TO_CPP_DisplayMediaStreamOptions): Int64  // TODO
     func ffi_webrtc_mediaDevices_enumerateDevices(mediaDevicesPtr: Int64): CJ_ReturnEnumerateDevicesInfo
@@ -312,7 +341,7 @@ foreign {
 
     func deleteChar(ch: CString): Unit
 }
-//
+
 //public func cj_newNativeVideoRenderer(surfaceId: Int64): Int64 {
 //    unsafe {
 //        return ffi_newNativeVideoRenderer(surfaceId)

@@ -604,7 +604,6 @@ class EntryView {
         spawn {
             if (this.displayMediaStream.isNone()) {
                 var captureVideo: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(CJ_MediaTrackConstraintSet(width: 720.0, height: 1280.0, ohosScreenCaptureAudioFilter: "current-app"))
-
                 this.displayMediaStream = mediaDevices.getDisplayMedia(captureVideo, true, true)
                 this.retVideoTrack = this.displayMediaStream.getVideoTracks()
                 this.localVideoTrack = this.retVideoTrack[0]
@@ -620,6 +619,33 @@ class EntryView {
                      this.localAudioTrack2 = audioTracks[1]
                      AppLog.error('${Index_WebRTC_TAG} audioTrack2: ${this.localAudioTrack.getOrThrow().getID()}')
                 }
+            }
+        }
+    }
+
+    func prepareDisplayMedia2(): Unit {
+        if (this.displayMediaStream.isNone()) {
+            var captureVideo: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(CJ_MediaTrackConstraintSet(width: 720.0, height: 1280.0, ohosScreenCaptureAudioFilter: "current-app"))
+            let that = this
+
+            mediaDevices.getDisplayMedia(captureVideo, true, true,
+                {
+                    displayMediaStream =>
+                        that.displayMediaStream = displayMediaStream
+                        that.retVideoTrack = that.displayMediaStream.getVideoTracks()
+                        that.mXComponentController1.setVideoTrack(that.retVideoTrack[0])
+                        that.mXComponentController1.setScalingMode(ScalingMode().aspectFit)
+                }
+            )
+
+            let audioTracks = this.displayMediaStream.getAudioTracks()
+            if (audioTracks.size > 0) {
+                 this.localAudioTrack = audioTracks[0]
+                 AppLog.error('${Index_WebRTC_TAG} audioTrack: ${this.localAudioTrack.getOrThrow().getID()}')
+            }
+            if (audioTracks.size > 1) {
+                 this.localAudioTrack2 = audioTracks[1]
+                 AppLog.error('${Index_WebRTC_TAG} audioTrack2: ${this.localAudioTrack.getOrThrow().getID()}')
             }
         }
     }

@@ -24,56 +24,84 @@ struct FFI_videoGetDisplayMedia {
     char* cj_ohosScreenCaptureAudioFilter;
 };
 
+// 在ffi_media_devices.h中添加
+//struct DisplayMediaContext {
+//    FFIMediaDevices* instance;
+//    MediaTrackConstraints video;
+//    MediaTrackConstraints audio;
+//    MediaTrackConstraints systemAudio;
+//    int64_t id; // 用于标识回调
+//    void (*callback)(int64_t that, int64_t mediaStream); // 回调函数
+//};
+
 namespace webrtc {
 
-    class FFIMediaDevices  : public CJ_CLASS_BASE::FFICangjieClassID {
-        public:
-            FFIMediaDevices() {
-                factory_ = PeerConnectionFactoryWrapper::GetDefault();
-                
-                
-            }
-            ~FFIMediaDevices () override {
-                delete ffiUserMediaStream_;
-                delete ffiDisplayMediaStream_;
-            }
-            CJ_ReturnEnumerateDevicesInfo enumerateDevices(); // return MediaDeviceInfo[]
-            int64_t getSupportedConstraints(); // return MediaTrackSupportedConstraints*
-            void getUserMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video, 
-                              CJ_TO_CPP_DisplayMediaStreamOptions* audio, 
-                              int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack)); 
-            
+class FFIMediaDevices  : public CJ_CLASS_BASE::FFICangjieClassID {
+public:
+    FFIMediaDevices() {
+        factory_ = PeerConnectionFactoryWrapper::GetDefault();
+    }
+
+    ~FFIMediaDevices () override {
+        delete ffiUserMediaStream_;
+        delete ffiDisplayMediaStream_;
+    }
+
+    CJ_ReturnEnumerateDevicesInfo enumerateDevices(); // return MediaDeviceInfo[]
+    int64_t getSupportedConstraints(); // return MediaTrackSupportedConstraints*
+    void getUserMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video, 
+                        CJ_TO_CPP_DisplayMediaStreamOptions* audio, 
+                        int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack)); 
+
+    int64_t getDisplayMedia(const CJ_TO_CPP_DisplayMediaStreamOptions video, 
+                            const CJ_TO_CPP_DisplayMediaStreamOptions audio, 
+                            const CJ_TO_CPP_DisplayMediaStreamOptions systemAudio
+                            );
+
+    void getDisplayMedia(const CJ_TO_CPP_DisplayMediaStreamOptions video, 
+                        const CJ_TO_CPP_DisplayMediaStreamOptions audio, 
+                        const CJ_TO_CPP_DisplayMediaStreamOptions systemAudio,
+                        int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack));
+
+    // static void DoGetDisplayMedia(uv_work_t* req);
+    // static void AfterGetDisplayMedia(uv_work_t* req, int status);
     
-            int64_t getDisplayMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video, 
-                                 CJ_TO_CPP_DisplayMediaStreamOptions* audio, 
-                                 CJ_TO_CPP_DisplayMediaStreamOptions* systemAudio
-                                 );
-          
-        private:
-            void getUserMedia(MediaTrackConstraints video, MediaTrackConstraints audio, int64_t id, 
-                              void (*pe)(int64_t that, int64_t localVideoTrack)); 
-            int64_t getDisplayMedia(MediaTrackConstraints video, MediaTrackConstraints audio, MediaTrackConstraints systemAudio);// return MediaStream*
-        protected:
-            rtc::scoped_refptr<AudioTrackInterface> CreateAudioTrack(std::string* errorMessage);
-            rtc::scoped_refptr<AudioTrackInterface> CreateSystemAudioTrack(std::shared_ptr<SystemAudioReceiver> systemAudioReceiver, std::string* errorMessage);
-            rtc::scoped_refptr<VideoTrackInterface> CreateVideoTrack1(std::shared_ptr<SystemAudioReceiver> systemAudioReceiver, std::string* errorMessage);
-            rtc::scoped_refptr<VideoTrackInterface> CreateVideoTrack2(std::string* errorMessage);
-            MediaTrackConstraints audioConstraints_;
-            MediaTrackConstraints systemAudioConstraints_;
-            MediaTrackConstraints videoConstraints_;
-            
-            std::vector<CameraDeviceInfo> cameraDevices_;
-            std::vector<AudioDeviceInfo> audioDevices_; 
+    // 添加新的异步接口
+    //  std::optional<int64_t> getDisplayMedia(const CJ_TO_CPP_DisplayMediaStreamOptions video,
+    //                     const CJ_TO_CPP_DisplayMediaStreamOptions audio,
+    //                     const CJ_TO_CPP_DisplayMediaStreamOptions systemAudio,
+    //                     int64_t id,
+    //                     void (*callback)(int64_t that, int64_t mediaStream));
+
+private:
+    void getUserMedia(MediaTrackConstraints video, MediaTrackConstraints audio, int64_t id, 
+                        void (*pe)(int64_t that, int64_t localVideoTrack)); 
+    int64_t getDisplayMedia(MediaTrackConstraints video, MediaTrackConstraints audio, MediaTrackConstraints systemAudio);// return MediaStream*
+    void getDisplayMediaCallBack(MediaTrackConstraints video, 
+                                MediaTrackConstraints audio,
+                                MediaTrackConstraints systemAudio, 
+                                int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack));
+protected:
+    rtc::scoped_refptr<AudioTrackInterface> CreateAudioTrack(std::string* errorMessage);
+    rtc::scoped_refptr<AudioTrackInterface> CreateSystemAudioTrack(std::shared_ptr<SystemAudioReceiver> systemAudioReceiver, std::string* errorMessage);
+    rtc::scoped_refptr<VideoTrackInterface> CreateVideoTrack1(std::shared_ptr<SystemAudioReceiver> systemAudioReceiver, std::string* errorMessage);
+    rtc::scoped_refptr<VideoTrackInterface> CreateVideoTrack2(std::string* errorMessage);
+    MediaTrackConstraints audioConstraints_;
+    MediaTrackConstraints systemAudioConstraints_;
+    MediaTrackConstraints videoConstraints_;
     
-            std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
-            rtc::scoped_refptr<MediaStreamInterface> display_media_stream_;
-            rtc::scoped_refptr<MediaStreamInterface> user_media_stream_;
-            FFIMediaStream* ffiDisplayMediaStream_ = nullptr;
-            FFIMediaStream* ffiUserMediaStream_ = nullptr;
-            
-            void (*cj_func_call_back1_)(int64_t that, int64_t localVideoTrack);
-            void (*cj_func_call_back2_)(int64_t that, int64_t localVideoTrack);
-    };
+    std::vector<CameraDeviceInfo> cameraDevices_;
+    std::vector<AudioDeviceInfo> audioDevices_; 
+
+    std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
+    rtc::scoped_refptr<MediaStreamInterface> display_media_stream_;
+    rtc::scoped_refptr<MediaStreamInterface> user_media_stream_;
+    FFIMediaStream* ffiDisplayMediaStream_ = nullptr;
+    FFIMediaStream* ffiUserMediaStream_ = nullptr;
+    
+    void (*cj_func_call_back1_)(int64_t that, int64_t localVideoTrack);
+    void (*cj_func_call_back2_)(int64_t that, int64_t localVideoTrack);
+};
 
 } // namespace webrtc
 
