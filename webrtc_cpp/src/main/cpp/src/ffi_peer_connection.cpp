@@ -568,6 +568,7 @@ void ffiPeerConnection::OnIceConnectionChange(PeerConnectionInterface::IceConnec
 void ffiPeerConnection::SetOnStandardizedIceConnectionChange(void (*pe)(int64_t id, CJ_Event ptr)) {
     cj_func_call_OnStandardizedIceConnectionChange_ = pe;
 }
+
 void ffiPeerConnection::OnStandardizedIceConnectionChange(PeerConnectionInterface::IceConnectionState newState) {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__ << " newState=" << newState;
     Dispatch(CallbackEvent<ffiPeerConnection>::Create([this, newState](ffiPeerConnection& target) {
@@ -577,9 +578,11 @@ void ffiPeerConnection::OnStandardizedIceConnectionChange(PeerConnectionInterfac
         }
     }));
 }
+
 void ffiPeerConnection::SetOnConnectionChange(void (*pe)(int64_t id, CJ_Event ptr)) {
     cj_func_call_OnConnectionChange_ = pe;
 }
+
 void ffiPeerConnection::OnConnectionChange(PeerConnectionInterface::PeerConnectionState newState) {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__ << " newState=" << newState;
     Dispatch(CallbackEvent<ffiPeerConnection>::Create([this, newState](ffiPeerConnection& target) {
@@ -589,12 +592,15 @@ void ffiPeerConnection::OnConnectionChange(PeerConnectionInterface::PeerConnecti
         }
     }));
 }
+
 void ffiPeerConnection::OnIceConnectionReceivingChange(bool receiving) {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 }
+
 void ffiPeerConnection::SetOnIceGatheringChange(void (*pe)(int64_t id, CJ_Event ptr)) {
     cj_func_call_OnIceGatheringChange_ = pe;
 }
+
 void ffiPeerConnection::OnIceGatheringChange(PeerConnectionInterface::IceGatheringState newState) {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__ << " newState=" << newState;
     Dispatch(CallbackEvent<ffiPeerConnection>::Create([this, newState](ffiPeerConnection& target) {
@@ -608,9 +614,11 @@ void ffiPeerConnection::OnIceGatheringChange(PeerConnectionInterface::IceGatheri
 void ffiPeerConnection::OnIceSelectedCandidatePairChanged(const cricket::CandidatePairChangeEvent& event) {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 }
+
 void ffiPeerConnection::OnAddStream(rtc::scoped_refptr<MediaStreamInterface> stream) {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 }
+
 void ffiPeerConnection::OnRemoveStream(rtc::scoped_refptr<MediaStreamInterface> stream) {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 }

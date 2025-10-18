@@ -241,27 +241,6 @@ public class MediaDevices <: WebrtcClass {
              return MediaStream(ffi_webrtc_mediaDevices_getDisplayMedia(this.ID, video, captureAudio, captureohosSystemAudio))
         }
     }
-
-    public func getDisplayMedia(video: CJ_TO_CPP_DisplayMediaStreamOptions,
-                                audio: Bool,
-                                systemAudio: Bool,
-                                callback: (mediaStream: MediaStream)-> Unit): Unit
-    {
-        var captureAudio: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(audio)
-        var captureohosSystemAudio: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(systemAudio)
-        this.call = callback
-        let f : CFunc<(that: Int64, localVideoTrack: Int64) -> Unit> = {id: Int64, localVideoTrack: Int64 =>
-            let that: MediaDevices = ((WebRtcGlobal.map.get(id) ?? return) as MediaDevices) ?? return
-            let track = MediaStream(localVideoTrack)
-            if (let Some(v) <- that.call) {
-                v(track)
-            }
-        }
-
-        unsafe {
-            ffi_webrtc_mediaDevices_getDisplayMedia_CallBack(this.ID, video, captureAudio, captureohosSystemAudio, this.randomid, f)
-        }
-    }
 }
 
 foreign {
@@ -298,11 +277,6 @@ foreign {
     func ffi_webrtc_mediaDevices_getDisplayMedia(mediaDevicesPtr: Int64, video: CJ_TO_CPP_DisplayMediaStreamOptions,
                                                         audio:CJ_TO_CPP_DisplayMediaStreamOptions,
                                                         systemAudio:CJ_TO_CPP_DisplayMediaStreamOptions): Int64
-
-    func ffi_webrtc_mediaDevices_getDisplayMedia_CallBack(mediaDevicesPtr: Int64, video: CJ_TO_CPP_DisplayMediaStreamOptions,
-                                                        audio:CJ_TO_CPP_DisplayMediaStreamOptions,
-                                                        systemAudio:CJ_TO_CPP_DisplayMediaStreamOptions,
-                                                        id: Int64, pe: CFunc<(that: Int64, localVideoTrack: Int64) -> Unit>): Unit
 
     func ffi_webrtc_mediaDevices_getUserMedia(mediaDevicesPtr: Int64, video: CJ_TO_CPP_DisplayMediaStreamOptions,
                                                         audio:CJ_TO_CPP_DisplayMediaStreamOptions): Int64  // TODO
@@ -426,11 +400,11 @@ foreign {
 //    }
 //}
 //
-//public func cj_SetDefault(pcfID: Int64) {
-//    unsafe {
-//        ffi_SetDefault(pcfID)
-//    }
-//}
+public func cj_SetDefault(pcf: PeerConnectionFactory) {
+    unsafe {
+        ffi_SetDefault(pcf.getID())
+    }
+}
 //
 //private func cj_StartAecDump(pcfID: Int64, fd: Int32, max_size_bytes: Int32): Bool {
 //    unsafe {

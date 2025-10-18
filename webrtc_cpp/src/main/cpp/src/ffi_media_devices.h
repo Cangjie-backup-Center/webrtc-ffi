@@ -58,29 +58,11 @@ public:
                             const CJ_TO_CPP_DisplayMediaStreamOptions systemAudio
                             );
 
-    void getDisplayMedia(const CJ_TO_CPP_DisplayMediaStreamOptions video, 
-                        const CJ_TO_CPP_DisplayMediaStreamOptions audio, 
-                        const CJ_TO_CPP_DisplayMediaStreamOptions systemAudio,
-                        int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack));
-
-    // static void DoGetDisplayMedia(uv_work_t* req);
-    // static void AfterGetDisplayMedia(uv_work_t* req, int status);
-    
-    // 添加新的异步接口
-    //  std::optional<int64_t> getDisplayMedia(const CJ_TO_CPP_DisplayMediaStreamOptions video,
-    //                     const CJ_TO_CPP_DisplayMediaStreamOptions audio,
-    //                     const CJ_TO_CPP_DisplayMediaStreamOptions systemAudio,
-    //                     int64_t id,
-    //                     void (*callback)(int64_t that, int64_t mediaStream));
-
 private:
     void getUserMedia(MediaTrackConstraints video, MediaTrackConstraints audio, int64_t id, 
                         void (*pe)(int64_t that, int64_t localVideoTrack)); 
     int64_t getDisplayMedia(MediaTrackConstraints video, MediaTrackConstraints audio, MediaTrackConstraints systemAudio);// return MediaStream*
-    void getDisplayMediaCallBack(MediaTrackConstraints video, 
-                                MediaTrackConstraints audio,
-                                MediaTrackConstraints systemAudio, 
-                                int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack));
+    
 protected:
     rtc::scoped_refptr<AudioTrackInterface> CreateAudioTrack(std::string* errorMessage);
     rtc::scoped_refptr<AudioTrackInterface> CreateSystemAudioTrack(std::shared_ptr<SystemAudioReceiver> systemAudioReceiver, std::string* errorMessage);

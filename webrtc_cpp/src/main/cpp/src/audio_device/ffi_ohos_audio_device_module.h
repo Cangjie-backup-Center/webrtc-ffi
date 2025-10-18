@@ -38,6 +38,7 @@ protected:
 
 private:
     rtc::scoped_refptr<OhosAudioDeviceModule> adm_;
+    std::unique_ptr<FineAudioBuffer> inputAudioBuffer_;
 
 };
 

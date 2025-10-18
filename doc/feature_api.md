@@ -156,9 +156,7 @@ public struct CJ_TO_CPP_DisplayMediaStreamOptions {
 }
 ```
 
-
-
-### 1.6 webrtc 提供 全局函数
+### 1.6 webrtc 提供重要功能类
 
 ```cangjie
 	/*
@@ -300,6 +298,126 @@ public struct CJ_TO_CPP_DisplayMediaStreamOptions {
         public func getVideoTracks(): Array<MediaStreamTrack> 
 	}
     
+  public class RTCPeerConnection <: WebrtcClass{
+  		/*
+  		* 控制接收音频流的播放状态。默认情况下处于启用状态。即使启用了播放功能，只有当应用了相应的 SDP 时，		 * 流才会被播放出来。将“playout”设置为“false”将停止底层音频设备的播放，但会启动一个任务，该任务每 		   * 10 毫秒就会检查音频数据一次，以确保音频处理得以进行并更新音频统计数据。
+  		* 
+  		* 参数 playout - 控制是否开启音频
+  		*/
+  		public func setAudioPlayout(playout: Bool): Unit
+  		
+  		/*
+  		* 控制传输音频流的录制功能。默认情况下该功能处于开启状态。即便录制功能已开启，只有在应用了相应的 			* SDP 文件的情况下，音频流才会被录制。
+  		*
+  		* 参数 recording - 控制是否开启音频录制
+  		*/
+  		public func setAudioRecording(recording: Bool): Unit
+  		
+  		/*
+  		* 关闭连接
+  		*
+  		*/
+  		public func close(): Unit
+  		
+  		/*
+  		* 生成SDP offer
+  		*
+  		* 参数 iceRestart - 控制是否控制是否重新启动ICE，默认为false
+  		* 
+  		* 返回值 WebrtcResult<RTCSessionDescription> - 获取返回值为OK还是ERROR
+  		*/
+  		public func createOffer(iceRestart!: Bool = false): WebrtcResult<RTCSessionDescription>
+  		
+  		/*
+  		* 播放对端传来的音视频信息
+  		*
+  		* 参数 pc - RTCPeerConnection类实例
+        * 参数 dc - 接收回调的事件
+  		*/
+  		public mut prop onTrack: ((pc: RTCPeerConnection, dc: RTCTrackEvent) -> Unit)
+  		
+  		/*
+  		* 
+  		*
+  		* 参数 pc - RTCPeerConnection类实例
+  		* 参数 dc - 接收回调的事件
+  		*/
+  		public mut prop onSignalingChange: ((pc: RTCPeerConnection, dc: Event) -> Unit)
+  	
+    	/*
+  		* 连接状态捕获，连接断开则关闭
+  		*
+  		* 参数 pc - RTCPeerConnection类实例
+  		* 参数 dc - 接收回调的事件
+  		*/
+  		public mut prop onconnectionstatechange: ((pc: RTCPeerConnection, dc: Event) -> Unit)
+  		
+  		/*
+  		* 向发送数据信息
+  		*
+  		* 参数 pc - RTCPeerConnection类实例
+  		* 参数 dc - 接收回调的事件
+  		*/
+  		public mut prop onIceCandidate: ((pc: RTCPeerConnection, dc: RTCPeerConnectionIceEvent) -> Unit)
+  		
+  		/*
+  		* 监控 WebRTC 连接中 ICE 候选地址收集过程的状态变化，并在状态改变时执行相应的打印
+  		*
+  		* 参数 pc - RTCPeerConnection类实例
+  		* 参数 dc - 接收回调的事件
+  		*/
+  		 public mut prop onicegatheringstatechange: ((pc: RTCPeerConnection, dc: Event) -> Unit)
+  		 
+  		 /*
+  		 * WebRTC 连接中接收由远程对等方发起创建的数据通道，并为该通道注册必要的事件监听器以便后续通信
+  		 *
+  		 * 参数 pc - RTCPeerConnection类实例
+  		 * 参数 dc - 接收回调的事件
+  		 */
+  		 public mut prop ondatachannel: ((pc: RTCPeerConnection, dc: RTCDataChannel) -> Unit)
+  		 
+  		 /*
+  		 * WebRTC 双端通信中将本地采集的音视频信息添加到发送队列
+  		 *
+  		 * 参数 track - MediaStreamTrack类，用以传递音视频流
+  		 * 参数 streamVec - 可选参数，CJ_ArrayMediaStream结构体
+  		 */
+  		 public func addTrack(track: MediaStreamTrack, streamVec!: CJ_ArrayMediaStream = CJ_ArrayMediaStream()): Int64
+  		 
+  		 /*
+  		 * 在当前的 WebRTC 连接中创建一个名为"send"的数据通道，用于实现与远程对等方之间的任意数据传输。
+  		 *
+  		 * 参数 label - 用来为数据通道命名
+  		 * 参数 dataChannelDict - 可缺省参数
+  		 *
+  		 * 返回值 RTCDataChannel - 返回创建成功的数据通道实例
+  		 */
+  		 public func createDataChannel(label: String, dataChannelDict!: CJ_RTCDataChannelInit = CJ_RTCDataChannelInit()): RTCDataChannel
+  }
+  
+  public class RTCDataChannel <: WebrtcClass & Resource {
+         /*
+         * 在本地数据通道成功建立连接后，自动发送一些初始数据用于测试数据通道的功能
+         *
+         * 参数 pc - RTCDataChannel类
+         * 参数 dc - 接收回调的事件
+         */
+		public mut prop onopen: ((pc: RTCDataChannel, dc: Event) -> Unit)
+		
+		/*
+		* 发送一些初始数据测试数据通道
+		* 
+		* 参数 data - 可自定义发送的数据
+		*/
+		public func send(data: String): Unit 
+		
+		/*
+		* 为本地创建的发送数据通道注册一个消息监听器，以便能够处理从远程对等方通过该通道发送过来的数据。
+		*
+		* 参数 pc - RTCDataChannel类
+		*/
+		public mut prop onmessage: ((pc: RTCDataChannel, dc: MessageEvent) -> Unit)
+ }
             
 ```
 

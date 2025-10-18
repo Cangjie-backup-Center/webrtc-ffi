@@ -46,6 +46,7 @@ webrtc4cj 是一个基于仓颉语言以视频直播、屏幕共享为核心功�
 
     1. 克隆下载项目
 2. 将webrtc_cpp和webrtc_cj模块拷贝到应用项目下
+    
     3. 解压模块下目录任意webrtc_cpp/src/cpp/libwebrtc*.rar得到libwebrtc.a文件
 4. 编译模块webrtc_cpp得到动态库.so
     5. 修改自身应用 entry 下的 oh-package.json5 文件，在 dependencies 字段添加 "webrtc": "file:../webrtc"
@@ -101,8 +102,8 @@ webrtc4cj 是一个基于仓颉语言以视频直播、屏幕共享为核心功�
 ## 约束与限制
 1. 在下述版本验证通过：
 
-- DevEco Studio 5.1.0 Release
-- Cangjie support Plugin: 5.1.0.828
+- DevEco Studio 5.1.1 Release
+- Cangjie support Plugin: 5.1.0.823
 
 
 ## 开源协议
