@@ -86,9 +86,7 @@ class CJ_MessageData <: Serializable<CJ_MessageData> {
             )
         }
     }
-
 }
-
 
 @Entry
 @Component
@@ -273,14 +271,9 @@ class EntryView {
     }
 
     protected override func aboutToAppear(): Unit {
-        // 设置音频策略，允许和其它音频流并发
-        // let strategy: AudioSessionStrategy = AudioSessionStrategy(concurrencyMode: AudioConcurrencyMode.CONCURRENCY_MIX_WITH_OTHERS)
         let audioManager = getAudioManager()
         let audioSessionManager = audioManager.getRoutingManager()
 
-        // Logging.enableLogThreads()
-        // Logging.enableLogTimeStamps()
-        // Logging.enableLogToDebugOutput(LoggingSeverity.VERBOSE)
         let stageContext = getStageContext(getContext())
         let atManager = AbilityAccessCtrl.createAtManager()
         let permissionList = ["ohos.permission.MICROPHONE", "ohos.permission.CAMERA"]
@@ -445,7 +438,6 @@ class EntryView {
             this.createPeerConnectionFactory({
                 value => launch {
                     this.pcf = value
-                    cj_SetDefault(value)
                 }
             })
         }
@@ -493,11 +485,9 @@ class EntryView {
         spawn {
              try {
                 let offer = this.pc.getOrThrow().createOffer()
-                // AppLog.error("${Index_WebRTC_TAG} createOffer: ${offer}")
                 match (offer) {
                     case Ok(v) =>
                         this.pc?.setLocalDescription(v)
-//                        this.sendMessage(v.sdp)
                         let cjmsg = CJ_MessageData(v, Option<RTCIceCandidateInit>.None)
                         let dm = cjmsg.serialize()
                         let obj: JsonValue = dm.toJson()
@@ -555,9 +545,9 @@ class EntryView {
             let ret: PeerConnectionFactory = PeerConnectionFactory(this.adm.getOrThrow())
             callback(ret)
             ret.SetDefault()
-//            let filesDir = getContext().filesDir
-//            let file = FileFs.open("${filesDir}/test.txt", mode: (READ_WRITE.mode | CREATE.mode))
-//            this.pcf?.startAecDump(file.fd, -1)
+            let filesDir = getContext().filesDir
+            let file = FileFs.open("${filesDir}/test.txt", mode: (READ_WRITE.mode | CREATE.mode))
+            this.pcf?.startAecDump(file.fd, -1)
         }
     }
 
@@ -604,9 +594,10 @@ class EntryView {
         }
     }
 
+
     func createPeerConnection(): Future<Unit> {
         spawn {
-             prepareLocalMedia().get()
+            // prepareLocalMedia().get()
             prepareDisplayMedia().get()
             this.pc = this.pcf?.createPeerConnection(RTCConfiguration(iceServers: [RTCIceServer(urls: [STUN_SERVER])]))
             if (this.pc.isNone()) {
@@ -622,41 +613,15 @@ class EntryView {
                     } else if (event.track.kind == 'audio') {
                         this.remoteAudioTrack = event.track
                     }
-            }
-//            this.pc?.onSignalingChange = {
-//                pc, event => AppLog.info('${Index_WebRTC_TAG} onsignalingstatechange: ${this.pc?.signalingState}')
-//            }
-            this.pc?.onconnectionstatechange = { pc, event =>
-                          AppLog.info('${Index_WebRTC_TAG} onconnectionstatechange: ${this.pc?.connectionState}')
-                if (this.pc?.connectionState.toString() == 'failed') {
-                    this.setError("Peer connection failed")
-                    this.ws.close({
-                            errorCode: Option<AsyncError>, data: Option<Bool> => match (errorCode) {
-                                case Some(e) => 0 // error
-                                case _ => match (data) {
-                                    case Some(value) => 1 // success
-                                    case _ => 0 // error
-                                }
-                            }
-                        })
                 }
-            }
-
-
-            this.pc?.onIceCandidate = { pc, event =>
-              if (let Some(v) <- event.candidate) {
-                let dm = CJ_MessageData(Option<RTCSessionDescription>.None, v.toRTCIceCandidateInit()).serialize()
-                let obj: JsonValue = dm.toJson()
-                this.sendMessage(obj.toJsonString())
-              }
-            }
-
-            this.pc?.oniceconnectionstatechange = { pc, event =>
-              AppLog.info('${Index_WebRTC_TAG} oniceconnect/ionstatechange: ${this.pc?.iceConnectionState}')
-              if (this.pc?.iceConnectionState.toString() == 'failed') {
-                this.setError("Ice connection failed")
-                this.ws.close(
-                    {
+        this.pc?.onSignalingChange = {
+            pc, event => AppLog.info('${Index_WebRTC_TAG} onsignalingstatechange: ${this.pc?.signalingState}')
+        }
+        this.pc?.onconnectionstatechange = { pc, event =>
+                      AppLog.info('${Index_WebRTC_TAG} onconnectionstatechange: ${this.pc?.connectionState}')
+            if (this.pc?.connectionState.toString() == 'failed') {
+                this.setError("Peer connection failed")
+                this.ws.close({
                         errorCode: Option<AsyncError>, data: Option<Bool> => match (errorCode) {
                             case Some(e) => 0 // error
                             case _ => match (data) {
@@ -664,65 +629,100 @@ class EntryView {
                                 case _ => 0 // error
                             }
                         }
-                })
-              }
+                    })
             }
-            this.pc?.onicegatheringstatechange = { pc, event =>
-              AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: ${this.pc?.iceGatheringState}')
-              match (this.pc.getOrThrow().iceGatheringState) {
-                case FFIRTCIceGatheringState.NEW =>
-                  AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: gathering is either just starting or has been reset')
-                case FFIRTCIceGatheringState.GATHERING =>
-                  AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: gathering has begun or is ongoing')
-                case FFIRTCIceGatheringState.COMPLETE =>
-                  AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: gathering has ended')
-                case _ => ()
-              }
-            }
-            this.pc?.ondatachannel = {
-                pc, event =>
-                    AppLog.info('${Index_WebRTC_TAG} ondatachannel: this=')
-                    // AppLog.info('${Index_WebRTC_TAG} ondatachannel: event= ${event}')
-                    this.setStatus("Data channel created")
-                    this.recvChannel = event
-                    this.recvChannel?.onopen = this.onDataChannelOpen
-                    this.recvChannel?.onmessage = {pc, event => this.setStatus("Received data channel message")}
-                    this.recvChannel?.onerror = this.onDataChannelError
-                    this.recvChannel?.onclose = this.onDataChannelClose
-            }
-            if (let Some(v) <- this.localAudioTrack) {
-                 let rtpSender1 = this.pc?.addTrack(v)
-                 AppLog.info('${Index_WebRTC_TAG} rtpSender1: ${rtpSender1}')
-            }
-            if (let Some(v) <- this.localAudioTrack2) {
-                 let rtpSender2 = this.pc?.addTrack(v)
-                 AppLog.info('${Index_WebRTC_TAG} rtpSender2: ${rtpSender2}')
-            }
-            if (let Some(v) <- this.localVideoTrack) {
-                 let rtpSender3 = this.pc?.addTrack(v)
-                 AppLog.info('${Index_WebRTC_TAG} rtpSender3: ${rtpSender3}')
-            }
-            if (let Some(v) <- this.localCameraVideoTrack) {
-                 let rtpSender4 = this.pc?.addTrack(v)
-                 AppLog.info('${Index_WebRTC_TAG} rtpSender3: ${rtpSender4}')
-            }
+        }
+        this.pc?.onnegotiationneeded = { pc, event =>
+//                      AppLog.info('${Index_WebRTC_TAG} onnegotiationneeded: this= ${this.pc}')
+//                      AppLog.info('${Index_WebRTC_TAG} onnegotiationneeded: event= ${event}')
+        }
+        this.pc?.onIceCandidate = { pc, event =>
+//              AppLog.info('${Index_WebRTC_TAG} onicecandidate: this=')
+//              AppLog.info('${Index_WebRTC_TAG} onicecandidate: event=${event}')
+          if (let Some(v) <- event.candidate) {
+            let dm = CJ_MessageData(Option<RTCSessionDescription>.None, v.toRTCIceCandidateInit()).serialize()
+            let obj: JsonValue = dm.toJson()
+            this.sendMessage(obj.toJsonString())
+          }
+        }
+        this.pc?.onIceCandidateError = { pc, event =>
+//              AppLog.error('${Index_WebRTC_TAG} onicecandidateerror: event= ${event}')
+        }
+        this.pc?.oniceconnectionstatechange = { pc, event =>
+          AppLog.info('${Index_WebRTC_TAG} oniceconnect/ionstatechange: ${this.pc?.iceConnectionState}')
+          if (this.pc?.iceConnectionState.toString() == 'failed') {
+            this.setError("Ice connection failed")
+            this.ws.close(
+                {
+                    errorCode: Option<AsyncError>, data: Option<Bool> => match (errorCode) {
+                        case Some(e) => 0 // error
+                        case _ => match (data) {
+                            case Some(value) => 1 // success
+                            case _ => 0 // error
+                        }
+                    }
+            })
+          }
+        }
+        this.pc?.onicegatheringstatechange = { pc, event =>
+          AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: ${this.pc?.iceGatheringState}')
+          match (this.pc.getOrThrow().iceGatheringState) {
+            case FFIRTCIceGatheringState.NEW =>
+              AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: gathering is either just starting or has been reset')
+            case FFIRTCIceGatheringState.GATHERING =>
+              AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: gathering has begun or is ongoing')
+            case FFIRTCIceGatheringState.COMPLETE =>
+              AppLog.info('${Index_WebRTC_TAG} onicegatheringstatechange: gathering has ended')
+            case _ => ()
+          }
+        }
+        this.pc?.ondatachannel = {
+            pc, event =>
+                AppLog.info('${Index_WebRTC_TAG} ondatachannel: this=')
+                // AppLog.info('${Index_WebRTC_TAG} ondatachannel: event= ${event}')
+                this.setStatus("Data channel created")
+                this.recvChannel = event
+                this.recvChannel?.onopen = this.onDataChannelOpen
+                this.recvChannel?.onmessage = {pc, event => this.setStatus("Received data channel message")}
+                this.recvChannel?.onerror = this.onDataChannelError
+                this.recvChannel?.onclose = this.onDataChannelClose
+        }
+        if (let Some(v) <- this.localAudioTrack) {
+             let rtpSender1 = this.pc?.addTrack(v)
+             AppLog.info('${Index_WebRTC_TAG} rtpSender1: ${rtpSender1}')
+        }
+        if (let Some(v) <- this.localAudioTrack2) {
+             let rtpSender2 = this.pc?.addTrack(v)
+             AppLog.info('${Index_WebRTC_TAG} rtpSender2: ${rtpSender2}')
+        }
+        if (let Some(v) <- this.localVideoTrack) {
+             let rtpSender3 = this.pc?.addTrack(v)
+             AppLog.info('${Index_WebRTC_TAG} rtpSender3: ${rtpSender3}')
+        }
+        if (let Some(v) <- this.localCameraVideoTrack) {
+             let rtpSender4 = this.pc?.addTrack(v)
+             AppLog.info('${Index_WebRTC_TAG} rtpSender3: ${rtpSender4}')
+        }
 
-            this.sendChannel = this.pc?.createDataChannel("send")
-            this.sendChannel?.onopen = {
-                pc, event =>
-                    // this is Index
-                    AppLog.info('${Index_WebRTC_TAG} =dataChannel.OnOpen: this=')
-                    this.sendChannel?.send("Hi! (from ArkTS)")
-                    let data1 = Array<UInt8>(20, repeat: 0)
-                    this.sendChannel?.send(data1)
-                    let data2 = Array<UInt8>(20, repeat: 1)
-                    this.sendChannel?.send(data2)
-                    let data3 = Array<UInt8>(20, repeat: 2)
-                    this.sendChannel?.send(data3)
-            }
-            this.sendChannel?.onmessage = {pc, event => this.setStatus("Received data channel message")}
-            this.sendChannel?.onerror = this.onDataChannelError
-            this.sendChannel?.onclose = this.onDataChannelClose
+//         AppLog.info('${Index_WebRTC_TAG} transceivers: ${this.pc?.getTransceivers()}')
+        this.sendChannel = this.pc?.createDataChannel("send")
+//         AppLog.info('${Index_WebRTC_TAG} sendChannel: ${this.sendChannel}')
+        this.sendChannel?.onopen = {
+            pc, event =>
+                // this is Index
+                AppLog.info('${Index_WebRTC_TAG} =dataChannel.OnOpen: this=')
+                // AppLog.info("${Index_WebRTC_TAG} =dataChannel.OnOpen: ${event}")
+                this.sendChannel?.send("Hi! (from ArkTS)")
+                let data1 = Array<UInt8>(20, repeat: 0)
+                this.sendChannel?.send(data1)
+                let data2 = Array<UInt8>(20, repeat: 1)
+                this.sendChannel?.send(data2)
+                let data3 = Array<UInt8>(20, repeat: 2)
+                this.sendChannel?.send(data3)
+        }
+        this.sendChannel?.onmessage = {pc, event => this.setStatus("Received data channel message")}
+        this.sendChannel?.onerror = this.onDataChannelError
+        this.sendChannel?.onclose = this.onDataChannelClose
          }
     }
 
@@ -734,12 +734,12 @@ class EntryView {
 
     func onDataChannelError(pc: RTCDataChannel, event: Event): Unit {
         // this is webrtc.RTCDataChannel
-         AppLog.info("${Index_WebRTC_TAG} dataChannel.OnError: ${event}")
+         AppLog.info("${Index_WebRTC_TAG} dataChannel.OnError")
     }
 
     func onDataChannelClose(pc: RTCDataChannel, event: Event): Unit {
         // this is webrtc.RTCDataChannel
-        AppLog.info("${Index_WebRTC_TAG} dataChannel.OnClose:")
+        AppLog.info("${Index_WebRTC_TAG} dataChannel.OnClose")
     }
 
     func sendAnswer(): Future<Unit> {
@@ -747,7 +747,6 @@ class EntryView {
             this.setStatus("Got SDP offer, creating answer")
             try {
                 let desc = this.pc.getOrThrow().createAnswer()
-    //            AppLog.error('${Index_WebRTC_TAG} Success to create answer: ${desc}')
                 match (desc) {
                     case Ok(v) =>
                         this.pc?.setLocalDescription(v)
