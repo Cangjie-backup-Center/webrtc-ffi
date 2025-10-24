@@ -24,16 +24,6 @@ struct FFI_videoGetDisplayMedia {
     char* cj_ohosScreenCaptureAudioFilter;
 };
 
-// 在ffi_media_devices.h中添加
-//struct DisplayMediaContext {
-//    FFIMediaDevices* instance;
-//    MediaTrackConstraints video;
-//    MediaTrackConstraints audio;
-//    MediaTrackConstraints systemAudio;
-//    int64_t id; // 用于标识回调
-//    void (*callback)(int64_t that, int64_t mediaStream); // 回调函数
-//};
-
 namespace webrtc {
 
 class FFIMediaDevices  : public CJ_CLASS_BASE::FFICangjieClassID {
@@ -76,6 +66,7 @@ protected:
     std::vector<AudioDeviceInfo> audioDevices_; 
 
     std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
+    std::shared_ptr<PeerConnectionFactoryWrapper> factoryDefault_;
     rtc::scoped_refptr<MediaStreamInterface> display_media_stream_;
     rtc::scoped_refptr<MediaStreamInterface> user_media_stream_;
     FFIMediaStream* ffiDisplayMediaStream_ = nullptr;

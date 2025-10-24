@@ -536,7 +536,8 @@ class EntryView {
 
     func createAudioDeviceModule(callback: (admID: AudioDeviceModule) -> Unit): Future<Unit> {
         spawn {
-            callback(AudioDeviceModule(true, true))
+            let retAdm: AudioDeviceModule = AudioDeviceModule(true, true)
+            callback(retAdm)
         }
     }
 

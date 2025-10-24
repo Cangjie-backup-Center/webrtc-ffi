@@ -168,6 +168,8 @@ int64_t FFIMediaDevices::getDisplayMedia(const CJ_TO_CPP_DisplayMediaStreamOptio
     MediaTrackConstraints systemAudio_;
     MediaTrackConstraints video_;
 
+    factoryDefault_ = PeerConnectionFactoryWrapper::GetDefault();
+
     if (audio.isBool) {
         if (audio.boolean) {
             MediaTrackConstraints constraints;
@@ -239,7 +241,7 @@ int64_t FFIMediaDevices::getDisplayMedia(MediaTrackConstraints video, MediaTrack
     systemAudioConstraints_ = std::move(systemAudio);
     videoConstraints_ = std::move(video);
     
-    display_media_stream_ = factory_->GetFactory()->CreateLocalMediaStream(rtc::CreateRandomUuid());
+    display_media_stream_ = factoryDefault_->GetFactory()->CreateLocalMediaStream(rtc::CreateRandomUuid());
     if (!display_media_stream_) {
         CANGJIE_THROW("Failed to create display media stream");
         return 0;
@@ -289,7 +291,7 @@ int64_t FFIMediaDevices::getDisplayMedia(MediaTrackConstraints video, MediaTrack
         }
     }
     
-    this->ffiDisplayMediaStream_ = new FFIMediaStream(this->factory_, this->display_media_stream_);
+    this->ffiDisplayMediaStream_ = new FFIMediaStream(this->factoryDefault_, this->display_media_stream_);
     return (int64_t)this->ffiDisplayMediaStream_;
 }
 

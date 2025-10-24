@@ -290,6 +290,15 @@ public class MessageEvent {
     ) {}
 }
 
+@C
+struct CJ_AudioSamples {
+    let sampleRate: Int32 = unsafe {zeroValue<Int32>()};
+    let audioFormat: Int32 = unsafe {zeroValue<Int32>()};
+    let channelCount: Int32 = unsafe {zeroValue<Int32>()};
+    let data: CPointer<UInt8> = unsafe {zeroValue<CPointer<UInt8>>()};
+    let dataLength: Int32 = unsafe {zeroValue<Int32>()};
+}
+
 
 
 
