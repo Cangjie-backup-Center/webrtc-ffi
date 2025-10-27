@@ -233,7 +233,8 @@ int64_t FFIMediaDevices::getDisplayMedia(const CJ_TO_CPP_DisplayMediaStreamOptio
         video_ = constraints;
     }
 
-    return getDisplayMedia(video_, audio_, systemAudio_);
+    ffiMDA_ = std::make_shared<FFIMediaDevicesAssist>();
+    return ffiMDA_->getDisplayMediaAssist(video_, audio_, systemAudio_);
 }
 
 int64_t FFIMediaDevices::getDisplayMedia(MediaTrackConstraints video, MediaTrackConstraints audio, MediaTrackConstraints systemAudio){
@@ -424,4 +425,70 @@ rtc::scoped_refptr<AudioTrackInterface> FFIMediaDevices::CreateSystemAudioTrack(
     }
 
     return audioTrack;
+}
+
+int64_t FFIMediaDevicesAssist::getDisplayMediaAssist(MediaTrackConstraints video, 
+                                            MediaTrackConstraints audio, 
+                                            MediaTrackConstraints systemAudio
+                                            )
+{
+    audioConstraints_ = std::move(audio);
+    systemAudioConstraints_ = std::move(systemAudio);
+    videoConstraints_ = std::move(video);
+    
+    factory_ = PeerConnectionFactoryWrapper::GetDefault();
+
+    display_media_stream_ = factory_->GetFactory()->CreateLocalMediaStream(rtc::CreateRandomUuid());
+    if (!display_media_stream_) {
+        CANGJIE_THROW("Failed to create display media stream");
+        return 0;
+    }
+    
+    if(!audioConstraints_.IsNull()) {
+        if(videoConstraints_.IsNull()) {
+            CANGJIE_THROW("Audio should not be enabled individually");
+            return 0;
+        } 
+        std::string errorMessage;
+        auto audioTrack = CreateAudioTrack(&errorMessage);
+        if (audioTrack) {
+            display_media_stream_->AddTrack(audioTrack);
+        } else {
+            CANGJIE_THROW(errorMessage);
+            return 0;
+        }
+    }
+
+    std::shared_ptr<SystemAudioReceiver> systemAudioReceiver;
+    if (!systemAudioConstraints_.IsNull()) {
+        if (videoConstraints_.IsNull()) {
+            CANGJIE_THROW("System audio should not be enabled individually");
+            return 0;
+        }
+
+        // Use default options
+        systemAudioReceiver = SystemAudioReceiver::Create();
+        std::string errorMessage;
+        auto audioTrack = CreateSystemAudioTrack(systemAudioReceiver, &errorMessage);
+        if (audioTrack) {
+            display_media_stream_->AddTrack(audioTrack);
+        } else {
+            CANGJIE_THROW(errorMessage);
+            return 0;
+        }
+    }
+
+    if (!videoConstraints_.IsNull()) { 
+        std::string errorMessage;
+        auto videoTrack = CreateVideoTrack1(systemAudioReceiver, &errorMessage);
+        if (videoTrack) {
+            display_media_stream_->AddTrack(videoTrack);
+        } else {
+            CANGJIE_THROW(errorMessage);
+        }
+    }
+    
+    this->ffiDisplayMediaStream_ = new FFIMediaStream(this->factory_, this->display_media_stream_);
+    return (int64_t)this->ffiDisplayMediaStream_;
+
 }

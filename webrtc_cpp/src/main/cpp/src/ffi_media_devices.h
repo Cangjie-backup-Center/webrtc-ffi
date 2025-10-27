@@ -25,7 +25,7 @@ struct FFI_videoGetDisplayMedia {
 };
 
 namespace webrtc {
-
+class FFIMediaDevicesAssist;
 class FFIMediaDevices  : public CJ_CLASS_BASE::FFICangjieClassID {
 public:
     FFIMediaDevices() {
@@ -49,6 +49,7 @@ public:
                             );
 
 private:
+    std::shared_ptr<FFIMediaDevicesAssist> ffiMDA_;
     void getUserMedia(MediaTrackConstraints video, MediaTrackConstraints audio, int64_t id, 
                         void (*pe)(int64_t that, int64_t localVideoTrack)); 
     int64_t getDisplayMedia(MediaTrackConstraints video, MediaTrackConstraints audio, MediaTrackConstraints systemAudio);// return MediaStream*
@@ -75,6 +76,19 @@ protected:
     void (*cj_func_call_back1_)(int64_t that, int64_t localVideoTrack);
     void (*cj_func_call_back2_)(int64_t that, int64_t localVideoTrack);
 };
+
+class FFIMediaDevicesAssist  : public FFIMediaDevices {
+public:
+    FFIMediaDevicesAssist() = default;
+    int64_t getDisplayMediaAssist(MediaTrackConstraints video, 
+                                  MediaTrackConstraints audio, 
+                                  MediaTrackConstraints systemAudio);
+
+    ~FFIMediaDevicesAssist () override {
+        delete ffiDisplayMediaStream_;
+    }
+};
+
 
 } // namespace webrtc
 

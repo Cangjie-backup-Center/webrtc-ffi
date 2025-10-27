@@ -195,12 +195,14 @@ ffiPeerConnection::ffiPeerConnection(CJ_RTCConfiguration config, std::shared_ptr
     if(factory.get()) {
         factory_ = factory;
     } else {
-        CANGJIE_THROW("ffiPeerConnection build fail factory is null");
+        factory_ = PeerConnectionFactoryWrapper::GetDefault();
     }
     PeerConnectionDependencies deps(this);
     
     PeerConnectionInterface::RTCConfiguration configuration;
     CangjieToNativeConfiguration(config, configuration);
+    configuration.sdp_semantics = SdpSemantics::kUnifiedPlan;
+
     auto result = factory_->GetFactory()->CreatePeerConnectionOrError(configuration, std::move(deps));
     if (!result.ok()) {
         RTC_LOG(LS_ERROR) << "Failed to create PeerConnection: " << result.error().message();
