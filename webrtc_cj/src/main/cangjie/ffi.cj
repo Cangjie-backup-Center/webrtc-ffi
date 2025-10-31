@@ -409,11 +409,11 @@ public class RTCIceCandidateInit <: Serializable<RTCIceCandidateInit> {
     var sdpMid_: String = ""
     var usernameFragment_: String = ""
 
-    public prop isBuild: Bool {get() {this.cpp.isBuild}}
-    public prop candidate: String {get() {this.cpp.candidate.toString()}}
-    public prop sdpMLineIndex: Int32{get() {this.cpp.sdpMLineIndex}}
-    public prop sdpMid: String {get() {this.cpp.sdpMid.toString()}}
-    public prop usernameFragment: String {get() {this.cpp.usernameFragment.toString()}}
+    public prop isBuild: Bool {get() {this.isBuild}}
+    public prop candidate: String {get() {this.candidate.toString()}}
+    public prop sdpMLineIndex: Int32{get() {this.sdpMLineIndex}}
+    public prop sdpMid: String {get() {this.sdpMid.toString()}}
+    public prop usernameFragment: String {get() {this.usernameFragment.toString()}}
 
     public init(cpp: CJ_RTCIceCandidateInit){
         this.isBuild_ = cpp.isBuild
@@ -430,14 +430,7 @@ public class RTCIceCandidateInit <: Serializable<RTCIceCandidateInit> {
             this.sdpMLineIndex_ = sdpMLineIndex
             this.sdpMid_ = sdpMid
             this.usernameFragment_ = usernameFragment
-        } else {
-            let cpp = CJ_RTCIceCandidateInit()
-            this.isBuild_ = cpp.isBuild
-            this.candidate_ = cpp.candidate
-            this.sdpMLineIndex_ = cpp.sdpMLineIndex
-            this.sdpMid_ = cpp.sdpMid
-            this.usernameFragment_ = cpp.usernameFragment
-        }
+        } 
     }
 
     ~init(){

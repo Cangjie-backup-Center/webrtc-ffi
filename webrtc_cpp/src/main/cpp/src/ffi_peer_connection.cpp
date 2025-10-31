@@ -900,6 +900,10 @@ void ffiPeerConnection::addIceCandidate(CJ_RTCIceCandidateInit iceCandidate) {
         CANGJIE_THROW("CreateIceCandidate error");
     }
 
+    free(iceCandidate.candidate);
+    free(iceCandidate.sdpMid);
+    free(iceCandidate.usernameFragment);
+
     this->Dispatch(
         CallbackEvent<ffiPeerConnection>::Create([this, candidate](ffiPeerConnection& target) {
             pc_->AddIceCandidate(std::unique_ptr<IceCandidateInterface>(candidate), [this](RTCError error) {
