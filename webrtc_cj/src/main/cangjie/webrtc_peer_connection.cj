@@ -320,11 +320,25 @@ public class RTCPeerConnection <: WebrtcClass {
     public func addIceCandidate(candidate: ?RTCIceCandidateInit): Unit {
         if (let Some(v) <- candidate) {
             unsafe {
-                peerConnection_addIceCandidate(this.ID, v.cpp)
+                let candidateCString = LibC.mallocCString(v.candidate)
+                let sdpMidCString = LibC.mallocCString(v.sdpMid)
+                let usernameFragmentCString = LibC.mallocCString(v.usernameFragment)
+                let cpp: CJ_RTCIceCandidateInit = CJ_RTCIceCandidateInit(v.isBuild, candidateCString, v.sdpMLineIndex, sdpMidCString, usernameFragmentCString)
+                peerConnection_addIceCandidate(this.ID, cpp)
+                LibC.free(candidateCString)
+                LibC.free(sdpMidCString)
+                LibC.free(usernameFragmentCString)
             }
         } else {
             unsafe {
-                peerConnection_addIceCandidate(this.ID, RTCIceCandidateInit(false, "", 0, "", "").cpp)
+                let candidateCString = LibC.mallocCString("")
+                let sdpMidCString = LibC.mallocCString("")
+                let usernameFragmentCString = LibC.mallocCString("")
+                let cpp: CJ_RTCIceCandidateInit = CJ_RTCIceCandidateInit(false, candidateCString, 0, sdpMidCString, usernameFragmentCString)
+                peerConnection_addIceCandidate(this.ID, cpp)
+                LibC.free(candidateCString)
+                LibC.free(sdpMidCString)
+                LibC.free(usernameFragmentCString)
             }
         }
     }

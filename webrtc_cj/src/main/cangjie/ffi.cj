@@ -182,7 +182,7 @@ public class ErrorMessage {
     init(msg: CJ_ErrorMessage){
         this.cpp = msg
     }
-    ~init() {
+      ~init() {
         unsafe {
             LibC.free(this.cpp.msg)
         }
@@ -414,41 +414,33 @@ public class RTCIceCandidateInit <: Serializable<RTCIceCandidateInit> {
     public prop sdpMLineIndex: Int32{get() {this.cpp.sdpMLineIndex}}
     public prop sdpMid: String {get() {this.cpp.sdpMid.toString()}}
     public prop usernameFragment: String {get() {this.cpp.usernameFragment.toString()}}
-    let cpp: CJ_RTCIceCandidateInit
 
     public init(cpp: CJ_RTCIceCandidateInit){
-        this.cpp =cpp
         this.isBuild_ = cpp.isBuild
         this.candidate_ = cpp.candidate.toString()
         this.sdpMLineIndex_ = cpp.sdpMLineIndex
         this.sdpMid_ = cpp.sdpMid.toString()
         this.usernameFragment_ = cpp.usernameFragment.toString()
-
     }
 
     public init(isBuild: Bool, candidate: String, sdpMLineIndex: Int32, sdpMid: String, usernameFragment: String) {
         if (isBuild) {
-            unsafe {
-                this.isBuild_ = isBuild
-                this.candidate_ = candidate
-                this.sdpMLineIndex_ = sdpMLineIndex
-                this.sdpMid_ = sdpMid
-                this.usernameFragment_ = usernameFragment
-                this.cpp = CJ_RTCIceCandidateInit(isBuild, LibC.mallocCString(candidate), sdpMLineIndex, LibC.mallocCString(sdpMid), LibC.mallocCString(usernameFragment))
-            }
+            this.isBuild_ = isBuild
+            this.candidate_ = candidate
+            this.sdpMLineIndex_ = sdpMLineIndex
+            this.sdpMid_ = sdpMid
+            this.usernameFragment_ = usernameFragment
         } else {
-            this.cpp = CJ_RTCIceCandidateInit()
+            let cpp = CJ_RTCIceCandidateInit()
+            this.isBuild_ = cpp.isBuild
+            this.candidate_ = cpp.candidate
+            this.sdpMLineIndex_ = cpp.sdpMLineIndex
+            this.sdpMid_ = cpp.sdpMid
+            this.usernameFragment_ = cpp.usernameFragment
         }
     }
 
     ~init(){
-        unsafe{
-            if (this.cpp.isBuild){
-                LibC.free(this.cpp.candidate)
-                LibC.free(this.cpp.sdpMid)
-                LibC.free(this.cpp.usernameFragment)
-            }
-        }
     }
 
     /* 实现 Serializable 接口的序列化方法 */
