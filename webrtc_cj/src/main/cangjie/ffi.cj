@@ -430,7 +430,7 @@ public class RTCIceCandidateInit <: Serializable<RTCIceCandidateInit> {
             this.sdpMLineIndex_ = sdpMLineIndex
             this.sdpMid_ = sdpMid
             this.usernameFragment_ = usernameFragment
-        } 
+        }
     }
 
     ~init(){

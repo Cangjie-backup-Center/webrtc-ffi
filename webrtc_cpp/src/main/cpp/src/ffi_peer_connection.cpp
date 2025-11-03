@@ -900,9 +900,9 @@ void ffiPeerConnection::addIceCandidate(CJ_RTCIceCandidateInit iceCandidate) {
         CANGJIE_THROW("CreateIceCandidate error");
     }
 
-    free(iceCandidate.candidate);
-    free(iceCandidate.sdpMid);
-    free(iceCandidate.usernameFragment);
+    delete [] iceCandidate.candidate;
+    delete [] iceCandidate.sdpMid;
+    delete [] iceCandidate.usernameFragment;
 
     this->Dispatch(
         CallbackEvent<ffiPeerConnection>::Create([this, candidate](ffiPeerConnection& target) {

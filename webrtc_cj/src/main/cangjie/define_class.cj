@@ -4,58 +4,79 @@
 package webrtc_cj
 
 public class RTCIceServer {
-    public prop urls: Array<String> {
-        get() {
-            let arr = Array<String>(this.cpp.urls_size, repeat: "")
-            unsafe {
-                for (i in 0..this.cpp.urls_size) {
-                    arr[i] = this.cpp.urls.read(i).toString()
-                }
-            }
-            return arr
-        }
-    }
-    public prop username: String { get() { return this.cpp.username.toString() } }
-    public prop credential: String { get() { return this.cpp.credential.toString() } }
+//    public prop urls: Array<String> {
+//        get() {
+//            let arr = Array<String>(this.cpp.urls_size, repeat: "")
+//            unsafe {
+//                for (i in 0..this.cpp.urls_size) {
+//                    arr[i] = this.cpp.urls.read(i).toString()
+//                }
+//            }
+//            return arr
+//        }
+//    }
+    var username_: CString = unsafe { zeroValue<CString>() }
+    var credential_: CString = unsafe { zeroValue<CString>() }
+    var arr = Array<CString>()
+
+//    public prop username: String { get() { return this.cpp.username.toString() } }
+//    public prop credential: String { get() { return this.cpp.credential.toString() } }
+
+    public prop username: String { get() { return this.username_.toString() } }
+    public prop credential: String { get() { return this.credential_.toString() } }
+    var usernameSize_: Int64 = 0
+    var credentialSize_: Int64 = 0
+
     var urls_handle: CPointerHandle<CString>
-    var cpp: CJ_RTCIceServer
+//    var cpp: CJ_RTCIceServer
     public init(urls!: Array<String> = [], username!: String = "", credential!: String = "") {
         unsafe {
-            let arr = Array<CString>(urls.size, repeat: zeroValue<CString>())
-            for (i in 0..arr.size) {
+            this.arr = Array<CString>(urls.size, repeat: zeroValue<CString>())
+            for (i in 0..this.arr.size) {
                 arr[i] = LibC.mallocCString(urls[i])
             }
             this.urls_handle = acquireArrayRawData(arr)
-            this.cpp = CJ_RTCIceServer(acquireArrayRawData(arr).pointer, arr.size, LibC.mallocCString(username), username.size, LibC.mallocCString(credential), credential.size)
+            this.username_ = LibC.mallocCString(username)
+            usernameSize_ = username.size
+            this.credential_ = LibC.mallocCString(credential)
+            credentialSize_ = credential.size
+//            this.cpp = CJ_RTCIceServer(acquireArrayRawData(arr).pointer, arr.size, LibC.mallocCString(username), username.size, LibC.mallocCString(credential), credential.size)
         }
     }
     ~init() {
         unsafe {
-            for (i in 0..this.cpp.urls_size) {
-                LibC.free(this.cpp.urls.read(i))
-            }
+//            for (i in 0..this.cpp.urls_size) {
+//                LibC.free(this.cpp.urls.read(i))
+//            }
             releaseArrayRawData(this.urls_handle)
-            LibC.free(this.cpp.username)
-            LibC.free(this.cpp.credential)
-            this.cpp = zeroValue<CJ_RTCIceServer>()
+//            LibC.free(this.cpp.username)
+//            LibC.free(this.cpp.credential)
+//            this.cpp = zeroValue<CJ_RTCIceServer>()
         }
     }
 }
 
 public class RTCRtpHeaderExtensionParameters {
-    public prop id: Int64 {get() {this.cpp.id}}
-    public prop uri: String {get() {this.cpp.uri.toString()}}
-    public prop encrypted: Bool{get() {this.cpp.encrypted}}
-    var cpp:CJ_RTCRtpHeaderExtensionParameters
-    public init(id: Int64, uri: String,encrypted: Bool ){
-        unsafe {
-            this.cpp = CJ_RTCRtpHeaderExtensionParameters(id, LibC.mallocCString(uri), uri.size, encrypted)
-        }
+    var id_: Int64 = 0
+    var uri_: String = ""
+    var encrypted_: Bool = false
+
+    public prop id: Int64 {get() {this.id_}}
+    public prop uri: String {get() {this.uri_.toString()}}
+    public prop encrypted: Bool{get() {this.encrypted_}}
+//    var cpp:CJ_RTCRtpHeaderExtensionParameters
+    public init(id: Int64, uri: String, encrypted: Bool ){
+        id_ = id
+        uri_ = uri
+        encrypted_ = encrypted
+//        unsafe {
+//            this.cpp = CJ_RTCRtpHeaderExtensionParameters(id_, LibC.mallocCString(uri_), uri_.size, encrypted_)
+//        }
     }
     ~init() {
-        unsafe {
-            LibC.free(this.cpp.uri)
-        }
+//        unsafe {
+//            LibC.free(this.cpp.uri)
+//        }
     }
 }
 
@@ -158,7 +179,9 @@ public class RTCRtpSendParameters {
             }
             let headerExtensions_cpp = Array<CJ_RTCRtpHeaderExtensionParameters>(codecs.size, repeat: zeroValue<CJ_RTCRtpHeaderExtensionParameters>())
             for (i in 0..codecs.size) {
-                headerExtensions_cpp[i] = headerExtensions[i].cpp
+                let cpp: CJ_RTCRtpHeaderExtensionParameters = CJ_RTCRtpHeaderExtensionParameters(headerExtensions[i].id, LibC.mallocCString(headerExtensions[i].uri), headerExtensions[i].uri.size, headerExtensions[i].encrypted)
+//                headerExtensions_cpp[i] = headerExtensions[i].cpp
+                headerExtensions_cpp[i] = cpp
             }
             let encodings_cpp = Array<CJ_RTCRtpEncodingParameters>(codecs.size, repeat: zeroValue<CJ_RTCRtpEncodingParameters>())
             for (i in 0..codecs.size) {
@@ -262,7 +285,11 @@ public class RTCConfiguration {
         unsafe {
             let arr1 = Array<CJ_RTCIceServer>(iceServers.size, repeat: zeroValue<CJ_RTCIceServer>())
             for (i in 0..arr1.size) {
-                arr1[i] = iceServers[i].cpp
+                let cpp: CJ_RTCIceServer = CJ_RTCIceServer(acquireArrayRawData(iceServers[i].arr).pointer, iceServers[i].arr.size, iceServers[i].username_, iceServers[i].usernameSize_, iceServers[i].credential_, iceServers[i].credentialSize_)
+                //            this.cpp = CJ_RTCIceServer(acquireArrayRawData(arr).pointer, arr.size, LibC.mallocCString(username), username.size, LibC.mallocCString(credential), credential.size)
+
+//                arr1[i] = iceServers[i].cpp
+                arr1[i] = cpp
             }
             let arr2 = Array<CJ_RTCCertificate>(certificates.size, repeat: zeroValue<CJ_RTCCertificate>())
             for (i in 0..arr2.size) {
@@ -292,6 +319,10 @@ public class RTCConfiguration {
                 arr2.size,
                 iceCandidatePoolSize
             )
+            for (i in 0..arr1.size) {
+                LibC.free(arr1[i].username)
+                LibC.free(arr1[i].credential)
+            }
         }
     }
     ~init() {
