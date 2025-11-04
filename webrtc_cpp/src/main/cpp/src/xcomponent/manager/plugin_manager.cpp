@@ -37,11 +37,25 @@ PluginRender* PluginManager::GetPluginRender(int64_t& id)
     }
     return nullptr;
 }
-
+//
+//void* PluginManager::SetSurfaceId(int64_t surfaceId)
+//{
+//    OHNativeWindow *nativeWindow = nullptr;
+//    PluginRender *pluginRender = nullptr;
+//    if (windowMap_.find(surfaceId) == windowMap_.end()) {
+//        OH_NativeWindow_CreateNativeWindowFromSurfaceId(surfaceId, &nativeWindow);
+//        windowMap_[surfaceId] = nativeWindow;
+//    }
+//    if (pluginRenderMap_.find(surfaceId) == pluginRenderMap_.end()) {
+//        pluginRender = new PluginRender(surfaceId);
+//        pluginRenderMap_[surfaceId] = pluginRender;
+//    }
+//    return nullptr;
+//}
 void* PluginManager::SetSurfaceId(int64_t surfaceId)
 {
-    OHNativeWindow *nativeWindow = nullptr;
-    PluginRender *pluginRender = nullptr;
+    OHNativeWindow *nativeWindow;
+    PluginRender *pluginRender;
     if (windowMap_.find(surfaceId) == windowMap_.end()) {
         OH_NativeWindow_CreateNativeWindowFromSurfaceId(surfaceId, &nativeWindow);
         windowMap_[surfaceId] = nativeWindow;
@@ -50,6 +64,7 @@ void* PluginManager::SetSurfaceId(int64_t surfaceId)
         pluginRender = new PluginRender(surfaceId);
         pluginRenderMap_[surfaceId] = pluginRender;
     }
+    pluginRender->InitNativeWindow(nativeWindow);
     return nullptr;
 }
 
