@@ -33,14 +33,8 @@ public:
     }
 
     ~FFIMediaDevices () override {
-        if (ffiUserMediaStream_) {
-            delete ffiUserMediaStream_;
-            ffiUserMediaStream_ = nullptr;
-        }
-        if (ffiDisplayMediaStream_) {
-            delete ffiDisplayMediaStream_;
-            ffiDisplayMediaStream_ = nullptr;
-        }
+        delete ffiUserMediaStream_;
+        delete ffiDisplayMediaStream_;
     }
 
     CJ_ReturnEnumerateDevicesInfo enumerateDevices(); // return MediaDeviceInfo[]
@@ -91,10 +85,7 @@ public:
                                   MediaTrackConstraints systemAudio);
 
     ~FFIMediaDevicesAssist () override {
-        if (ffiDisplayMediaStream_) {
-            delete ffiDisplayMediaStream_;
-            ffiDisplayMediaStream_ = nullptr;
-        }
+        delete ffiDisplayMediaStream_;
     }
 };
 

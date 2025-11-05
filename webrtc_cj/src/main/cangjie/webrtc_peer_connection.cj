@@ -320,12 +320,12 @@ public class RTCPeerConnection <: WebrtcClass {
     public func addIceCandidate(candidate: ?RTCIceCandidateInit): Unit {
         if (let Some(v) <- candidate) {
             unsafe {
-                let cpp: CJ_RTCIceCandidateInit = CJ_RTCIceCandidateInit(v.isBuild, LibC.mallocCString(v.candidate), v.sdpMLineIndex, LibC.mallocCString(v.sdpMid), LibC.mallocCString(v.usernameFragment))
+                let cpp = CJ_RTCIceCandidateInit(v.isBuild, LibC.mallocCString(v.candidate), v.sdpMLineIndex, LibC.mallocCString(v.sdpMid), LibC.mallocCString(v.usernameFragment))
                 peerConnection_addIceCandidate(this.ID, cpp)
             }
         } else {
             unsafe {
-                let cpp: CJ_RTCIceCandidateInit = CJ_RTCIceCandidateInit(false, LibC.mallocCString(""), 0, LibC.mallocCString(""), LibC.mallocCString(""))
+                let cpp = CJ_RTCIceCandidateInit(false, LibC.mallocCString(""), 0, LibC.mallocCString(""), LibC.mallocCString(""))
                 peerConnection_addIceCandidate(this.ID, cpp)
             }
         }

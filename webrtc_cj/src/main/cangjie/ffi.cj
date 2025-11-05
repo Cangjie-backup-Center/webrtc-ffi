@@ -182,7 +182,7 @@ public class ErrorMessage {
     init(msg: CJ_ErrorMessage){
         this.cpp = msg
     }
-      ~init() {
+    ~init() {
         unsafe {
             LibC.free(this.cpp.msg)
         }
@@ -409,27 +409,21 @@ public class RTCIceCandidateInit <: Serializable<RTCIceCandidateInit> {
     var sdpMid_: String = ""
     var usernameFragment_: String = ""
 
-    public prop isBuild: Bool {get() {this.isBuild}}
-    public prop candidate: String {get() {this.candidate.toString()}}
-    public prop sdpMLineIndex: Int32{get() {this.sdpMLineIndex}}
-    public prop sdpMid: String {get() {this.sdpMid.toString()}}
-    public prop usernameFragment: String {get() {this.usernameFragment.toString()}}
-
-    public init(cpp: CJ_RTCIceCandidateInit){
-        this.isBuild_ = cpp.isBuild
-        this.candidate_ = cpp.candidate.toString()
-        this.sdpMLineIndex_ = cpp.sdpMLineIndex
-        this.sdpMid_ = cpp.sdpMid.toString()
-        this.usernameFragment_ = cpp.usernameFragment.toString()
-    }
+    public prop isBuild: Bool {get() {this.isBuild_}}
+    public prop candidate: String {get() {this.candidate_.toString()}}
+    public prop sdpMLineIndex: Int32{get() {this.sdpMLineIndex_}}
+    public prop sdpMid: String {get() {this.sdpMid_.toString()}}
+    public prop usernameFragment: String {get() {this.usernameFragment_.toString()}}
 
     public init(isBuild: Bool, candidate: String, sdpMLineIndex: Int32, sdpMid: String, usernameFragment: String) {
         if (isBuild) {
-            this.isBuild_ = isBuild
-            this.candidate_ = candidate
-            this.sdpMLineIndex_ = sdpMLineIndex
-            this.sdpMid_ = sdpMid
-            this.usernameFragment_ = usernameFragment
+            unsafe {
+                this.isBuild_ = isBuild
+                this.candidate_ = candidate
+                this.sdpMLineIndex_ = sdpMLineIndex
+                this.sdpMid_ = sdpMid
+                this.usernameFragment_ = usernameFragment
+            }
         }
     }
 
