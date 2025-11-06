@@ -42,58 +42,61 @@ webrtc4cj 是一个基于仓颉语言以视频直播、屏幕共享为核心功�
 
 ### 编译运行
 
-1. 通过 module 引入
+- 通过 module 引入
 
-    1. 克隆下载项目
+1. 克隆下载项目
+
 2. 将webrtc_cpp和webrtc_cj模块拷贝到应用项目下
-    
-    3. 解压模块下目录任意webrtc_cpp/src/cpp/libwebrtc*.rar得到libwebrtc.a文件
+
+3. 解压模块下目录任意webrtc_cpp/src/cpp/libwebrtc*.rar得到libwebrtc.a文件
+
 4. 编译模块webrtc_cpp得到动态库.so
-    5. 修改自身应用 entry 下的 oh-package.json5 文件，在 dependencies 字段添加 "webrtc": "file:../webrtc"
 
-   ```shell
-   {
-     "name": "entry",
-     "version": "1.0.0",
-     "description": "Please describe the basic information.",
-     "main": "",
-     "author": "",
-     "license": "",
-     "dependencies": {
-       "webrtc":"file:../webrtc_cj"
-     }
-   }
-   ```
+5. 修改自身应用 entry 下的 oh-package.json5 文件，在 dependencies 字段添加 "webrtc": "file:../webrtc"
 
-   6. 在项目中使用 import webrtc.* 引用 webrtc项目
+    ```shell
+    {
+      "name": "entry",
+      "version": "1.0.0",
+      "description": "Please describe the basic information.",
+      "main": "",
+      "author": "",
+      "license": "",
+      "dependencies": {
+        "webrtc":"file:../webrtc_cj"
+      }
+    }
+    ```
 
-   ```cangjie
-   import webrtc_cj.*
-   ```
+6. 在项目中使用 import webrtc.* 引用 webrtc项目
 
-2. 把 webrtc4cj作为三方库依赖引入
+    ```cangjie
+    import webrtc_cj.*
+    ```
 
-    1. 目标工程把 webrtc4cj依赖库作为 git submodule 引入
+- 把 webrtc4cj作为三方库依赖引入
 
-   ```shell
-   > cd $工程根目录
-   > mkdir third-party
-   > cd third-party
-   > git submodule add "https://gitcode.com/Cangjie-TPC/webrtc4cj.git"
-   ```
+1. 目标工程把 webrtc4cj依赖库作为 git submodule 引入
 
-    2. 修改自身应用 entry 下的 cjpm.toml 文件，添加依赖
+```shell
+> cd $工程根目录
+> mkdir third-party
+> cd third-party
+> git submodule add "https://gitcode.com/Cangjie-TPC/webrtc4cj.git"
+```
 
-   ```
-   [dependencies]
-   	webrtc = {path = "../third-party/webrtc4cj/webrtc/src/main/cangjie", version = "1.0.0"}
-   ```
+ 2. 修改自身应用 entry 下的 cjpm.toml 文件，添加依赖
 
-    3.  在项目中使用 webrtc 组件
+```
+[dependencies]
+	webrtc = {path = "../third-party/webrtc4cj/webrtc/src/main/cangjie", version = "1.0.0"}
+```
 
-   ```cangjie
-   import webrtc_cj.*
-   ```
+ 3.  在项目中使用 webrtc 组件
+
+```cangjie
+import webrtc_cj.*
+```
 
 ### 功能示例
 
