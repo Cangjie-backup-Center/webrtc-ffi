@@ -6,7 +6,7 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "webrtc":"file:../webrtc"
+    "webrtc_cj": "file:../webrtc_cj"
   }
 }
 

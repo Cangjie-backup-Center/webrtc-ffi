@@ -1,0 +1,10 @@
+{
+  "module": {
+    "name": "webrtc_cj",
+    "type": "har",
+    "deviceTypes": [
+      "default",
+      "2in1"
+    ]
+  }
+}
