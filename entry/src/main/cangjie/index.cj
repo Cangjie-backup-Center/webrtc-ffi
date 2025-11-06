@@ -1,5 +1,5 @@
 /*
- * @Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
  */
 
 package ohos_app_cangjie_entry
@@ -25,6 +25,7 @@ import ohos.prompt_action.PromptAction
 import kit.AudioKit.*
 import ohos.file_fs.*
 import webrtc_cj.*
+import ohos.state_macro_manage_ndk.r
 
 let Index_WebRTC_TAG: String = "[Index]"
 // 用于测试的信令服务器
@@ -503,19 +504,19 @@ class EntryView {
     func sendMessage(message: String): Future<Unit> {
         spawn {
             this.ws.send(MessageData.STRING_DATA(message), {
-                    errorCode: Option<AsyncError>, data: Option<Bool> => if (let Some(e) <- errorCode) {
-                        AppLog.error("${Index_WebRTC_TAG} websocket send errorCode: ${e.code}")
-                    } else {
-                        if (let Some(value) <- data) {
-                            AppLog.info("${Index_WebRTC_TAG} websocket send:${message}")
-                            if (value) {
-                                AppLog.info("${Index_WebRTC_TAG} websocket send success:${message}")
-                            } else {
-                                AppLog.error("${Index_WebRTC_TAG} websocket send error:${errorCode.isNone()}")
-                            }
+                errorCode: Option<AsyncError>, data: Option<Bool> => if (let Some(e) <- errorCode) {
+                    AppLog.error("${Index_WebRTC_TAG} websocket send errorCode: ${e.code}")
+                } else {
+                    if (let Some(value) <- data) {
+                        AppLog.info("${Index_WebRTC_TAG} websocket send:${message}")
+                        if (value) {
+                            AppLog.info("${Index_WebRTC_TAG} websocket send success:${message}")
+                        } else {
+                            AppLog.error("${Index_WebRTC_TAG} websocket send error:${errorCode.isNone()}")
                         }
                     }
-                })
+                }
+            })
         }
     }
 
@@ -567,7 +568,8 @@ class EntryView {
                 this.localCameraVideoTrack = VideoTrack(this.pcf.getOrThrow(), "video")
                 this.mXComponentController1.setVideoTrack(this.localCameraVideoTrack.getOrThrow())
                 this.mXComponentController1.setMirror(true)
-                this.mXComponentController1.setScalingMode(ScalingMode().aspectFit)
+                this.mXComponentController1.setScalingMode(FFIScalingModeEnum.ASPECTFIT)
+
             }
         }
     }
@@ -580,7 +582,7 @@ class EntryView {
                 this.retVideoTrack = this.displayMediaStream.getVideoTracks()
                 this.localVideoTrack = this.retVideoTrack[0]
                 this.mXComponentController1.setVideoTrack(this.retVideoTrack[0])
-                this.mXComponentController1.setScalingMode(ScalingMode().aspectFit)
+                this.mXComponentController1.setScalingMode(FFIScalingModeEnum.ASPECTFIT)
 
                 let audioTracks = this.displayMediaStream.getAudioTracks()
                 if (audioTracks.size > 0) {

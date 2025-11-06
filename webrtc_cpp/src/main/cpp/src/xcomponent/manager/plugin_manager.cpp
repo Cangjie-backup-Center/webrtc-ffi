@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
+ */
+
 #include "plugin_manager.h"
 #include <cstdint>
 #include <hilog/log.h>

@@ -1,8 +1,6 @@
-//
-// Created on 2025/8/14.
-//
-// Node APIs are not fully supported. To solve the compilation error of the interface cannot be found,
-// please include "napi/native_api.h".
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
+ */
 
 #ifndef WEBRTC4CJ_FFI_RTP_TRANSCEIVER_H
 #define WEBRTC4CJ_FFI_RTP_TRANSCEIVER_H

@@ -1,8 +1,6 @@
-//
-// Created on 2025/8/20.
-//
-// Node APIs are not fully supported. To solve the compilation error of the interface cannot be found,
-// please include "napi/native_api.h".
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
+ */
 
 #include "ffi_dtls_transport.h"
 
@@ -17,15 +15,7 @@ FFIRTCDtlsTransportState ffiDtlsTransport::GetState() {
 } 
     
 void ffiDtlsTransport::OnStateChange(DtlsTransportInformation info) {
-    // auto dtlsTransportState = info.state();
-    // Dispatch(CallbackEvent<ffiDtlsTransport>::Create([this, dtlsTransportState](ffiDtlsTransport& target){
-    //     RTC_DCHECK_EQ(this, &target);
-    //     auto env = target.Env();
 
-    //     if (dtlsTransportState == DtlsTransportState::kClosed) {
-    //         target.Stop();
-    //     }
-    // }))
 }
 void ffiDtlsTransport::OnError(RTCError error) {}
 

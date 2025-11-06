@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
+ */
+
 #include "ffi_peer_connection_factory.h"
 #include "user_media/media_constraints_util.h"
 

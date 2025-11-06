@@ -1,6 +1,11 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
+ */
+
 #include <cstdint>
 #include "plugin_render.h"
 #include <cstdint>
+
 #include "plugin_render.h"
 
 namespace NativeXComponentSample {

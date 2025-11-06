@@ -1,6 +1,7 @@
-/**
- * Created on 2025/8/15
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
  */
+
 package webrtc_cj
 
 foreign {

@@ -1,9 +1,12 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
+ */
+
 #include "ffi_ohos_audio_device_module.h"
 #include "audio_common.h"
 #include "modules/audio_device/audio_device_buffer.h"
 #include "api/make_ref_counted.h"
 #include "rtc_base/logging.h"
-
 
 #include <memory>
 #include <utility>

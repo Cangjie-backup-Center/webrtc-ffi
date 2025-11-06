@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
+ */
+
 #include "ffi.h"
 #include "ffi_data_channel.h"
 
@@ -461,12 +465,3 @@ bool ffiDtmfSender_InsertDTMF(int64_t cpp_ptr, const char* tones, int64_t durati
 void ffiDtmfSender_set_OnToneChange(int64_t cpp_ptr, void (*pe)(int64_t id, const char* tone) ) {
     ((webrtc::ffiDtmfSender*)cpp_ptr)->cj_func_call_OnToneChange_ = pe;
 }   
-
-
-void deleteCJMediaStreamTrack(CJ_MediaStreamTrack* cjMST){
-    if (cjMST) {
-        delete cjMST->kind;
-        delete cjMST->id;
-        delete cjMST->readyState;
-    }
-}

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
+ */
+
 #include "ffi_native_video_renderer.h"
 #include "logging/ohos_log.h"
 #define OHOS_LOG_DOMAIN 0xD001234

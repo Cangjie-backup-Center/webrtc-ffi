@@ -1,5 +1,5 @@
-/**
- * Created on 2025/8/19
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
  */
 package webrtc_cj
 
@@ -158,6 +158,50 @@ public enum FFIScreenCaptureMode {
 
 public enum FFIScreenCaptureAudioFilterEnum {
     CURRENT_APP | NOTIFICATION
+}
+
+public enum FFIScalingModeEnum {
+    FILL | ASPECTFILL | ASPECTFIT
+}
+
+extend FFIScalingModeEnum <: ToString & Equatable<FFIScalingModeEnum> {
+    public static func GET(index: Int32): FFIScalingModeEnum {
+        return match (index) {
+            case 0 => FILL
+            case 1 => ASPECTFILL
+            case 2 => ASPECTFIT
+            case _ => throw Webrtc4cjException("not found.")
+        }
+    }
+
+    public static func GET(index: FFIScalingModeEnum): Int32 {
+        return match (index) {
+            case FILL => 0
+            case ASPECTFILL => 1
+            case ASPECTFIT => 2
+        }
+    }
+
+    public func toString(): String {
+        return match (this) {
+            case FILL => "FILL"
+            case ASPECTFILL => "ASPECTFILL"
+            case ASPECTFIT => "ASPECTFIT"
+        }
+    }
+
+    public operator func ==(rhs: FFIScalingModeEnum): Bool {
+        return match ((this, rhs)) {
+            case (FILL, FILL) => true
+            case (ASPECTFILL, ASPECTFILL) => true
+            case (ASPECTFIT, ASPECTFIT) => true
+            case _ => false
+        }
+    }
+
+    public operator func !=(rhs: FFIScalingModeEnum): Bool {
+        return !(this == rhs)
+    }
 }
 
 extend FFIRTCErrorDetailType <: ToString & Equatable<FFIRTCErrorDetailType> {

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
+ */
+
 #include "ffi_video_decoder_factory.h"
 #include "video_codec/hardware_video_decoder_factory.h"
 

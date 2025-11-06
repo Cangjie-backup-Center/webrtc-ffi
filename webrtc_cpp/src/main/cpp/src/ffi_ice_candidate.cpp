@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
+ */
+
 #include "ffi_ice_candidate.h"
 #include <cstdint>
 #define KCOMPONENT_ID_RTP 1

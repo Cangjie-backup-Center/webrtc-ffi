@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
+ */
+
 #ifndef WEBRTC_FFI_H_
 #define WEBRTC_FFI_H_
 
@@ -168,8 +172,6 @@ extern "C" {
     bool ffiMediaStreamTrack_getEnabled(int64_t cpp_ptr);
     char* ffiMediaStreamTrack_getReadyState(int64_t cpp_ptr);
     char* ffiMediaStreamTrack_getId(int64_t cpp_ptr);
-
-    // void deleteCJMediaStreamTrack(CJ_MediaStreamTrack* cjMST);
 
 }
 

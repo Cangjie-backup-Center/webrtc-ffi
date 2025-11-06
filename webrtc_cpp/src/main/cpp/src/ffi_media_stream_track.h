@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
+ */
+
 #ifndef WEBRTC_FFI_MEDIA_STREAM_TRACK_H
 #define WEBRTC_FFI_MEDIA_STREAM_TRACK_H
 

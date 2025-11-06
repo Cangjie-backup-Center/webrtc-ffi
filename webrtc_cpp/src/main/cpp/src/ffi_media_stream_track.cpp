@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
+ */
+
 #include "ffi_media_stream_track.h"
 #include "ffi_exception.h"
 #include <cstdint>

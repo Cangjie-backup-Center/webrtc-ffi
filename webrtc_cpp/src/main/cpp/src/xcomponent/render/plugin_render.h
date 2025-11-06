@@ -1,5 +1,8 @@
 #ifndef NATIVE_XCOMPONENT_PLUGIN_RENDER_H
 #define NATIVE_XCOMPONENT_PLUGIN_RENDER_H
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
+ */
 
 #include <ace/xcomponent/native_interface_xcomponent.h>
 #include <native_window/external_window.h>
