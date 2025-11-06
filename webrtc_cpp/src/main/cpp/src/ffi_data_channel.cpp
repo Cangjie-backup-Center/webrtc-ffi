@@ -123,6 +123,7 @@ namespace webrtc {
             }
         });
     }
+    
     void ffiDataChannelObserverTemp::Close() {
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
         dataChannel_->Close();
