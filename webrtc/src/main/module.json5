@@ -1,9 +1,0 @@
-{
-  "module": {
-    "name": "webrtc",
-    "type": "har",
-    "deviceTypes": [
-      "default"
-    ]
-  }
-}
