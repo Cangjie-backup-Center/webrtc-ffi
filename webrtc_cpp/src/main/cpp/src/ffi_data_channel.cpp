@@ -1,9 +1,10 @@
 /*
  * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
  */
-
+#define __STDC_WANT_LIB_EXT1__ 1
 #include "ffi_data_channel.h"
 #include "ffi_exception.h"
+#include <string.h>
 
 namespace webrtc {
     ffiDataChannelObserverTemp::ffiDataChannelObserverTemp(rtc::scoped_refptr<DataChannelInterface> dataChannel)
@@ -97,13 +98,22 @@ namespace webrtc {
         if (dataChannel_->state() != DataChannelInterface::kOpen) {
             CANGJIE_THROW("Datachannel state is not open");
         }
-        void* ptr = malloc(size);
+        // void* ptr = malloc(size);
+        // auto retMemcpy = memcpy_s(ptr, size, data, size);
+        // if (retMemcpy != 0) {
+        //     CANGJIE_THROW("memcpy_s error");
+        // }
+
+        auto ptr = new uint8_t[size];
         memcpy(ptr, data, size);
-        dataChannel_->SendAsync(DataBuffer(rtc::CopyOnWriteBuffer((uint8_t*)ptr, size), true), [&](RTCError err) {
+
+        dataChannel_->SendAsync(DataBuffer(rtc::CopyOnWriteBuffer(ptr, size), true), [&](RTCError err) {
             if (!err.ok()) {
                 RTC_LOG(LS_ERROR) << "send array buffer error: " << err.type() << ", " << err.message();
             }
-            free(ptr);
+            if (ptr != nullptr) {
+                delete[] ptr;
+            }
             ptr = nullptr;
         });
     }

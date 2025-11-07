@@ -13,6 +13,30 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-int-conversion -Wl,-Bsymbolic")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-int-conversion -Wl,-Bsymbolic")
 
+set(CHECK_DIR "${NATIVERENDER_ROOT_PATH}/include")
+
+if(EXISTS ${CHECK_DIR})
+    message(STATUS "目录 ${CHECK_DIR} 存在")
+else()
+    message(STATUS "目录 ${CHECK_DIR} 不存在")
+    file(ARCHIVE_EXTRACT
+      INPUT "${NATIVERENDER_ROOT_PATH}/include.zip"
+      DESTINATION "${NATIVERENDER_ROOT_PATH}/"
+    )
+endif()
+
+
+file(SIZE "${NATIVERENDER_ROOT_PATH}/libwebrtc.a" FILE_SIZE)
+if(${FILE_SIZE} GREATER 10485760)
+    message("libwebrtc.a Exist")
+else()
+    message("libwebrtc.a unExist")
+    file(ARCHIVE_EXTRACT
+            INPUT "${NATIVERENDER_ROOT_PATH}/libwebrtc.zip"
+            DESTINATION "${NATIVERENDER_ROOT_PATH}/"
+    )
+endif()
+
 if(DEFINED PACKAGE_FIND_FILE)
     include(${PACKAGE_FIND_FILE})
 endif()
@@ -39,12 +63,12 @@ include_directories(
 file(GLOB_RECURSE CPP_FILES ${NATIVERENDER_ROOT_PATH}/src/*.cpp)
 
 # 生成的动态库 so文件
-add_library(webrtc_cpp SHARED
+add_library(cj_webrtc SHARED
                         ${CPP_FILES}
                         )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_definitions(webrtc_cpp
+    target_compile_definitions(cj_webrtc
         PUBLIC  NODE_ADDON_API_DISABLE_DEPRECATED             # 对当前目标及依赖目标可见
 #        PUBLIC  NDEBUG             # 对当前目标及依赖目标可见
         PUBLIC  NAPI_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
@@ -56,7 +80,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         PUBLIC  OHOS             # 对当前目标及依赖目标可见
     )
 else()
-    target_compile_definitions(webrtc_cpp
+    target_compile_definitions(cj_webrtc
         PUBLIC  NODE_ADDON_API_DISABLE_DEPRECATED             # 对当前目标及依赖目标可见
         PUBLIC  DCHECK_ALWAYS_ON             # 对当前目标及依赖目标可见
         PUBLIC  NAPI_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
@@ -70,9 +94,9 @@ else()
 endif()
 
 # so 文件 链接的so
-target_compile_options(webrtc_cpp PRIVATE -fno-rtti) # 若 WebRTC 禁用 RTTI，则项目中需同步禁用
+target_compile_options(cj_webrtc PRIVATE -fno-rtti) # 若 WebRTC 禁用 RTTI，则项目中需同步禁用
 
-target_link_libraries(webrtc_cpp
+target_link_libraries(cj_webrtc
                                 libace_napi.z.so
                                 libhilog_ndk.z.so
                                 libohaudio.so

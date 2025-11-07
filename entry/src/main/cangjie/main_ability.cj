@@ -1,7 +1,3 @@
-/*
- * @Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 package ohos_app_cangjie_entry
 
 internal import ohos.base.AppLog
@@ -14,6 +10,7 @@ internal import ohos.window.WindowStage
 internal import ohos.ability.*
 
 var globalAbilityContext: Option<AbilityContext> = Option<AbilityContext>.None
+
 
 class MainAbility <: UIAbility {
     public init() {

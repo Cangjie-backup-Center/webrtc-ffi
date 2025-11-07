@@ -97,6 +97,10 @@ public:
     bool ShouldStop() const{
         return stop;
     }
+    
+    bool Empty() {
+        return EventQueue<T>::Empty();
+    }
 
 private:
     std::vector<std::thread> workers;

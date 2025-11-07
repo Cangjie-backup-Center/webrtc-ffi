@@ -502,6 +502,7 @@ GLuint EGLCore::LoadShader(GLenum type, const char* shaderSrc)
     char* infoLog = (char*)malloc(sizeof(char) * (infoLen + 1));
     if (infoLog != nullptr) {
         memset(infoLog, 0, infoLen + 1);
+        // memset_s(infoLog, infoLen + 1, 0, infoLen + 1);
         glGetShaderInfoLog(shader, infoLen, nullptr, infoLog);
         OH_LOG_Print(LOG_APP, LOG_ERROR, LOG_PRINT_DOMAIN, "EGLCore", "glCompileShader error = %s", infoLog);
         free(infoLog);
@@ -558,6 +559,7 @@ GLuint EGLCore::CreateProgram(const char* vertexShader, const char* fragShader)
     if (infoLen > 1) {
         char* infoLog = (char*)malloc(sizeof(char) * (infoLen + 1));
         memset(infoLog, 0, infoLen + 1);
+        // memset_s(infoLog, infoLen + 1, 0, infoLen + 1);
         glGetProgramInfoLog(program, infoLen, nullptr, infoLog);
         OH_LOG_Print(LOG_APP, LOG_ERROR, LOG_PRINT_DOMAIN, "EGLCore", "glLinkProgram error = %s", infoLog);
         free(infoLog);
