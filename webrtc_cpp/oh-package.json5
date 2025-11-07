@@ -1,7 +1,7 @@
 {
   "name": "webrtc_cpp",
   "version": "1.0.0",
-  "description": "Please describe the basic information.",
+  "description": "webrtc-ffi是一个视频、音频连接共享库，webrtc_cpp适配了视频音频的采集、渲染连接功能的底层实现",
   "main": "Index.ets",
   "author": "",
   "license": "Apache-2.0",
