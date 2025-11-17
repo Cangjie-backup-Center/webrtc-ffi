@@ -22,9 +22,9 @@ class PeerConnectionFactoryWrapper;
 bool CangjieToNativeConfiguration(
     const CJ_RTCConfiguration& jsConfiguration, webrtc::PeerConnectionInterface::RTCConfiguration& configuration);
 
-bool CangjieToNativeIceServer(CJ_RTCIceServer cjrs, webrtc::PeerConnectionInterface::IceServer& iceServer); // TODO
+bool CangjieToNativeIceServer(CJ_RTCIceServer cjrs, webrtc::PeerConnectionInterface::IceServer& iceServer); 
 
-rtc::RTCCertificate* CangjieToNativeCertificate(CJ_RTCCertificate cjrc); // TODO
+rtc::RTCCertificate* CangjieToNativeCertificate(CJ_RTCCertificate cjrc); 
 
 class ffiPeerConnection : public FFIEventTarget<ffiPeerConnection>, public PeerConnectionObserver, 
                             public CJ_CLASS_BASE::FFICangjieClassID {

@@ -39,8 +39,12 @@
       ]
     },
     {
-      "name": "webrtc",
-      "srcPath": "./webrtc"
+      "name": "webrtc_cpp",
+      "srcPath": "./webrtc_cpp"
+    },
+    {
+      "name": "webrtc_cj",
+      "srcPath": "./webrtc_cj"
     }
   ]
 }

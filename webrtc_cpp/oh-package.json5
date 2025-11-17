@@ -1,11 +1,19 @@
 {
-  "name": "webrtc_cpp",
+  "name": "@cangjie-tpc/webrtc_hybrid",
   "version": "1.0.0",
   "description": "webrtc-ffi是一个视频、音频连接共享库，webrtc_cpp适配了视频音频的采集、渲染连接功能的底层实现",
   "main": "Index.ets",
-  "author": "",
+  "author": "cangjie-tpc",
   "license": "Apache-2.0",
-  "packageType": "InterfaceHar",
+  "repository": "https://gitcode.com/Cangjie-TPC/webrtc-ffi.git",
+  "homepage": "https://gitcode.com/Cangjie-TPC/webrtc-ffi",
+  "keywords": [
+    "Webrtc",
+    "仓颉",
+    "OpenHarmony",
+    "HarmonyOS",
+    "Latex"
+  ],
   "dependencies": {
   }
 }

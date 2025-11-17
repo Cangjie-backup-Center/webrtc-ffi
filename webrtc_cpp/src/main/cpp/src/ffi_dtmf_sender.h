@@ -6,7 +6,7 @@
 #define WEBRTC4CJ_FFI_DTMF_SENDER_H
 
 
-#include "dtmf_sender_interface.h"
+#include "api/dtmf_sender_interface.h"
 #include "event/ffi_event_target.h"
 #include "ffi_cj_class.h"
 #include <cstdint>

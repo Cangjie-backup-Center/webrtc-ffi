@@ -33,13 +33,11 @@
 #include <cstdint>
 
 
-namespace webrtc{
+namespace webrtc {
 ffiPeerConnectionFactory::ffiPeerConnectionFactory(
                         ffiAudioDeviceModule* ffiADM,
                         ffiHardwareVideoEncoderFactory* ffiHVEF,
-                        ffiHardwareVideoDecoderFactory* ffiHVDF)
-
-{
+                        ffiHardwareVideoDecoderFactory* ffiHVDF) {
     audioSourcePtr_ = nullptr;
     audioTrackPtr_ = nullptr;
     videoSourcePtr_ = nullptr;

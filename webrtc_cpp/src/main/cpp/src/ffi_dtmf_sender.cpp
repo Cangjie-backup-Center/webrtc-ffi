@@ -75,6 +75,4 @@ void ffiDtmfSender::OnToneChange(const std::string& tone, const std::string& ton
         }
     }));
 }
-
-
 }
