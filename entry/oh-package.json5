@@ -6,7 +6,7 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "@cangjie-tpc/webrtc": "file:../webrtc_cj"
+//    "@cangjie-tpc/webrtc": "file:../webrtc_cj"
   }
 }
 

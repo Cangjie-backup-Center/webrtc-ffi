@@ -14,7 +14,7 @@ public class RTCErrorEvent <: Event {
     public let sctpCauseCode: Int64
     public let receivedAlert: Int64
     public let sentAlert: Int64
-    RTCErrorEvent(TYPE: String, errorDetail: FFIRTCErrorDetailType, sdpLineNumber: Int64, sctpCauseCode: Int64, receivedAlert: Int64, sentAlert: Int64) {
+    public RTCErrorEvent(TYPE: String, errorDetail: FFIRTCErrorDetailType, sdpLineNumber: Int64, sctpCauseCode: Int64, receivedAlert: Int64, sentAlert: Int64) {
         super(TYPE)
         this.errorDetail =errorDetail
         this.sdpLineNumber =sdpLineNumber
@@ -26,14 +26,14 @@ public class RTCErrorEvent <: Event {
 
 public class AudioErrorEvent <: Event {
     public let error: FFIAudioErrorType
-    AudioErrorEvent(TYPE: String, error: FFIAudioErrorType) {
+    public AudioErrorEvent(TYPE: String, error: FFIAudioErrorType) {
         super(TYPE)
         this.error = error
     }
 }
 public class AudioStateChangeEvent <: Event {
     public let state: FFIAudioState
-    AudioStateChangeEvent(TYPE: String, state: FFIAudioState) {
+    public AudioStateChangeEvent(TYPE: String, state: FFIAudioState) {
         super(TYPE)
         this.state = state
     }
@@ -43,7 +43,7 @@ public class AudioCapturerSamplesReadyEvent <: Event {
     public let channelCount: Int64
     public let sampleRate: Int64
     public let data: Array<Byte>
-    AudioCapturerSamplesReadyEvent(TYPE: String, audioFormat: Int64, channelCount: Int64, sampleRate: Int64, data: Array<Byte>) {
+    public AudioCapturerSamplesReadyEvent(TYPE: String, audioFormat: Int64, channelCount: Int64, sampleRate: Int64, data: Array<Byte>) {
         super(TYPE)
         this.audioFormat = audioFormat
         this.channelCount = channelCount
@@ -53,18 +53,18 @@ public class AudioCapturerSamplesReadyEvent <: Event {
 }
 
 @C
-struct CJ_RTCDataChannelEvent {
+public struct CJ_RTCDataChannelEvent {
     var channel: Int64 = 0
 }
 
 @C
-struct CJ_Event {
+public struct CJ_Event {
     let eventType: CString = unsafe {zeroValue<CString>()}
 }
 
 
 @C
-struct CJ_RTCIceCandidate {
+public struct CJ_RTCIceCandidate {
     let undefined: Bool = unsafe {zeroValue<Bool>()}
     let candidate: CString = unsafe {zeroValue<CString>()}
     let sdpMid: CString = unsafe {zeroValue<CString>()}
@@ -118,7 +118,7 @@ public class RTCIceCandidate <: Serializable<RTCIceCandidate> {
     }
 
 
-    init(candidate: String, sdpMid: String, sdpMLineIndex: Int64, foundation: String, component: Int64, priority: Int64, address: String, iceProtocol: String, port: Int64, iceCandidateType: Int64, iceTcpCandidateType: String, relatedAddress: String, relatedPort: Int64, usernameFragment: String) {
+    public init(candidate: String, sdpMid: String, sdpMLineIndex: Int64, foundation: String, component: Int64, priority: Int64, address: String, iceProtocol: String, port: Int64, iceCandidateType: Int64, iceTcpCandidateType: String, relatedAddress: String, relatedPort: Int64, usernameFragment: String) {
         this.candidate = candidate
         this.sdpMid = sdpMid
         this.sdpMLineIndex = sdpMLineIndex
@@ -190,7 +190,7 @@ public class RTCIceCandidate <: Serializable<RTCIceCandidate> {
 }
 
 @C
-struct CJ_RTCPeerConnectionIceEvent {
+public struct CJ_RTCPeerConnectionIceEvent {
     let TYPE: CString = unsafe {zeroValue<CString>()}
     let candidate: CJ_RTCIceCandidate = unsafe {zeroValue<CJ_RTCIceCandidate>()}
 }
@@ -209,7 +209,7 @@ public class RTCPeerConnectionIceEvent {
 }
 
 public class OnIceCandidateEvent {
-    OnIceCandidateEvent(public let TYPE: String){}
+    public OnIceCandidateEvent(public let TYPE: String){}
 }
 
 @C
@@ -222,7 +222,7 @@ public struct CJ_MediaStreamTrack {
 }
 
 @C
-struct CJ_RTCTrackEvent {
+public struct CJ_RTCTrackEvent {
     let TYPE: CString = unsafe {zeroValue<CString>()}
     let streams: CPointer<Int64> = unsafe {zeroValue<CPointer<Int64>>()}
     let streams_size: Int64 = -1
@@ -248,7 +248,7 @@ public class RTCTrackEvent {
 }
 
 @C
-struct CJ_RTCPeerConnectionIceErrorEvent {
+public struct CJ_RTCPeerConnectionIceErrorEvent {
     let TYPE: CString = unsafe {zeroValue<CString>()}
     let address: CString = unsafe {zeroValue<CString>()}
     let port: Int64 = -1
@@ -270,7 +270,7 @@ public class RTCPeerConnectionIceErrorEvent {
 
 
 @C
-struct CJ_MessageEvent {
+public struct CJ_MessageEvent {
     let TYPE: CString = unsafe {zeroValue<CString>()}
     let data_arr: CPointer<UInt8>= unsafe {zeroValue<CPointer<UInt8>>()}
     let data_arr_size: Int64= unsafe {zeroValue<Int64>()}
@@ -291,7 +291,7 @@ public class MessageEvent {
 }
 
 @C
-struct CJ_AudioSamples {
+public struct CJ_AudioSamples {
     let sampleRate: Int32 = unsafe {zeroValue<Int32>()};
     let audioFormat: Int32 = unsafe {zeroValue<Int32>()};
     let channelCount: Int32 = unsafe {zeroValue<Int32>()};

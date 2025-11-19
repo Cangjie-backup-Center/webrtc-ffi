@@ -15,7 +15,7 @@ public struct FFIAudioOptions{
 }
 
 @C
-struct FFICreateVideoSourceParameters{
+public struct FFICreateVideoSourceParameters{
     public var width: Float64
     public var height: Float64
     public var facingMode: CString
@@ -148,8 +148,6 @@ public open class MediaStreamTrack <: WebrtcClass {
     public var enabled: Bool = false
     public var readyState: String = ""
 
-    protected init() {}
-
     protected init(id: Int64, t:MediaStreamTrack) {
         super(id, t)
         this.kind = unsafe {ffiMediaStreamTrack_getKind(id).toString()}
@@ -167,11 +165,11 @@ public open class MediaStreamTrack <: WebrtcClass {
     }
 }
 
-public class RtpReceiver <: WebrtcClass {
-    public init(id: Int64) {
-        super(id, this)
-    }
-}
+//public class RtpReceiver <: WebrtcClass {
+//    public init(id: Int64) {
+//        super(id, this)
+//    }
+//}
 
 public class RtpTransceiver <: WebrtcClass {
     public init(id: Int64) {

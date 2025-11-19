@@ -135,13 +135,8 @@ int64_t ffiPeerConnectionFactory::ffiCreateAudioSource(FFIAudioOptions ffi_audio
 int64_t ffiPeerConnectionFactory::ffiCreateAudioTrack(std::string ffi_audioId_str){
     copyVauleCreateAudioTrack(ffi_audioId_str);
     audioTrack_ = wrapper_->CreateAudioTrack(audioId_,audioSource_);
-    audioTrackPtr_ = &audioTrack_;
-
-    if (audioTrackPtr_) {
-        return (int64_t)audioTrackPtr_; 
-    }
-
-    return 0;
+    auto ffiMST = new ffiMediaStreamTrack(wrapper_, audioTrack_);
+    return (int64_t)ffiMST;
 }
 
 int64_t ffiPeerConnectionFactory::ffiCreateVideoSource(CJ_TO_CPP_DisplayMediaStreamOptions ffi_videoSource, bool isScreencast){

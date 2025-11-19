@@ -167,7 +167,7 @@ public struct CJ_RTCSessionDescription {
 }
 
 @C
-struct CJ_ErrorMessage {
+public struct CJ_ErrorMessage {
     let rtcErrorDetailType: Int64 = 0
     let msg: CString = unsafe{zeroValue<CString>()}
 }
@@ -179,7 +179,7 @@ public class ErrorMessage {
     public prop msg: String {get() {this.cpp.msg.toString()}}
 
     private var cpp: CJ_ErrorMessage
-    init(msg: CJ_ErrorMessage){
+    public init(msg: CJ_ErrorMessage){
         this.cpp = msg
     }
     ~init() {
