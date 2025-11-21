@@ -12,9 +12,6 @@
 #include <thread>
 #include <future>
 #include "ffi_exception.h"
-//#include "napi.h"
-//#include "napi/native_api.h"
-
 #include "rtc_base/logging.h"
 
 #include "event.h"
@@ -27,7 +24,6 @@ using FuncPtr = void (*)(int64_t classID, int64_t ptr);
 
 template <typename T>
 class FFIEventTarget : public EventQueue<T> {
-    
 public:
     explicit FFIEventTarget()
         : stop(false), isRunning(false)
@@ -36,7 +32,8 @@ public:
     }
 
     // 优雅关闭线程池
-    ~FFIEventTarget() noexcept {
+    ~FFIEventTarget() noexcept
+    {
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
         {
             std::unique_lock<std::mutex> lock(mutex_);
@@ -52,9 +49,12 @@ public:
         }
     }
     
-    void Dispatch(std::unique_ptr<Event<T>> event){
+    void Dispatch(std::unique_ptr<Event<T>> event)
+    {
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-        if(this->stop) return;
+        if (this->stop) {
+            return;
+        }
         this->Enqueue(std::move(event));
         if (isRunning) {
             condition.notify_one();
@@ -63,7 +63,8 @@ public:
         }
     }
 
-    void CreateThread(){
+    void CreateThread()
+    {
         size_t threads = 1;  // 至少1个线程
         workers.reserve(threads);
         workers.emplace_back([this] {
@@ -88,17 +89,20 @@ public:
             }
         });
     }
-
-    virtual void Stop(){
+    
+    virtual void Stop()
+    {
         stop = true;
         Dispatch(EmptyEvent<T>::Create());
     }
 
-    bool ShouldStop() const{
+    bool ShouldStop() const
+    {
         return stop;
     }
     
-    bool Empty() {
+    bool Empty()
+    {
         return EventQueue<T>::Empty();
     }
 

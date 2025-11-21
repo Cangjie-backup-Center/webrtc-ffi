@@ -10,26 +10,25 @@
 #include "p2p/base/ice_transport_internal.h"
 
 #include "event/ffi_event_target.h"
-//#include "ice_candidate.h"
 #include "ffi_define_struct.h"
 #include "peer_connection_factory.h"
 
 
 namespace webrtc {
 
-//class PeerConnectionFactoryWrapper;
-
-class ffiIceTransport : public FFIEventTarget<ffiIceTransport>, public sigslot::has_slots<> ,
-                        public CJ_CLASS_BASE::FFICangjieClassID {
+class ffiIceTransport : public FFIEventTarget<ffiIceTransport>, public sigslot::has_slots<>,
+                        public CJ_CLASS_BASE::ffiCjClass {
 public:
 
     static ffiIceTransport* NewInstance(std::shared_ptr<PeerConnectionFactoryWrapper> factory,
-        rtc::scoped_refptr<IceTransportInterface> iceTransport) {
-            return new ffiIceTransport(factory, iceTransport);
-        }
+        rtc::scoped_refptr<IceTransportInterface> iceTransport)
+    {
+        return new ffiIceTransport(factory, iceTransport);
+    }
     
     ffiIceTransport(std::shared_ptr<PeerConnectionFactoryWrapper> factory,
-        rtc::scoped_refptr<IceTransportInterface> iceTransport){
+        rtc::scoped_refptr<IceTransportInterface> iceTransport)
+    {
         factory_ = factory;
         iceTransport_ = iceTransport;
         
@@ -78,7 +77,6 @@ private:
     std::atomic<cricket::IceGatheringState> iceGatheringState_{cricket::kIceGatheringNew};
 };
 
-
 }
 
-#endif //WEBRTC4CJ_FFI_ICE_TRANSPORT_H
+#endif // WEBRTC4CJ_FFI_ICE_TRANSPORT_H

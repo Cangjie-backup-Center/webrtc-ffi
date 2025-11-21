@@ -12,44 +12,44 @@
 
 namespace webrtc {
 
-class PeerConnectionFactoryWrapper;
-
 class ffiRtpTransceiver {
 public:
     static ffiRtpTransceiver* NewInstance(
-        std::shared_ptr<PeerConnectionFactoryWrapper> factory, 
+        std::shared_ptr<PeerConnectionFactoryWrapper> factory,
         rtc::scoped_refptr<PeerConnectionInterface> pc,
-        rtc::scoped_refptr<RtpTransceiverInterface> transceiver) {
+        rtc::scoped_refptr<RtpTransceiverInterface> transceiver)
+    {
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
         if (!factory || !pc || !transceiver) {
             CANGJIE_THROW("Invalid argument");
         }
         return new ffiRtpTransceiver(factory, pc, transceiver);
-    } 
+    }
     
-    ffiRtpTransceiver(std::shared_ptr<PeerConnectionFactoryWrapper> factory, 
+    ffiRtpTransceiver(std::shared_ptr<PeerConnectionFactoryWrapper> factory,
         rtc::scoped_refptr<PeerConnectionInterface> pc,
-        rtc::scoped_refptr<RtpTransceiverInterface> transceiver){
+        rtc::scoped_refptr<RtpTransceiverInterface> transceiver)
+    {
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
         factory_ = factory;
         pc_ = pc;
         rtpTransceiver_ = transceiver;
     }
-    ~ffiRtpTransceiver() ;
+    ~ffiRtpTransceiver();
 
-    rtc::scoped_refptr<RtpTransceiverInterface> Get() const {
+    rtc::scoped_refptr<RtpTransceiverInterface> Get() const
+    {
         return rtpTransceiver_;
     }
     
-
-    std::string GetMid(); 
-    ffiRtpSender GetSender(); 
-    ffiRtpReceiver GetReceiver(); 
-    FFIRTCRtpTransceiverDirection GetDirection(); 
-    void SetDirection(FFIRTCRtpTransceiverDirection n); 
-    FFIRTCRtpTransceiverDirection GetCurrentDirection(); 
-    void Stop(); 
-    void SetCodecPreferences(CJ_RTCRtpCodec codecs[]); 
+    std::string GetMid();
+    ffiRtpSender GetSender();
+    ffiRtpReceiver GetReceiver();
+    FFIRTCRtpTransceiverDirection GetDirection();
+    void SetDirection(FFIRTCRtpTransceiverDirection n);
+    FFIRTCRtpTransceiverDirection GetCurrentDirection();
+    void Stop();
+    void SetCodecPreferences(CJ_RTCRtpCodec codecs[]);
 private:
     std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
     rtc::scoped_refptr<PeerConnectionInterface> pc_;
@@ -57,4 +57,4 @@ private:
 };
 
 }
-#endif //WEBRTC4CJ_FFI_RTP_TRANSCEIVER_H
+#endif // WEBRTC4CJ_FFI_RTP_TRANSCEIVER_H

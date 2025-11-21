@@ -13,25 +13,24 @@
 #include "ffi_rtp_transceiver.h"
 #include "ffi_sctp_transport.h"
 #include "jsep.h"
+#include "webrtc_func.h"
 #include <cstdint>
 
-
 namespace webrtc {
-class PeerConnectionFactoryWrapper;
 
 bool CangjieToNativeConfiguration(
     const CJ_RTCConfiguration& jsConfiguration, webrtc::PeerConnectionInterface::RTCConfiguration& configuration);
 
-bool CangjieToNativeIceServer(CJ_RTCIceServer cjrs, webrtc::PeerConnectionInterface::IceServer& iceServer); 
+bool CangjieToNativeIceServer(CJ_RTCIceServer cjrs, webrtc::PeerConnectionInterface::IceServer& iceServer);
 
-rtc::RTCCertificate* CangjieToNativeCertificate(CJ_RTCCertificate cjrc); 
+rtc::RTCCertificate* CangjieToNativeCertificate(CJ_RTCCertificate cjrc);
 
-class ffiPeerConnection : public FFIEventTarget<ffiPeerConnection>, public PeerConnectionObserver, 
-                            public CJ_CLASS_BASE::FFICangjieClassID {
-    
+class ffiPeerConnection : public FFIEventTarget<ffiPeerConnection>, public PeerConnectionObserver,
+    public CJ_CLASS_BASE::ffiCjClass {
 public:
     
-    ~ffiPeerConnection() {
+    ~ffiPeerConnection()
+    {
         if (sender_) {
             delete sender_;
             sender_ = nullptr;
@@ -49,34 +48,50 @@ public:
     CJ_RTCSessionDescription GetCurrentRemoteDescription();
     CJ_RTCSessionDescription GetPendingLocalDescription();
     CJ_RTCSessionDescription GetPendingRemoteDescription();
-    int64_t GetSctp(); 
+    int64_t GetSctp();
 // readonly end
     
     void CreateOffer(bool iceRestart);
     
     ffiPeerConnection(CJ_RTCConfiguration config, std::shared_ptr<PeerConnectionFactoryWrapper> factory);
-    void (*cj_func_call_CreateOffer_)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg) = nullptr;
-    void (*cj_func_call_CreateAnswer_)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg) = nullptr;
+    void (*cj_func_call_CreateOffer_)(int64_t id,
+        bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg) = nullptr;
+    void (*cj_func_call_CreateAnswer_)(int64_t id,
+        bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg) = nullptr;
 
     int64_t addTrack(ffiMediaStreamTrack* track, std::vector<webrtc::FFIMediaStream*> streamVec);
-    // void removeTrack(ffiRtpReceiver* receiver);
+
     void setLocalDescription(CJ_RTCSessionDescription description, void (*pe)(int64_t cj_id, CJ_ErrorMessage msg));
     void setRemoteDescription(CJ_RTCSessionDescription description, void (*pe)(int64_t cj_id, CJ_ErrorMessage msg));
     CJ_FFICreateSdpObserver_result createOffer(bool iceRestart);
     CJ_FFICreateSdpObserver_result createAnswer();
-    int64_t createDataChannel(char* label,CJ_RTCDataChannelInit dataChannelDict);
+    int64_t createDataChannel(CHAR_PTR label, CJ_RTCDataChannelInit dataChannelDict);
     void addIceCandidate(CJ_RTCIceCandidateInit candidate);
     int64_t* getSenders();
     int64_t* getReceivers();
     int64_t* getTransceivers();
-//    RTCConfigur1ation* getConfiguration();
     void restartIce();
     void setConfiguration(CJ_RTCConfiguration cjConfig);
-    // RTCRtpTransceiver* addTransceiver();
     void close();
-    // RTCStatsReport* getStats();
     void setAudioRecording(bool recording);
     void setAudioPlayout(bool playout);
+
+    static int64_t GenerateCertificate(std::string keyname);
+    static rtc::scoped_refptr<rtc::RTCCertificate> certificate_;
+
+    void SetOnTrack(void (*pe)(int64_t id, CJ_RTCTrackEvent ptr)) ;
+    void SetOnDataChannel(void (*pe)(int64_t id, int64_t ptr)) ;
+    void SetOnSignalingChange(void (*pe)(int64_t id, CJ_Event ptr)) ;
+    void SetOnRenegotiationNeeded(void (*pe)(int64_t id, CJ_Event ptr)) ;
+    void SetOnIceCandidateError(void (*pe)(int64_t id, CJ_RTCPeerConnectionIceErrorEvent ptr));
+    void SetOnStandardizedIceConnectionChange(void (*pe)(int64_t id, CJ_Event ptr));
+    void SetOnConnectionChange(void (*pe)(int64_t id, CJ_Event ptr));
+    void SetOnIceGatheringChange(void (*pe)(int64_t id, CJ_Event ptr));
+    void SetOnIceCandidate(void (*pe)(int64_t id, CJ_RTCPeerConnectionIceEvent ptr));
+    void SetCallBackCreateOffer(void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg));
+    void SetCallBackCreateAnswer(void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg));
+    void SetAddIceCandidate(void (*pe)(int64_t id, const char* msg));
+    void (*cj_func_call_addIceCandidate)(int64_t id, const char* msg) = nullptr;
 
 protected:
     void OnIceCandidate(const IceCandidateInterface* candidate) override;
@@ -102,22 +117,6 @@ protected:
     void OnTrack(rtc::scoped_refptr<RtpTransceiverInterface> transceiver) override;
     void OnRemoveTrack(rtc::scoped_refptr<RtpReceiverInterface> receiver) override;
 
-public:
-    void SetOnTrack(void (*pe)(int64_t id, CJ_RTCTrackEvent ptr)) ;
-    void SetOnDataChannel(void (*pe)(int64_t id, int64_t ptr)) ;
-    void SetOnSignalingChange(void (*pe)(int64_t id, CJ_Event ptr)) ;
-    void SetOnRenegotiationNeeded(void (*pe)(int64_t id, CJ_Event ptr)) ;
-    void SetOnIceCandidateError(void (*pe)(int64_t id, CJ_RTCPeerConnectionIceErrorEvent ptr));
-    void SetOnStandardizedIceConnectionChange(void (*pe)(int64_t id, CJ_Event ptr));
-    void SetOnConnectionChange(void (*pe)(int64_t id, CJ_Event ptr));
-    void SetOnIceGatheringChange(void (*pe)(int64_t id, CJ_Event ptr));
-    void SetOnIceCandidate(void (*pe)(int64_t id, CJ_RTCPeerConnectionIceEvent ptr));
-    void SetCallBackCreateOffer(void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg));
-    void SetCallBackCreateAnswer(void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg));
-
-    void SetAddIceCandidate(void (*pe)(int64_t id,const  char* msg));
-    void (*cj_func_call_addIceCandidate)(int64_t id, const char* msg) = nullptr;
-
 private:
     std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
     rtc::scoped_refptr<PeerConnectionInterface> pc_;
@@ -133,12 +132,8 @@ private:
     void (*cj_func_call_OnConnectionChange_)(int64_t id, CJ_Event ptr) = nullptr;
     void (*cj_func_call_OnIceGatheringChange_)(int64_t id, CJ_Event ptr) = nullptr;
     void (*cj_func_call_OnIceCandidate_)(int64_t id, CJ_RTCPeerConnectionIceEvent ptr) = nullptr;
-
-public:
-    static int64_t GenerateCertificate(std::string keyname);
-    static rtc::scoped_refptr<rtc::RTCCertificate> certificate_;
 };
 
 }
 
-#endif //WEBRTC4CJ_FFI_PEER_CONNECTION_H
+#endif // WEBRTC4CJ_FFI_PEER_CONNECTION_H

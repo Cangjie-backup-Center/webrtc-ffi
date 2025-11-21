@@ -20,9 +20,9 @@ namespace webrtc {
 
 
 CJ_RTCIceCandidate CJToRTCPeerConnectionIceEvent(const std::string& sdpMid,
-                    int32_t sdpMLineIndex, 
-                    const std::string& sdp,
-                    const cricket::Candidate& candidate);
+    int32_t sdpMLineIndex,
+    const std::string& sdp,
+    const cricket::Candidate& candidate);
 
 } // namespace webrtc
 

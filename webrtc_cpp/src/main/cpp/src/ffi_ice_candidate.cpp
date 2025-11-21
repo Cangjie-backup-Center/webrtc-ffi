@@ -9,18 +9,11 @@
 
 
 namespace webrtc {
-//char cjkEnumIceCandidateRtp[] = "rtp";
-//char cjkEnumIceCandidateRtcp[] = "rtcp";
-//
-//char cjkEnumIceCandidateTypeHost[] = "host";
-//char cjkEnumIceCandidateTypeSrflx[] = "srflx";
-//char cjkEnumIceCandidateTypePrflx[] = "prflx";
-//char cjkEnumIceCandidateTypeRelay[] = "relay";
 
 CJ_RTCIceCandidate CJToRTCPeerConnectionIceEvent(const std::string& sdpMid,
-                    int32_t sdpMLineIndex, 
-                    const std::string& sdp,
-                    const cricket::Candidate& candidate) 
+    int32_t sdpMLineIndex,
+    const std::string& sdp,
+    const cricket::Candidate& candidate)
 {
     CJ_RTCIceCandidate obj = CJ_RTCIceCandidate{};
     if (sdp.empty()) {
@@ -34,7 +27,7 @@ CJ_RTCIceCandidate CJToRTCPeerConnectionIceEvent(const std::string& sdpMid,
     obj.foundation = strdup(candidate.foundation().c_str());
     if (candidate.component() == KCOMPONENT_ID_RTP) {
         obj.component = (int64_t)FFIRTCIceComponent::RTP;
-    } 
+    }
     if (candidate.component() == KCOMPONENT_ID_RTCP) {
         obj.component = (int64_t)FFIRTCIceComponent::RTCP;
     }
@@ -66,7 +59,6 @@ CJ_RTCIceCandidate CJToRTCPeerConnectionIceEvent(const std::string& sdpMid,
 
     return obj;
 }
-
 
 }
 

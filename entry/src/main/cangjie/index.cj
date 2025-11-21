@@ -569,7 +569,6 @@ class EntryView {
                 this.mXComponentController1.setVideoTrack(this.localCameraVideoTrack.getOrThrow())
                 this.mXComponentController1.setMirror(true)
                 this.mXComponentController1.setScalingMode(FFIScalingModeEnum.ASPECTFIT)
-
             }
         }
     }

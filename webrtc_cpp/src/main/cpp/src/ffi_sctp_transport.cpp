@@ -7,18 +7,22 @@
 
 namespace webrtc {
 
-
-int64_t ffiSctpTransport::GetMaxChannels(){
+int64_t ffiSctpTransport::GetMaxChannels()
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
     auto maxChannels = sctpTransport_->Information().MaxChannels();
     return maxChannels.value();
 }
-int64_t ffiSctpTransport::GetMaxMessageSize() {
+
+int64_t ffiSctpTransport::GetMaxMessageSize()
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
     auto maxMessageSize = sctpTransport_->Information().MaxMessageSize();
     return maxMessageSize.value();
 }
-FFIRTCSctpTransportState ffiSctpTransport::GetState() {
+
+FFIRTCSctpTransportState ffiSctpTransport::GetState()
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 
     switch (sctpTransport_->Information().state()) {
@@ -33,17 +37,20 @@ FFIRTCSctpTransportState ffiSctpTransport::GetState() {
     }
     CANGJIE_THROW("Invalid state");
 }
-ffiDtlsTransport* ffiSctpTransport::GetTransport(){
+
+ffiDtlsTransport* ffiSctpTransport::GetTransport()
+{
     auto transport = sctpTransport_->Information().dtls_transport();
-    return ffiDtlsTransport::NewInstance(factory_, transport) ;
+    return ffiDtlsTransport::NewInstance(factory_, transport);
 }
 
-void ffiSctpTransport::SetOnStateChange(void (*pe)(int64_t id, CJ_Event ptr)) {
+void ffiSctpTransport::SetOnStateChange(void (*pe)(int64_t id, CJ_Event ptr))
+{
     cj_func_call_OnStateChange_ = pe;
 }
 
-void ffiSctpTransport::OnStateChange(SctpTransportInformation info) {
-    
+void ffiSctpTransport::OnStateChange(SctpTransportInformation info)
+{
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
 
     auto sctpTransportState = info.state();

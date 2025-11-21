@@ -1,8 +1,9 @@
-#ifndef NATIVE_XCOMPONENT_EGL_CORE_H
-#define NATIVE_XCOMPONENT_EGL_CORE_H
 /*
  * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
  */
+
+#ifndef NATIVE_XCOMPONENT_EGL_CORE_H
+#define NATIVE_XCOMPONENT_EGL_CORE_H
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>

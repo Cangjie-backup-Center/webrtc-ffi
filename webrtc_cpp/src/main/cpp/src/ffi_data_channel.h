@@ -12,14 +12,20 @@
 
 namespace webrtc {
 
+class ffiDataChannel {
+};
+
 class ffiDataChannelObserverTemp : public FFIEventTarget<ffiDataChannelObserverTemp>,
                                    public DataChannelObserver,
-                                   public CJ_CLASS_BASE::FFICangjieClassID {
+                                   public CJ_CLASS_BASE::ffiCjClass {
 public:
     explicit ffiDataChannelObserverTemp(rtc::scoped_refptr<DataChannelInterface> dataChannel);
     ~ffiDataChannelObserverTemp() override;
 
-    rtc::scoped_refptr<DataChannelInterface> Get() const { return dataChannel_; }
+    rtc::scoped_refptr<DataChannelInterface> Get() const
+    {
+        return dataChannel_;
+    }
 
 // readonly
     std::string GetLabel();
@@ -38,9 +44,8 @@ public:
 // readonly
     
     void Send(uint8_t* data, int64_t size);
-    void Send(char* data);
+    void Send(std::string dataStr);
     void Close();
-    
 
     void SetOnopen(void (*pe)(int64_t id, CJ_Event ptr));
     void SetOnclose(void (*pe)(int64_t id, CJ_Event ptr));

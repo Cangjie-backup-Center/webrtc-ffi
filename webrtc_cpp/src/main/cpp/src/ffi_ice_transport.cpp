@@ -7,10 +7,11 @@
 namespace webrtc {
 
 
-FFIRTCIceRole ffiIceTransport::GetRole() {
+FFIRTCIceRole ffiIceTransport::GetRole()
+{
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
 
-    cricket::IceRole iceRole;
+    cricket::IceRole iceRole = cricket::ICEROLE_UNKNOWN;
     factory_->GetNetworkThread()->BlockingCall([&iceRole, this] { iceRole = iceTransport_->internal()->GetIceRole(); });
     switch (iceRole) {
         case cricket::ICEROLE_CONTROLLING:
@@ -24,7 +25,9 @@ FFIRTCIceRole ffiIceTransport::GetRole() {
     }
     CANGJIE_THROW("Invalid role");
 }
-FFIRTCIceComponent ffiIceTransport::GetComponent() {
+
+FFIRTCIceComponent ffiIceTransport::GetComponent()
+{
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
 
     int component = 0;
@@ -42,10 +45,10 @@ FFIRTCIceComponent ffiIceTransport::GetComponent() {
         return FFIRTCIceComponent::RTCP;
     }
     CANGJIE_THROW("Invalid component");
-    
 }
 
-FFIRTCIceTransportState ffiIceTransport::GetState() {
+FFIRTCIceTransportState ffiIceTransport::GetState()
+{
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
 
     IceTransportState iceTransportState = iceTransportState_;
@@ -70,7 +73,9 @@ FFIRTCIceTransportState ffiIceTransport::GetState() {
     }
     CANGJIE_THROW("Invalid state");
 }
-FFIRTCIceGathererState ffiIceTransport::GetGatheringState() {
+
+FFIRTCIceGathererState ffiIceTransport::GetGatheringState()
+{
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
 
     cricket::IceGatheringState iceGatheringState = iceGatheringState_;
@@ -85,16 +90,16 @@ FFIRTCIceGathererState ffiIceTransport::GetGatheringState() {
             break;
     }
     CANGJIE_THROW("Invalid gathering state");
-    
 }
 
-void ffiIceTransport::OnStateChange(cricket::IceTransportInternal* iceTransport) {
-    
+void ffiIceTransport::OnStateChange(cricket::IceTransportInternal* iceTransport)
+{
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
 
     iceTransportState_ = iceTransport_->internal()->GetIceTransportState();
     
-    this->Dispatch(CallbackEvent<ffiIceTransport>::Create([this, state = iceTransportState_.load()](ffiIceTransport& target) {
+    this->Dispatch(CallbackEvent<ffiIceTransport>::Create(
+        [this, state = iceTransportState_.load()](ffiIceTransport& target) {
         RTC_DCHECK_EQ(this, &target);
         if (this->cj_func_call_OnStateChange_)
             this->cj_func_call_OnStateChange_(this->GetCJClassID(), CJ_Event{type: "statechange"});
@@ -103,25 +108,33 @@ void ffiIceTransport::OnStateChange(cricket::IceTransportInternal* iceTransport)
         }
     }));
 }
-void ffiIceTransport::OnGatheringStateChange(cricket::IceTransportInternal* iceTransport) {
+
+void ffiIceTransport::OnGatheringStateChange(cricket::IceTransportInternal* iceTransport)
+{
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
 
     iceGatheringState_ = iceTransport->gathering_state();
     
-    this->Dispatch(CallbackEvent<ffiIceTransport>::Create([this, state = iceTransportState_.load()](ffiIceTransport& target) {
+    this->Dispatch(CallbackEvent<ffiIceTransport>::Create(
+        [this, state = iceTransportState_.load()](ffiIceTransport& target) {
         RTC_DCHECK_EQ(this, &target);
-        if (this->cj_func_call_OnGatheringStateChange_) 
+        if (this->cj_func_call_OnGatheringStateChange_) {
             this->cj_func_call_OnGatheringStateChange_(this->GetCJClassID(), CJ_Event{type: "gatheringstatechange"});
-    }));
-}
-void ffiIceTransport::OnSelectedCandidatePairChange(const cricket::CandidatePairChangeEvent& event) {
-    RTC_LOG(LS_VERBOSE) << __FUNCTION__;
-    this->Dispatch(CallbackEvent<ffiIceTransport>::Create([this, state = iceTransportState_.load()](ffiIceTransport& target) {
-        RTC_DCHECK_EQ(this, &target);
-        if (this->cj_func_call_OnSelectedCandidatePairChange_)
-            this->cj_func_call_OnSelectedCandidatePairChange_(this->GetCJClassID(), CJ_Event{type: "selectedcandidatepairchange"});
+        }
     }));
 }
 
+void ffiIceTransport::OnSelectedCandidatePairChange(const cricket::CandidatePairChangeEvent& event)
+{
+    RTC_LOG(LS_VERBOSE) << __FUNCTION__;
+    this->Dispatch(CallbackEvent<ffiIceTransport>::Create(
+        [this, state = iceTransportState_.load()](ffiIceTransport& target) {
+        RTC_DCHECK_EQ(this, &target);
+        if (this->cj_func_call_OnSelectedCandidatePairChange_) {
+            this->cj_func_call_OnSelectedCandidatePairChange_(this->GetCJClassID(),
+                CJ_Event{ type: "selectedcandidatepairchange" });
+        }
+    }));
+}
 
 }

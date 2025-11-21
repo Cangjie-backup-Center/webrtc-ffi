@@ -8,14 +8,12 @@
 #include "rtc_base/helpers.h"
 #include "ffi_media_stream_track.h"
 #include <string>
-#include <memory> 
+#include <memory>
 #include <cstdint>
-
-
 using namespace webrtc;
 
-
-void webrtc::FFIMediaStream::AddTrack(int64_t mst){
+void webrtc::FFIMediaStream::AddTrack(int64_t mst)
+{
     auto nativeTrack = reinterpret_cast<ffiMediaStreamTrack*>(mst);
     if (!nativeTrack) {
         CANGJIE_THROW("Invalid argument");
@@ -43,7 +41,8 @@ void webrtc::FFIMediaStream::AddTrack(int64_t mst){
     }
 }
 
-void webrtc::FFIMediaStream::RemoveTrack(int64_t mst) {
+void webrtc::FFIMediaStream::RemoveTrack(int64_t mst)
+{
     auto nativeTrack = reinterpret_cast<ffiMediaStreamTrack*>(mst);
     if (!nativeTrack) {
         CANGJIE_THROW("Invalid argument");
@@ -72,8 +71,9 @@ void webrtc::FFIMediaStream::RemoveTrack(int64_t mst) {
     }
 }
 
-int64_t webrtc::FFIMediaStream::GetTrackById(char* str){
-    std::string trackId = str;
+int64_t webrtc::FFIMediaStream::GetTrackById(std::string trackId_str)
+{
+    std::string trackId = trackId_str;
     atif_ = stream_->FindAudioTrack(trackId);
     if (atif_) {
         return reinterpret_cast<int64_t>(atif_.get());
@@ -86,14 +86,15 @@ int64_t webrtc::FFIMediaStream::GetTrackById(char* str){
     RTC_LOG(LS_INFO) << "No track with id: " << trackId;
 }
 
-CJ_ReturnArray webrtc::FFIMediaStream::GetTracks() {
+CJ_ReturnArray webrtc::FFIMediaStream::GetTracks()
+{
     auto audioTracks = stream_->GetAudioTracks();
     auto videoTracks = stream_->GetVideoTracks();
 
-    int64_t* result = new int64_t[audioTracks.size() + videoTracks.size()];  
+    int64_t* result = new int64_t[audioTracks.size() + videoTracks.size()];
     for (uint32_t i = 0; i < audioTracks.size(); i++) {
         audioMediaStreamTrackPtr = new ffiMediaStreamTrack(factory_, audioTracks[i]);
-        result[i] = reinterpret_cast<int64_t>(audioMediaStreamTrackPtr);    
+        result[i] = reinterpret_cast<int64_t>(audioMediaStreamTrackPtr);
     }
 
     for (uint32_t i = 0; i < videoTracks.size(); i++) {
@@ -104,9 +105,10 @@ CJ_ReturnArray webrtc::FFIMediaStream::GetTracks() {
 }
 
 
-CJ_ReturnArray webrtc::FFIMediaStream::GetAudioTracks(){
+CJ_ReturnArray webrtc::FFIMediaStream::GetAudioTracks()
+{
     auto audioTracks = stream_->GetAudioTracks();
-    int64_t* result = new int64_t[audioTracks.size()];  
+    int64_t* result = new int64_t[audioTracks.size()];
     for (uint32_t i = 0; i < audioTracks.size(); i++) {
         audioMediaStreamTrackPtr = new ffiMediaStreamTrack(factory_, audioTracks[i]);
         result[i] = reinterpret_cast<int64_t>(audioMediaStreamTrackPtr);
@@ -114,10 +116,11 @@ CJ_ReturnArray webrtc::FFIMediaStream::GetAudioTracks(){
     return (CJ_ReturnArray){result, (int64_t)(audioTracks.size())};
 }
 
-CJ_ReturnArray webrtc::FFIMediaStream::GetVideoTracks(){
+CJ_ReturnArray webrtc::FFIMediaStream::GetVideoTracks()
+{
     auto videoTracks = stream_->GetVideoTracks();
 
-    int64_t* result = new int64_t[videoTracks.size()];  
+    int64_t* result = new int64_t[videoTracks.size()];
     for (uint32_t i = 0; i < videoTracks.size(); i++) {
         videoMediaStreamTrackPtr = new ffiMediaStreamTrack(factory_, videoTracks[i]);
         result[i] = reinterpret_cast<int64_t>(videoMediaStreamTrackPtr);
@@ -125,4 +128,3 @@ CJ_ReturnArray webrtc::FFIMediaStream::GetVideoTracks(){
 
     return (CJ_ReturnArray){result, (int64_t)(videoTracks.size())};
 }
-

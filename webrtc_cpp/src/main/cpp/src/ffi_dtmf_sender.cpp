@@ -4,19 +4,22 @@
 
 #include "ffi_dtmf_sender.h"
 
-
 namespace webrtc {
 
-bool ffiDtmfSender::GetCanInsertDTMF(){
+bool ffiDtmfSender::GetCanInsertDTMF()
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
     return dtmfSender_->CanInsertDtmf();
 }
-const char* ffiDtmfSender::GetToneBuffer(){
+
+const char* ffiDtmfSender::GetToneBuffer()
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
     return dtmfSender_->tones().data();
 }
 
-bool ffiDtmfSender::InsertDTMF(const char* tones, int64_t duration, int64_t interToneGap){
+bool ffiDtmfSender::InsertDTMF(const char* tones, int64_t duration, int64_t interToneGap)
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 
     if (!dtmfSender_->CanInsertDtmf()) {
@@ -60,19 +63,18 @@ bool ffiDtmfSender::InsertDTMF(const char* tones, int64_t duration, int64_t inte
     } else {
         CANGJIE_THROW("Failed to insert DTMF");
     }
-    
-    
 }
 
-
-void ffiDtmfSender::OnToneChange(const std::string& tone, const std::string& tone_buffer) {
+void ffiDtmfSender::OnToneChange(const std::string& tone, const std::string& tone_buffer)
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 
     Dispatch(CallbackEvent<ffiDtmfSender>::Create([this, tone](ffiDtmfSender& target) {
         RTC_DCHECK_EQ(this, &target);
-        if (cj_func_call_OnToneChange_){
+        if (cj_func_call_OnToneChange_) {
             cj_func_call_OnToneChange_(this->GetCJClassID(), tone.data());
         }
     }));
 }
+
 }

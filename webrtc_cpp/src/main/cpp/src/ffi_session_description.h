@@ -9,12 +9,13 @@
 namespace webrtc {
 class ffiSessionDescription {
 public:
-
-    static ffiSessionDescription *NewInstance(std::string sdp, std::string type) {
+    static ffiSessionDescription *NewInstance(std::string sdp, std::string type)
+    {
         return new ffiSessionDescription(sdp, type);
     }
 
-    ffiSessionDescription(std::string sdp, std::string type) {
+    ffiSessionDescription(std::string sdp, std::string type)
+    {
         sdp_ = sdp;
         type_ = type;
     }
@@ -29,4 +30,4 @@ private:
 };
 }
 
-#endif //WEBRTC4CJ_FFI_SESSION_DESCRIPTION_H
+#endif // WEBRTC4CJ_FFI_SESSION_DESCRIPTION_H

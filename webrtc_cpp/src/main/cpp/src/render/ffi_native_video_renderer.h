@@ -21,7 +21,7 @@
 namespace webrtc {
 
 class ffiNativeVideoRenderer {
-public: 
+public:
     ffiNativeVideoRenderer();
     ~ffiNativeVideoRenderer();
 

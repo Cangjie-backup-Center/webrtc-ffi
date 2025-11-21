@@ -12,38 +12,38 @@
 namespace webrtc {
 class OhosLocalAudioSource;
 
-//class FFIAudioSource {
-//public:
+// class FFIAudioSource {
+// public:
 //    FFIAudioSource(rtc::scoped_refptr<OhosLocalAudioSource> source);
 //    ~FFIAudioSource();
-//
+
 //    static FFIAudioSource* NewInstance(rtc::scoped_refptr<OhosLocalAudioSource> source); 
-//
-//protected:
-//    
-//private:
+
+// protected:
+   
+// private:
 //    rtc::scoped_refptr<OhosLocalAudioSource> source_;
-//
-//
-//};
-//
-//class FFIVideoSource :  public VideoCapturer::Observer{
-//public:
+
+
+// };
+
+// class FFIVideoSource :  public VideoCapturer::Observer{
+// public:
 //    FFIVideoSource(rtc::scoped_refptr<OhosVideoTrackSource> source);
 //    ~FFIVideoSource();
-//
+
 //    static FFIVideoSource* NewInstance(rtc::scoped_refptr<OhosVideoTrackSource> source);
 //    rtc::scoped_refptr<OhosVideoTrackSource> Get() const
 //    {
 //        return source_;
 //    }
-//
-//protected:
+
+// protected:
 //    void OnCapturerStarted(bool success) override;
 //    void OnCapturerStopped() override;
-//
-//
-//}
+
+
+// }
 
 }
 
