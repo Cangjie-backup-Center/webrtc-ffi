@@ -21,8 +21,6 @@
 
 namespace webrtc {
 
-using namespace Napi;
-
 std::unique_ptr<AudioCapturer> AudioCapturer::Create(AudioInputOptions options)
 {
     return std::make_unique<AudioCapturer>(std::move(options));

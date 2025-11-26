@@ -12,7 +12,7 @@
 #include "ffi_rtp_receiver.h"
 #include "ffi_rtp_transceiver.h"
 #include "ffi_sctp_transport.h"
-#include "jsep.h"
+#include "api/jsep.h"
 #include "webrtc_func.h"
 #include <cstdint>
 

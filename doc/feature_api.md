@@ -1,4 +1,4 @@
-# webrtc4cj特性转测文档
+# webrtc4cj特性文档
 
 ## 1 主要接口
 
@@ -37,49 +37,37 @@ public class VideoRenderController <: XComponentController {
     /*
      * 视频填充模式选择
      *
-     * 参数 Int32 - 传入结构体ScalingMode中元素用以视频显示的设置
+     * 参数 scalingMode - 传入枚举FFIScalingModeEnum
      * 返回值 Unit - Unit
      */
-    public func setScalingMode(scalingMode : Int32): Unit
+    public func setScalingMode(scalingMode : FFIScalingModeEnum): Unit
 
 }
     
 ```
 
-### 1.2 webrtc 提供 ffiCreateVideoSourceParameters
+### 1.2 webrtc 提供 FFIAudioOptions
 ```cangjie
-
-struct ffiCreateVideoSourceParameters{
-    var width : Float64 = 0.00   // 宽度
-    var height : Float64 = 0.00  // 高度
-    var facingMode : CString = unsafe{LibC.mallocCString("")}  // 表示媒体轨道是否支持摄像头朝向模式约束条件，user为前置摄像头，非user为后置摄像头
-    var isScreencast : Bool = false;   // 是否是屏幕录像，true：使用屏幕录像作为视频源（当前仅支持 width、height约束条件，且不支持 advanced 属性）；false：使用相机作为视频源（当前支持 width、height、aspectRatio、framRate、facingMode、deviceId约束条件）。
-}
-```
-
-### 1.3 webrtc 提供 ffiAudioOptions
-```cangjie
-struct ffiAudioOptions{
+struct FFIAudioOptions{
     var echo_cancellation : Bool = false   // 表示媒体轨道是否支持回声消除约束条件
     var noise_suppression : Bool = false   // 表示媒体轨道是否支持噪音抑制约束条件
 }
 
 ```
 
-### 1.4  webrtc 提供 ScalingMode
+### 1.3  webrtc 提供 FFIScalingModeEnum
 
 ``` cangjie
 /*
-* 该结构体中参数值已初始化，根据需要传值即可，不必再自行赋值
+* 该枚举为视频显示参数
 */
-public struct ScalingMode {
-    public let fill: Int32 = 0 // 视频显示填充
-    public let aspectFill: Int32 = 1 // 视频拉伸填充
-    public let aspectFit: Int32 = 2 // 视频自适应
+public enum FFIScalingModeEnum {
+	// 分别为：视频显示填充 视频拉伸填充 视频自适应
+    FILL | ASPECTFILL | ASPECTFIT
 }
 ```
 
-### 1.5 webrtc 提供 CJ_MediaTrackConstraintSet和CJ_TO_CPP_DisplayMediaStreamOptions
+### 1.4 webrtc 提供 CJ_MediaTrackConstraintSet和CJ_TO_CPP_DisplayMediaStreamOptions
 
 ```cangjie
 // 该结构体中保存有桌面共享时video的各项参数，结构体不单独使用而是搭配CJ_TO_CPP_DisplayMediaStreamOptions使用
@@ -156,7 +144,7 @@ public struct CJ_TO_CPP_DisplayMediaStreamOptions {
 }
 ```
 
-### 1.6 webrtc 提供重要功能类
+### 1.5 webrtc 提供重要功能类
 
 ```cangjie
 	/*
@@ -174,8 +162,6 @@ public struct CJ_TO_CPP_DisplayMediaStreamOptions {
     	public init(useStereoInput: Bool, useStereoOutput: Bool)
 	}
 
-
-    
     public class PeerConnectionFactory <: WebrtcClass {
     	/*
          * 创建对等连接工厂
@@ -204,13 +190,13 @@ public struct CJ_TO_CPP_DisplayMediaStreamOptions {
      * 音轨管理类
      *
      */
-     public class VideoTrack <: MediaStreamTrack {
+     public class AudioTrack <: MediaStreamTrack {
          /*
          * 创建音轨
          *
          * 参数 pcf - 传入连接工厂
          * 参数 tag - 音轨标签(自定)
-         * 返回值 - VideoTrack实例
+         * 返回值 - AudioTrack实例
          */
         public init(pcf: PeerConnectionFactory, tag: String) 
        
@@ -226,8 +212,9 @@ public struct CJ_TO_CPP_DisplayMediaStreamOptions {
       *
       * 参数 pcf - 传入连接工厂
       * 参数 ffiCVSP - 视频配置
+      * 参数 isScreen - true:创建屏幕捕获器;false:创建摄像头捕获器
       */
-		public func createVideoSourceID(pcf: PeerConnectionFactory, ffiCVSP: ffiCreateVideoSourceParameters) 
+		public init(pcf: PeerConnectionFactory, ffiCVSP: CJ_MediaTrackConstraintSet, isScreen: Bool)
     }
  
     /*
@@ -255,13 +242,13 @@ public struct CJ_TO_CPP_DisplayMediaStreamOptions {
 		* 用以传入共享屏幕所需要的参数
 		*
 		* 参数 video - 视频控制参数
-		* 参数 audio - 音频控制参数
-		* 参数 systemAudio - 系统音频控制参数
+		* 参数 audio - 麦克风音频开/关
+		* 参数 systemAudio - 系统音频开/关
 		* 返回值 MediaStream - 返回MediaStream（管理共享屏幕功能返回的音、频流）
 		*/
-    	public func getDisplayMedia(video: CJ_TO_CPP_DisplayMediaStreamOptions,
-			audio:CJ_TO_CPP_DisplayMediaStreamOptions,
-			systemAudio:CJ_TO_CPP_DisplayMediaStreamOptions): MediaStream
+    	public func getDisplayMedia(video: CJ_MediaTrackConstraintSet,
+                                    audio: Bool,
+                                    systemAudio: Bool): MediaStream
 	}
     
     /*

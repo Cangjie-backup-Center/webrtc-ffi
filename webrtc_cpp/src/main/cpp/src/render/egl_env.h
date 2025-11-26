@@ -26,8 +26,6 @@
 
 #include <EGL/egl.h>
 
-#include "napi.h"
-#include "utils/marcos.h"
 
 namespace webrtc {
 
@@ -76,31 +74,6 @@ private:
     EGLSurface eglSurface_{EGL_NO_SURFACE};
 
     PFNEGLPRESENTATIONTIMEANDROIDPROC eglPresentationTimeANDROID_{};
-};
-
-class NapiEglEnv : public Napi::ObjectWrap<NapiEglEnv> {
-public:
-    NAPI_CLASS_NAME_DECLARE(EglEnv);
-    NAPI_METHOD_NAME_DECLARE(Create, create);
-    NAPI_METHOD_NAME_DECLARE(GetContext, getContext);
-    NAPI_METHOD_NAME_DECLARE(ToJson, toJSON);
-
-    static void Init(Napi::Env env, Napi::Object exports);
-
-protected:
-    friend class ObjectWrap;
-    explicit NapiEglEnv(const Napi::CallbackInfo& info);
-    ~NapiEglEnv();
-
-    static Napi::Value Create(const Napi::CallbackInfo& info);
-
-    Napi::Value GetContext(const Napi::CallbackInfo& info);
-    Napi::Value ToJson(const Napi::CallbackInfo& info);
-
-private:
-    static Napi::FunctionReference constructor_;
-
-    std::shared_ptr<EglEnv> eglEnv_;
 };
 
 } // namespace webrtc

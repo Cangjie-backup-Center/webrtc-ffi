@@ -64,8 +64,12 @@ public struct CJ_ReturnEnumerateDevicesInfo {
 
 @C // see ffi_define_struct.h
 public struct CJ_ReturnArray {
-    public let ptr: CPointer<Int64> = unsafe {zeroValue<CPointer<Int64>>()}
-    public let size: Int64 = 0
+    public var ptr: CPointer<Int64>
+    public var size: Int64
+    public init(ptr: CPointer<Int64> , size: Int64) {
+        this.ptr = ptr
+        this.size = size
+    }
 }
 
 @C // see ffi_define_struct.h
@@ -161,9 +165,6 @@ public struct CJ_RTCSessionDescription {
         }
     }
 
-    public static func GET(msg: String): CJ_RTCSessionDescription {
-        throw Webrtc4cjException("")
-    }
 }
 
 @C
@@ -365,21 +366,6 @@ public struct CJ_TO_CPP_DisplayMediaStreamOptions {
         this.obj = unsafe {zeroValue<CJ_MediaTrackConstraintSet>()}
         this.boolean = true
         this.isBool = true
-    }
-}
-
-public class MediaTrackConstraints {
-    var length: Int64 = 0
-    var advanced: CPointer<CJ_MediaTrackConstraintSet> = unsafe {zeroValue<CPointer<CJ_MediaTrackConstraintSet>>()}
-    public init(advanced: Array<CJ_MediaTrackConstraintSet>) {
-        let arr = LibC.malloc<CJ_MediaTrackConstraintSet>(count: advanced.size)
-        unsafe {
-            for (i in 0..advanced.size) {
-                arr.write(i, advanced[i])
-            }
-        }
-        this.advanced = arr
-        this.length = Int64(advanced.size)
     }
 }
 

@@ -28,6 +28,7 @@ private:
 
 std::unique_ptr<VideoEncoderFactory> createHardwareVideoEncoderFactory(ffiVideoEncoderFactory* ffiHVEF);
 
+std::unique_ptr<VideoEncoderFactory> CreateDefaultVideoEncoderFactory();
 }
 
 #endif // WEBRTC_FFI_VIDEO_ENCODER_FACTORY_H_

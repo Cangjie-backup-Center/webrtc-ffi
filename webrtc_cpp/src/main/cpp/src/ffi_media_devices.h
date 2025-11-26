@@ -10,6 +10,7 @@
 #include "ffi_media_stream.h"
 #include "ffi_peer_connection_factory.h"
 #include "pc/media_stream_observer.h"
+#define CLASS_FFIMEDIADEVICESASSIST class FFIMediaDevicesAssist
 
 #include "ffi_exception.h"
 #include "async_work/uv_work.h"
@@ -21,10 +22,9 @@
 #include "audio_device/audio_device_info.h"
 #include "audio_device/audio_device_enumerator.h"
 #include "ffi_define_struct.h"
-// #include "ffi_media_devicesassist.h" // 移除循环包含
 
 namespace webrtc {
-// class FFIMediaDevicesAssist;
+CLASS_FFIMEDIADEVICESASSIST;
 class FFIMediaDevices : public CJ_CLASS_BASE::ffiCjClass {
 public:
     FFIMediaDevices()
@@ -86,6 +86,8 @@ private:
     int64_t getDisplayMedia(MediaTrackConstraints video,
         MediaTrackConstraints audio,
         MediaTrackConstraints systemAudio);
+    
+    std::shared_ptr<FFIMediaDevicesAssist>ffiMDA_ = nullptr;
 };
 
 class FFIMediaDevicesAssist : public FFIMediaDevices {

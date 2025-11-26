@@ -16,7 +16,7 @@
 
 #include "peer_connection_factory.h"
 #include "logging/ohos_log.h"
-#include "webrtc_func.h"
+#include "./utils/marcos.h"
 #include "ffi_define_struct.h"
 
 namespace webrtc {

@@ -94,7 +94,7 @@ protected:
         this->ret.RTCSdpType = new char[sdptype.size()+1];
         webrtc_scp(this->ret.sdp, sdp.size()+1, sdp.data(), sdp.size());
         webrtc_scp(this->ret.RTCSdpType, sdptype.size()+1, sdptype.data(), sdptype.size());
-        delete desc;
+        // delete desc;
         cv.notify_one();
     }
 
@@ -704,7 +704,6 @@ void ffiPeerConnection::OnDataChannel(rtc::scoped_refptr<DataChannelInterface> c
                 CJ_RTCDataChannelEvent* crdce = new CJ_RTCDataChannelEvent();
                 crdce->channel = (int64_t)obs;
                 this->cj_func_call_OnDataChannel_(this->cj_class_key, (int64_t)crdce);
-                delete crdce;
             }
         }
     ));

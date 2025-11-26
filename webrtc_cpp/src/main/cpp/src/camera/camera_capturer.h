@@ -30,6 +30,7 @@
 
 #include "api/video/video_frame_buffer.h"
 #include "rtc_base/thread.h"
+#include "../utils/marcos.h"
 
 namespace webrtc {
 

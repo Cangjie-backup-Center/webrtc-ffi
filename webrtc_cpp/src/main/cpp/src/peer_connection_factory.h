@@ -22,8 +22,6 @@
 #include <memory>
 #include <mutex>
 
-//#include "napi.h"
-
 #include "api/peer_connection_interface.h"
 //#include "rtc_base/socket_server.h"
 
@@ -108,41 +106,6 @@ private:
 
     std::map<rtc::scoped_refptr<MediaStreamTrackInterface>, rtc::scoped_refptr<OhosLocalAudioSource>> audioSources_;
     std::map<rtc::scoped_refptr<MediaStreamTrackInterface>, rtc::scoped_refptr<OhosVideoTrackSource>> videoSources_;
-};
-
-class NapiPeerConnectionFactory : public Napi::ObjectWrap<NapiPeerConnectionFactory> {
-public:
-    static void Init(Napi::Env env, Napi::Object exports);
-
-    explicit NapiPeerConnectionFactory(const Napi::CallbackInfo& info);
-
-    std::shared_ptr<PeerConnectionFactoryWrapper> GetWrapper() const
-    {
-        return wrapper_;
-    }
-
-protected:
-    static Napi::Value SetDefault(const Napi::CallbackInfo& info);
-
-    Napi::Value CreatePeerConnection(const Napi::CallbackInfo& info);
-    Napi::Value CreateAudioSource(const Napi::CallbackInfo& info);
-    Napi::Value CreateAudioTrack(const Napi::CallbackInfo& info);
-    Napi::Value CreateVideoSource(const Napi::CallbackInfo& info);
-    Napi::Value CreateVideoTrack(const Napi::CallbackInfo& info);
-    Napi::Value StartAecDump(const Napi::CallbackInfo& info);
-    Napi::Value StopAecDump(const Napi::CallbackInfo& info);
-
-    Napi::Value ToJson(const Napi::CallbackInfo& info);
-
-private:
-    static Napi::FunctionReference constructor_;
-
-    PeerConnectionFactoryInterface* GetFactory() const
-    {
-        return wrapper_->GetFactory();
-    }
-
-    std::shared_ptr<PeerConnectionFactoryWrapper> wrapper_;
 };
 
 } // namespace webrtc

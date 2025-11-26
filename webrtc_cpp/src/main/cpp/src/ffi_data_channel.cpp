@@ -123,10 +123,6 @@ namespace webrtc {
             if (!err.ok()) {
                 RTC_LOG(LS_ERROR) << "send array buffer error: " << err.type() << ", " << err.message();
             }
-            if (ptr != nullptr) {
-                delete[] ptr;
-            }
-            ptr = nullptr;
         });
     }
 

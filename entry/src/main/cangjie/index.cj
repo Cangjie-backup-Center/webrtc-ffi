@@ -7,6 +7,7 @@ package ohos_app_cangjie_entry
 internal import ohos.base.*
 internal import ohos.component.*
 internal import ohos.state_manage.*
+internal import ohos.system_date_time.SystemDateTime
 import ohos.state_macro_manage.*
 import ohos.net.webSocket.*
 import ohos.ability.getStageContext
@@ -26,6 +27,7 @@ import kit.AudioKit.*
 import ohos.file_fs.*
 import webrtc_cj.*
 import ohos.state_macro_manage_ndk.r
+
 
 let Index_WebRTC_TAG: String = "[Index]"
 // 用于测试的信令服务器
@@ -126,6 +128,10 @@ class EntryView {
     private var onDataChannelMessageReceived: (RTCDataChannel, MessageEvent) -> Unit = {pc, event =>}
     private var localCameraVideoTrack: ?MediaStreamTrack = Option<MediaStreamTrack>.None
     private var retVideoTrack: Array<MediaStreamTrack> = Array<MediaStreamTrack>()
+    
+    private var connectTime: Int64 = 0
+    private var xBeforeSetVideoTime: Int64 = 0
+    private var xEndSetVideoTime: Int64 = 0
 
     func build() {
         Column() {
@@ -198,6 +204,7 @@ class EntryView {
                                 }
                                 this.sendMessage('SESSION ' + this.peerId)
                                 this.buttonTitle = 'Disconnect'
+                                this.connectTime = SystemDateTime.getTime(isNano: true)
                         }
                     )
                     .margin(left: 10, right: 20)
@@ -563,8 +570,7 @@ class EntryView {
                 this.localAudioTrack = AudioTrack(this.pcf.getOrThrow(), "audio")
             }
             if (this.localCameraVideoTrack.isNone()) {
-                var ffiCVSP: CJ_TO_CPP_DisplayMediaStreamOptions =  CJ_TO_CPP_DisplayMediaStreamOptions(CJ_MediaTrackConstraintSet(width:1280.0, height:720.0, facingMode:"user"))
-                this.localVideoSource = VideoSource(this.pcf.getOrThrow(), ffiCVSP, false)
+                this.localVideoSource = VideoSource(this.pcf.getOrThrow(), CJ_MediaTrackConstraintSet(width:1280.0, height:720.0, facingMode:"user"), false)
                 this.localCameraVideoTrack = VideoTrack(this.pcf.getOrThrow(), "video")
                 this.mXComponentController1.setVideoTrack(this.localCameraVideoTrack.getOrThrow())
                 this.mXComponentController1.setMirror(true)
@@ -576,8 +582,7 @@ class EntryView {
     func prepareDisplayMedia(): Future<Unit> {
         spawn {
             if (this.displayMediaStream.isNone()) {
-                var captureVideo: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(CJ_MediaTrackConstraintSet(width: 720.0, height: 1280.0, ohosScreenCaptureAudioFilter: "current-app"))
-                this.displayMediaStream = mediaDevices.getDisplayMedia(captureVideo, true, true)
+                this.displayMediaStream = mediaDevices.getDisplayMedia(CJ_MediaTrackConstraintSet(width: 720.0, height: 1280.0, ohosScreenCaptureAudioFilter: "current-app"), true, true)
                 this.retVideoTrack = this.displayMediaStream.getVideoTracks()
                 this.localVideoTrack = this.retVideoTrack[0]
                 this.mXComponentController1.setVideoTrack(this.retVideoTrack[0])
@@ -611,7 +616,11 @@ class EntryView {
                   AppLog.info('${Index_WebRTC_TAG} ontrack: ${event.track.kind}')
                     if (event.track.kind == 'video') {
                         this.remoteVideoTrack = event.track
+                        xBeforeSetVideoTime = SystemDateTime.getTime(isNano: true)
                         this.mXComponentController2.setVideoTrack(event.track)
+                        xEndSetVideoTime = SystemDateTime.getTime(isNano: true)
+                        AppLog.info("XComponent total cost: ${(this.xEndSetVideoTime - this.xBeforeSetVideoTime)}ns")
+                        AppLog.info("total cost: ${(this.xEndSetVideoTime - this.connectTime)}ns")
                     } else if (event.track.kind == 'audio') {
                         this.remoteAudioTrack = event.track
                     }

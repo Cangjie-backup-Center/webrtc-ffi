@@ -10,20 +10,5 @@ public class RTCRtpReceiver <: WebrtcClass {
         super(id, this)
     }
 
-//    public func getParameters(): RTCRtpReceiveParameters {
-//
-//    }
-//    public func getStats(): Promise<RTCStatsReport> {
-//
-//    }
-//
-//    public func getContributingSources(): Array<RTCRtpContributingSource> {
-//
-//    }
-//
-//    public func getSynchronizationSources(): Array<RTCRtpSynchronizationSource> {
-//
-//    }
-
 }
 
