@@ -13,7 +13,8 @@ typedef struct {
 } CallbackData;
 
 
-CJ_ReturnEnumerateDevicesInfo FFIMediaDevices::enumerateDevices() {
+CJ_ReturnEnumerateDevicesInfo FFIMediaDevices::enumerateDevices()
+{
     cameraDevices_ = CameraEnumerator::GetDevices();
     audioDevices_ = AudioDeviceEnumerator::GetDevices();
   
@@ -42,37 +43,41 @@ CJ_ReturnEnumerateDevicesInfo FFIMediaDevices::enumerateDevices() {
         result[cameraDevices_.size() + index] = ed;
     }
     return (CJ_ReturnEnumerateDevicesInfo){result, (int64_t)(cameraDevices_.size() + audioDevices_.size())};
-} 
-
-
-int64_t FFIMediaDevices::getSupportedConstraints() {
-    std::vector<CJ_SupportedConstraints>* list = new std::vector<CJ_SupportedConstraints>();
-    
-#define CANGJIE_SET_ATTRIBUTE(name)   \
-    list->push_back(CJ_SupportedConstraints{name, true});
-
-    CANGJIE_SET_ATTRIBUTE("width");
-    CANGJIE_SET_ATTRIBUTE("height");
-    CANGJIE_SET_ATTRIBUTE("aspectRatio");
-    CANGJIE_SET_ATTRIBUTE("frameRate");
-    CANGJIE_SET_ATTRIBUTE("facingMode");
-    CANGJIE_SET_ATTRIBUTE("resizeMode");
-    CANGJIE_SET_ATTRIBUTE("sampleRate");
-    CANGJIE_SET_ATTRIBUTE("sampleSize");
-    CANGJIE_SET_ATTRIBUTE("echoCancellation");
-    CANGJIE_SET_ATTRIBUTE("autoGainControl");
-    CANGJIE_SET_ATTRIBUTE("noiseSuppression");
-    CANGJIE_SET_ATTRIBUTE("latency");
-    CANGJIE_SET_ATTRIBUTE("ChannelCount");
-    CANGJIE_SET_ATTRIBUTE("deviceId");
-    CANGJIE_SET_ATTRIBUTE("groupId");
-#undef CANGJIE_SET_ATTRIBUTE
-    return (int64_t)list;  // TODO 资源释放?? 
 }
 
-void FFIMediaDevices::getUserMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video, 
-                                   CJ_TO_CPP_DisplayMediaStreamOptions* audio, 
-                                   int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack)) {
+
+int64_t FFIMediaDevices::getSupportedConstraints()
+{
+    std::vector<CJ_SupportedConstraints>* list = new std::vector<CJ_SupportedConstraints>();
+    
+    // 替代宏的局部辅助函数
+    auto setAttribute = [list](const char* name) {
+        list->push_back(CJ_SupportedConstraints{name, true});
+    };
+
+    setAttribute("width");
+    setAttribute("height");
+    setAttribute("aspectRatio");
+    setAttribute("frameRate");
+    setAttribute("facingMode");
+    setAttribute("resizeMode");
+    setAttribute("sampleRate");
+    setAttribute("sampleSize");
+    setAttribute("echoCancellation");
+    setAttribute("autoGainControl");
+    setAttribute("noiseSuppression");
+    setAttribute("latency");
+    setAttribute("ChannelCount");
+    setAttribute("deviceId");
+    setAttribute("groupId");
+    
+    return reinterpret_cast<int64_t>(list);
+}
+
+void FFIMediaDevices::getUserMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video,
+    CJ_TO_CPP_DisplayMediaStreamOptions* audio,
+    int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack))
+{
     MediaTrackConstraints audio_;
     MediaTrackConstraints video_;
     if (video->isBool) {
@@ -104,7 +109,7 @@ void FFIMediaDevices::getUserMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video,
         } else {
             audio_ = MediaTrackConstraints();
         }
-    } else { 
+    } else {
         std::string errorMessage;
         MediaTrackConstraintSet basic;
         if (!ffiValidateAndCopyConstraintSet(*audio,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
@@ -120,7 +125,9 @@ void FFIMediaDevices::getUserMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video,
 }
 
 
-void FFIMediaDevices::getUserMedia(MediaTrackConstraints video, MediaTrackConstraints audio, int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack)) {
+void FFIMediaDevices::getUserMedia(MediaTrackConstraints video, MediaTrackConstraints audio,
+    int64_t id, void (*pe)(int64_t that, int64_t localVideoTrack))
+{
     audioConstraints_ = std::move(audio);
     videoConstraints_ = std::move(video);
     user_media_stream_ = factory_->GetFactory()->CreateLocalMediaStream(rtc::CreateRandomUuid());
@@ -150,24 +157,21 @@ void FFIMediaDevices::getUserMedia(MediaTrackConstraints video, MediaTrackConstr
         }
     }
     cj_func_call_back2_ = pe;
-    Cangjie_CallBack(new CallbackData{this, id},
-        [](uv_work_t *work) {
+    Cangjie_CallBack(new CallbackData{this, id}, [](uv_work_t *work) {
             CallbackData* t = static_cast<CallbackData *>(work->data);
             FFIMediaDevices* that = t->md;
             that->ffiUserMediaStream_ = new FFIMediaStream(that->factory_, that->user_media_stream_);
-            if(that->cj_func_call_back2_) {
+            if (that->cj_func_call_back2_) {
                 that->cj_func_call_back2_(t->id, (int64_t)that->ffiUserMediaStream_);
-            } 
-        },
-        [](uv_work_t *work, int status) {
-            free(work->data);
-        }
+            }
+        }, [](uv_work_t *work, int status) { free(work->data); }
     );
 }
 
-int64_t FFIMediaDevices::getDisplayMedia(const CJ_TO_CPP_DisplayMediaStreamOptions video, 
-                                      const CJ_TO_CPP_DisplayMediaStreamOptions audio, 
-                                      const CJ_TO_CPP_DisplayMediaStreamOptions systemAudio){
+int64_t FFIMediaDevices::getDisplayMedia(const CJ_TO_CPP_DisplayMediaStreamOptions video,
+    const CJ_TO_CPP_DisplayMediaStreamOptions audio,
+    const CJ_TO_CPP_DisplayMediaStreamOptions systemAudio)
+{
     MediaTrackConstraints audio_;
     MediaTrackConstraints systemAudio_;
     MediaTrackConstraints video_;
@@ -237,11 +241,14 @@ int64_t FFIMediaDevices::getDisplayMedia(const CJ_TO_CPP_DisplayMediaStreamOptio
         video_ = constraints;
     }
 
-    ffiMDA_ = std::make_shared<FFIMediaDevicesAssist>();
+    auto ffiMDA_ = std::make_shared<FFIMediaDevicesAssist>();
     return ffiMDA_->getDisplayMediaAssist(video_, audio_, systemAudio_);
 }
 
-int64_t FFIMediaDevices::getDisplayMedia(MediaTrackConstraints video, MediaTrackConstraints audio, MediaTrackConstraints systemAudio){
+int64_t FFIMediaDevices::getDisplayMedia(MediaTrackConstraints video,
+    MediaTrackConstraints audio,
+    MediaTrackConstraints systemAudio)
+{
     audioConstraints_ = std::move(audio);
     systemAudioConstraints_ = std::move(systemAudio);
     videoConstraints_ = std::move(video);
@@ -252,11 +259,11 @@ int64_t FFIMediaDevices::getDisplayMedia(MediaTrackConstraints video, MediaTrack
         return 0;
     }
     
-    if(!audioConstraints_.IsNull()) {
-        if(videoConstraints_.IsNull()) {
+    if (!audioConstraints_.IsNull()) {
+        if (videoConstraints_.IsNull()) {
             CANGJIE_THROW("Audio should not be enabled individually");
             return 0;
-        } 
+        }
         std::string errorMessage;
         auto audioTrack = CreateAudioTrack(&errorMessage);
         if (audioTrack) {
@@ -286,7 +293,7 @@ int64_t FFIMediaDevices::getDisplayMedia(MediaTrackConstraints video, MediaTrack
         }
     }
 
-    if (!videoConstraints_.IsNull()) { 
+    if (!videoConstraints_.IsNull()) {
         std::string errorMessage;
         auto videoTrack = CreateVideoTrack1(systemAudioReceiver, &errorMessage);
         if (videoTrack) {
@@ -297,7 +304,7 @@ int64_t FFIMediaDevices::getDisplayMedia(MediaTrackConstraints video, MediaTrack
     }
     
     this->ffiDisplayMediaStream_ = new FFIMediaStream(this->factoryDefault_, this->display_media_stream_);
-    return (int64_t)this->ffiDisplayMediaStream_;
+    return reinterpret_cast<int64_t>(this->ffiDisplayMediaStream_);
 }
 
 // DisplayMedia
@@ -407,7 +414,7 @@ rtc::scoped_refptr<AudioTrackInterface> FFIMediaDevices::CreateAudioTrack(std::s
 }
 
 rtc::scoped_refptr<AudioTrackInterface> FFIMediaDevices::CreateSystemAudioTrack(
-     std::shared_ptr<SystemAudioReceiver> systemAudioReceiver, std::string* errorMessage)
+    std::shared_ptr<SystemAudioReceiver> systemAudioReceiver, std::string* errorMessage)
 {
     cricket::AudioOptions options;
     CopyConstraintsIntoAudioOptions(systemAudioConstraints_, options);
@@ -431,10 +438,9 @@ rtc::scoped_refptr<AudioTrackInterface> FFIMediaDevices::CreateSystemAudioTrack(
     return audioTrack;
 }
 
-int64_t FFIMediaDevicesAssist::getDisplayMediaAssist(MediaTrackConstraints video, 
-                                            MediaTrackConstraints audio, 
-                                            MediaTrackConstraints systemAudio
-                                            )
+int64_t FFIMediaDevicesAssist::getDisplayMediaAssist(MediaTrackConstraints video,
+    MediaTrackConstraints audio,
+    MediaTrackConstraints systemAudio)
 {
     audioConstraints_ = std::move(audio);
     systemAudioConstraints_ = std::move(systemAudio);
@@ -448,11 +454,11 @@ int64_t FFIMediaDevicesAssist::getDisplayMediaAssist(MediaTrackConstraints video
         return 0;
     }
     
-    if(!audioConstraints_.IsNull()) {
-        if(videoConstraints_.IsNull()) {
+    if (!audioConstraints_.IsNull()) {
+        if (videoConstraints_.IsNull()) {
             CANGJIE_THROW("Audio should not be enabled individually");
             return 0;
-        } 
+        }
         std::string errorMessage;
         auto audioTrack = CreateAudioTrack(&errorMessage);
         if (audioTrack) {
@@ -482,7 +488,7 @@ int64_t FFIMediaDevicesAssist::getDisplayMediaAssist(MediaTrackConstraints video
         }
     }
 
-    if (!videoConstraints_.IsNull()) { 
+    if (!videoConstraints_.IsNull()) {
         std::string errorMessage;
         auto videoTrack = CreateVideoTrack1(systemAudioReceiver, &errorMessage);
         if (videoTrack) {
@@ -494,5 +500,4 @@ int64_t FFIMediaDevicesAssist::getDisplayMediaAssist(MediaTrackConstraints video
     
     this->ffiDisplayMediaStream_ = new FFIMediaStream(this->factory_, this->display_media_stream_);
     return (int64_t)this->ffiDisplayMediaStream_;
-
 }

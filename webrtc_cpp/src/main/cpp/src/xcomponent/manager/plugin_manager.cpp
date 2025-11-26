@@ -8,7 +8,7 @@
 #include <string>
 #include "../common/common.h"
 #include <native_window/external_window.h>
-#include "helper/native_window.h"   
+#include "helper/native_window.h"
 
 namespace NativeXComponentSample {
 

@@ -6,18 +6,9 @@
 #define WEBRTC4CJ_FFI_DEFINE_STRUCT_H
 
 #include "api/rtp_parameters.h"
+#include "webrtc_func.h"
 #include <cstdint>
 
-//enum class FFIRTCErrorDetailType {
-//  NONE,
-//  DATA_CHANNEL_FAILURE,
-//  DTLS_FAILURE,
-//  FINGERPRINT_FAILURE,
-//  SCTP_FAILURE,
-//  SDP_SYNTAX_ERROR,
-//  HARDWARE_ENCODER_NOT_AVAILABLE,
-//  HARDWARE_ENCODER_ERROR,
-//};
 enum class FFIRTCIceProtocol { TCP, UDP };
 enum class FFIRTCIceCandidateType { HOST, PRFLX, RELAY, SRFLX };
 enum class FFIRTCIceTcpCandidateType { ACTIVE, PASSIVE, SO };
@@ -44,7 +35,6 @@ enum class FFIRTCBundlePolicy { BALANCED, MAX_BUNDLE, MAX_COMPAT };
 enum class FFIRTCRtcpMuxPolicy { REQUIRE };
 enum class FFIRTCIceTransportPolicy { ALL, RELAY };
 enum class FFIDegradationPreference { BALANCED, MAINTAIN_FRAMERATE, MAINTAIN_RESOLUTION };
-// enum clasFFIs RTCPriorityType { HIGH, LOW, MEDIUM, VERY_LOW};
 enum class FFIRTCRtpTransceiverDirection { INACTIVE, RECVONLY, SENDONLY, SENDRECV, STOPPED };
 enum class FFIRTCSctpTransportState { CONNECTING, CONNECTED, CLOSED };
 enum class FFIRTCStatsType {
@@ -74,36 +64,34 @@ enum class FFIAudioState { START, STOP };
 enum class FFIScreenCaptureMode { HOME_SCREEN, SPECIFIED_SCREEN, SPECIFIED_WINDOW };
 enum class FFIScreenCaptureAudioFilterEnum { CURRENT_APP, NOTIFICATION };
 
-
 typedef struct {
     bool echo_cancellation;
-    // bool auto_gain_control;
+    bool auto_gain_control;
     bool noise_suppression;
-    // bool highpass_filter;
-    // bool stereo_swapping;
-    // int audio_jitter_buffer_max_packets;
-    // bool audio_jitter_buffer_fast_accelerate;
-    // int audio_jitter_buffer_min_delay_ms;
-    // bool audio_network_adaptor;
-    // std::string audio_network_adaptor_config;
-    // bool init_recording_on_send;
+    bool highpass_filter;
+    bool stereo_swapping;
+    int32_t audio_jitter_buffer_max_packets;
+    bool audio_jitter_buffer_fast_accelerate;
+    int audio_jitter_buffer_min_delay_ms;
+    bool audio_network_adaptor;
+    std::string audio_network_adaptor_config;
+    bool init_recording_on_send;
 }FFIAudioOptions;
 
 typedef struct {
     double width;
     double height;
-    char* facingMode;
+    CHAR_PTR facingMode;
     bool isScreencast;
 }FFICreateVideoSourceParameters;
-
 
 typedef struct {
     double width;
     double height;
     double aspectRatio;
     double frameRate;
-    char *facingMode;
-    char *resizeMode;
+    CHAR_PTR facingMode;
+    CHAR_PTR resizeMode;
     double sampleRate;
     double sampleSize;
     bool echoCancellation;
@@ -111,17 +99,16 @@ typedef struct {
     bool noiseSuppression;
     double latency;
     double channelCount;
-    char *deviceId;
-    char *groupId;
-    char *ohosScreenCaptureMode;
+    CHAR_PTR deviceId;
+    CHAR_PTR groupId;
+    CHAR_PTR ohosScreenCaptureMode;
     double ohosScreenCaptureDisplayId;
-    char *ohosScreenCaptureMissionId;
-    char *ohosScreenCaptureWindowFilter;
-    char *ohosScreenCaptureAudioFilter;
-    char *ohosScreenCaptureSkipPrivacyMode;
+    CHAR_PTR ohosScreenCaptureMissionId;
+    CHAR_PTR ohosScreenCaptureWindowFilter;
+    CHAR_PTR ohosScreenCaptureAudioFilter;
+    CHAR_PTR ohosScreenCaptureSkipPrivacyMode;
     bool ohosScreenCaptureAutoRotation;
 } CJ_MediaTrackConstraintSet;
-
 
 typedef struct {
     CJ_MediaTrackConstraintSet obj;
@@ -131,21 +118,21 @@ typedef struct {
 
 
 typedef struct {
-    const char *deviceId;
-    const char *groupId;
-    const char *label;
-    const char *kind;
+    const CHAR_PTR deviceId;
+    const CHAR_PTR groupId;
+    const CHAR_PTR label;
+    const CHAR_PTR kind;
 } CJ_EnumerateDevicesInfo;
 
 typedef struct {
-    const char *id;
-    const char *kind;
-    const char *readyState;
+    const CHAR_PTR id;
+    const CHAR_PTR kind;
+    const CHAR_PTR readyState;
     bool enabled;
 } CJ_ffiMediaStreamTrackJson;
 
 typedef struct {
-    const char *name;
+    const CHAR_PTR name;
     const bool isSupported;
 } CJ_SupportedConstraints;
 
@@ -166,18 +153,18 @@ typedef struct {
 } CJ_ArrayMediaStream;
 
 typedef struct {
-    char **urls;
+    CHAR_PTR *urls;
     int64_t urls_size;
-    char *username;
+    CHAR_PTR username;
     int64_t username_size;
-    char *credential;
+    CHAR_PTR credential;
     int64_t credential_size;
 } CJ_RTCIceServer;
 
 typedef struct {
-    char *algorithm;
+    CHAR_PTR algorithm;
     int64_t algorithm_size;
-    char *value;
+    CHAR_PTR value;
     int64_t value_size;
 } CJ_RTCDtlsFingerprint;
 
@@ -200,52 +187,38 @@ typedef struct {
 } CJ_RTCConfiguration;
 
 typedef struct {
-    char *sdp;
+    CHAR_PTR sdp;
     int64_t sdp_size;
-    char *RTCSdpType;
+    CHAR_PTR RTCSdpType;
     int64_t RTCSdpType_size;
     bool undefined = true; // 如果 true , 其他值就无效了
 } CJ_RTCSessionDescription;
 
 typedef struct {
-    char *sdp;
-    char *RTCSdpType;
+    CHAR_PTR sdp;
+    CHAR_PTR RTCSdpType;
     bool isFail = true; // 如果 true , 其他值就无效了
-    char* msg;
+    CHAR_PTR msg;
 } CJ_FFICreateSdpObserver_result;
-
-
-
-
-
-
-//typedef struct {
-//    int64_t maxChannels;
-//    int64_t maxMessageSize;
-//    char *RTCSctpTransportState;
-//    int64_t RTCSctpTransportState_size;
-//    int64_t RTCDtlsTransport_ptr; // rtc::scoped_refptr<SctpTransportInterface>
-//    bool undefined = true;        // 如果 true , 其他值就无效了
-//} cj_RTCSctpTransport;
 
 typedef struct {
     int64_t channel; // ffiDataChannelObserverTemp 指针地址
 } CJ_RTCDataChannelEvent;
 
 typedef struct {
-    const char *type;
+    const CHAR_PTR type;
 } CJ_Event;
 
-typedef struct{
+typedef struct {
     int64_t ptr_id;
-    char* kind;
-    char* id;
+    CHAR_PTR kind;
+    CHAR_PTR id;
     bool enabled;
-    char* readyState;
+    CHAR_PTR readyState;
 } CJ_MediaStreamTrack;
 
 typedef struct {
-    const char *type;
+    const CHAR_PTR type;
     int64_t *streams;
     int64_t streams_size;
     int64_t MediaStreamTrack_ptr; // CJ_MediaStreamTrack
@@ -254,50 +227,50 @@ typedef struct {
 } CJ_RTCTrackEvent;
 
 typedef struct {
-    const char *type;
-    const char *address;
+    const CHAR_PTR type;
+    const CHAR_PTR address;
     int64_t port;
-    const char *url;
+    const CHAR_PTR url;
     int64_t errorCode;
-    const char *errorText;
+    const CHAR_PTR errorText;
 } CJ_RTCPeerConnectionIceErrorEvent;
 
 typedef struct {
-    const char *type;
+    const CHAR_PTR type;
     const uint8_t *data_arr;
     int64_t data_arr_size;
     const bool binary;
-    const char *data_str;
+    const CHAR_PTR data_str;
 } CJ_MessageEvent;
 
 typedef struct {
     bool undefined = true;
-    const char* candidate;
-    const char* sdpMid;
+    const CHAR_PTR candidate;
+    const CHAR_PTR sdpMid;
     int64_t sdpMLineIndex;
-    const char* foundation;
+    const CHAR_PTR foundation;
     int64_t component;
     int64_t priority;
-    const char* address;
-    const char* iceProtocol;
+    const CHAR_PTR address;
+    const CHAR_PTR iceProtocol;
     int64_t port;
     int64_t iceCandidateType;
-    const char* iceTcpCandidateType;
-    const char* relatedAddress;
+    const CHAR_PTR iceTcpCandidateType;
+    const CHAR_PTR relatedAddress;
     int64_t relatedPort;
-    const char* usernameFragment;
+    const CHAR_PTR usernameFragment;
     // 父类的成员属性
-    const char* adapterType;
-    const char* serverUrl;
+    const CHAR_PTR adapterType;
+    const CHAR_PTR serverUrl;
 } CJ_RTCIceCandidate ;
 
 typedef struct {
-    const char *type;
+    const CHAR_PTR type;
     CJ_RTCIceCandidate candidate;
 } CJ_RTCPeerConnectionIceEvent;
 
 typedef struct {
-    char * rid;
+    CHAR_PTR rid;
     int64_t rid_size;
     bool active;
     int64_t maxBitrate;
@@ -308,22 +281,22 @@ typedef struct {
 typedef struct {
     int64_t clockRate;
     int64_t channels;
-    char* mimeType;
+    CHAR_PTR mimeType;
     int64_t mimeType_size;
-    char* sdpFmtpLine;
+    CHAR_PTR sdpFmtpLine;
     int64_t sdpFmtpLine_size;
     int64_t payloadType;
 } CJ_RTCRtpCodecParameters;
 
 typedef struct {
     int64_t id;
-    char* uri;
+    CHAR_PTR uri;
     int64_t uri_size;
     bool encrypted;
 } CJ_RTCRtpHeaderExtensionParameters;
 
 typedef struct {
-    char* cname;
+    CHAR_PTR cname;
     int64_t cname_size;
     bool reducedSize;
 } CJ_RTCRtcpParameters;
@@ -336,15 +309,15 @@ typedef struct {
     CJ_RTCRtcpParameters rtcp;
     CJ_RTCRtpEncodingParameters* encodings;
     int64_t encodings_size;
-    const char* transactionId;
+    const CHAR_PTR transactionId;
     int64_t transactionId_size;
 } CJ_RTCRtpSendParameters;
 
 typedef struct {
-    char* mimeType;
+    CHAR_PTR mimeType;
     int64_t clockRate;
     int64_t channels;
-    char* sdpFmtpLine;
+    CHAR_PTR sdpFmtpLine;
 } CJ_RTCRtpCodec;
 
 typedef struct {
@@ -352,83 +325,22 @@ typedef struct {
     bool ordered;
     int64_t maxPacketLifeTime;
     int64_t maxRetransmits;
-    char* protocol;
+    CHAR_PTR protocol;
     bool negotiated;
     int64_t id;
 } CJ_RTCDataChannelInit;
 
 typedef struct {
     bool isBuild = false;
-    char* candidate = "";
+    CHAR_PTR candidate = "";
     int32_t sdpMLineIndex = 0;
-    char* sdpMid = "";
-    char* usernameFragment;
+    CHAR_PTR sdpMid = "";
+    CHAR_PTR usernameFragment;
 } CJ_RTCIceCandidateInit;
 
-
-typedef struct{
+typedef struct {
     int64_t rtcErrorDetailType;
-    const char* msg;
-}CJ_ErrorMessage;
-
-
-/*namespace webrtc {
-
-struct RtpSendParametersUtils {
-    static void CJToNative(const CJ_RTCRtpSendParameters& cj, RtpParameters& native);
-    static void NativeToCj(const RtpParameters& native, CJ_RTCRtpSendParameters& cj);
-};
-struct RtpParametersUtils {
-    static void CJToNative(const CJ_RTCRtpSendParameters& cj, RtpParameters& native);
-    static void NativeToCj(const RtpParameters& native, CJ_RTCRtpSendParameters& cj);
-};
-
-//struct RtpReceiveParametersUtils {
-//    static void JsToNative(const Napi::Object& cj, RtpParameters& native);
-//    static void NativeToJs(const RtpParameters& native, Napi::Object& cj);
-//};
-//
-//struct RtpCapabilitiesUtils {
-//    static void JsToNative(const Napi::Object& cj, RtpCapabilities& native);
-//    static void NativeToJs(const RtpCapabilities& native, Napi::Object& cj);
-//};
-//
-//struct RtpCodecCapabilityUtils {
-//    static void JsToNative(const Napi::Object& cj, RtpCodecCapability& native);
-//    static void NativeToJs(const RtpCodecCapability& native, Napi::Object& cj);
-//};
-//
-struct RtpEncodingParametersUtils {
-    constexpr static char kAttributeNameSsrc[] = "ssrc";
-    static void CJToNative(const CJ_RTCRtpEncodingParameters& cj, RtpEncodingParameters& native);
-    static void NativeToCJ(const RtpEncodingParameters& native, CJ_RTCRtpEncodingParameters& cj);
-};
-
-void RtpSendParametersUtils::NativeToCj(const RtpParameters& native, CJ_RTCRtpSendParameters& ret) {
-    
-    CJ_RTCRtpEncodingParameters arr[native.encodings.size()];
-    
-    for (uint32_t i = 0; i < native.encodings.size(); i++) {
-        CJ_RTCRtpEncodingParameters t;
-        RtpEncodingParametersUtils::NativeToCJ(native.encodings[i], t);
-        arr[i] = t;
-    }
-    ret.encodings = arr;
-    ret.encodings_size = native.encodings.size();
-    ret.transactionId = native.transaction_id.data();
-    
-}
-
-void RtpParametersUtils::NativeToCj(const RtpParameters &native, CJ_RTCRtpSendParameters &cj) {
-    
-}
-
-
-void RtpEncodingParametersUtils::NativeToCJ(const RtpEncodingParameters &native, CJ_RTCRtpEncodingParameters &cj) {
-    
-}
-
-
-} // namespace webrtc*/
+    const CHAR_PTR msg;
+} CJ_ErrorMessage;
 
 #endif // WEBRTC4CJ_FFI_DEFINE_STRUCT_H

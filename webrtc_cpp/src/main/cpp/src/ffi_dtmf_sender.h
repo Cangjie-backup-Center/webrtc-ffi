@@ -12,22 +12,21 @@
 #include <cstdint>
 namespace webrtc {
 
-class ffiDtmfSender : public FFIEventTarget<ffiDtmfSender>, 
-                    public DtmfSenderObserverInterface ,
-                    public CJ_CLASS_BASE::FFICangjieClassID{
-    
+class ffiDtmfSender : public FFIEventTarget<ffiDtmfSender>,
+                    public DtmfSenderObserverInterface,
+                    public CJ_CLASS_BASE::ffiCjClass {
 public:
-    
-    static ffiDtmfSender* NewInstance(rtc::scoped_refptr<DtmfSenderInterface> dtmfSender) {
+    static ffiDtmfSender* NewInstance(rtc::scoped_refptr<DtmfSenderInterface> dtmfSender)
+    {
         return new ffiDtmfSender(dtmfSender);
     }
     
-    ffiDtmfSender(rtc::scoped_refptr<DtmfSenderInterface> dtmfSender) {
+    ffiDtmfSender(rtc::scoped_refptr<DtmfSenderInterface> dtmfSender)
+    {
         dtmfSender_ = dtmfSender;
     }
     
     ~ffiDtmfSender() {}
-    
 public:
     bool GetCanInsertDTMF();
     const char* GetToneBuffer();
@@ -40,7 +39,6 @@ private:
     rtc::scoped_refptr<DtmfSenderInterface> dtmfSender_;
 };
 
-
 }
 
-#endif //WEBRTC4CJ_FFI_DTMF_SENDER_H
+#endif // WEBRTC4CJ_FFI_DTMF_SENDER_H

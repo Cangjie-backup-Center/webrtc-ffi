@@ -11,6 +11,7 @@
 #include <cmath>
 #include <cstdio>
 #include <hilog/log.h>
+#include "webrtc_func.h"
 
 #include "../common/common.h"
 #include "plugin_render.h"
@@ -499,15 +500,19 @@ GLuint EGLCore::LoadShader(GLenum type, const char* shaderSrc)
         return PROGRAM_ERROR;
     }
 
-    char* infoLog = (char*)malloc(sizeof(char) * (infoLen + 1));
+    CHAR_PTR infoLog = (CHAR_PTR)malloc(sizeof(char) * (infoLen + 1));
     if (infoLog != nullptr) {
-        memset(infoLog, 0, infoLen + 1);
-        // memset_s(infoLog, infoLen + 1, 0, infoLen + 1);
+        auto retMemset = webrtc_mst(infoLog, infoLen + 1, 0, infoLen + 1);
+        if (retMemset != SOFT_MEMSET_SUCCESS) {
+            CANGJIE_THROW("webrtc_mst error");
+            return PROGRAM_ERROR;
+        }
         glGetShaderInfoLog(shader, infoLen, nullptr, infoLog);
         OH_LOG_Print(LOG_APP, LOG_ERROR, LOG_PRINT_DOMAIN, "EGLCore", "glCompileShader error = %s", infoLog);
         free(infoLog);
         infoLog = nullptr;
     }
+    
     glDeleteShader(shader);
     return PROGRAM_ERROR;
 }
@@ -556,10 +561,14 @@ GLuint EGLCore::CreateProgram(const char* vertexShader, const char* fragShader)
     OH_LOG_Print(LOG_APP, LOG_ERROR, LOG_PRINT_DOMAIN, "EGLCore", "createProgram linked error");
     GLint infoLen = 0;
     glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLen);
+
     if (infoLen > 1) {
-        char* infoLog = (char*)malloc(sizeof(char) * (infoLen + 1));
-        memset(infoLog, 0, infoLen + 1);
-        // memset_s(infoLog, infoLen + 1, 0, infoLen + 1);
+        CHAR_PTR infoLog = (CHAR_PTR)malloc(sizeof(char) * (infoLen + 1));
+        auto retMemset = webrtc_mst(infoLog, infoLen + 1, 0, infoLen + 1);
+        if (retMemset != SOFT_MEMSET_SUCCESS) {
+            CANGJIE_THROW("webrtc_mst error");
+            return PROGRAM_ERROR;
+        }
         glGetProgramInfoLog(program, infoLen, nullptr, infoLog);
         OH_LOG_Print(LOG_APP, LOG_ERROR, LOG_PRINT_DOMAIN, "EGLCore", "glLinkProgram error = %s", infoLog);
         free(infoLog);

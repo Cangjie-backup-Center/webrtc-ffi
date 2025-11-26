@@ -148,8 +148,6 @@ public open class MediaStreamTrack <: WebrtcClass {
     public var enabled: Bool = false
     public var readyState: String = ""
 
-    protected init() {}
-
     protected init(id: Int64, t:MediaStreamTrack) {
         super(id, t)
         this.kind = unsafe {ffiMediaStreamTrack_getKind(id).toString()}

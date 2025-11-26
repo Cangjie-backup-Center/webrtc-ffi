@@ -235,10 +235,10 @@ public class RTCTrackEvent {
     public let TYPE: String
     public let streams: Array<Int64>
     public let track: MediaStreamTrack
-//    public let receiver: RtpReceiver // TODO
+    public let receiver: RtpReceiver // TODO
     public let transceiver: RtpTransceiver
 
-    public RTCTrackEvent( TYPE: String,  streams: Array<Int64>, mediaStreamTrack_ptr: Int64, RtpReceiver_ptr: Int64, RtpTransceiver_ptr: Int64) {
+    public RTCTrackEvent(TYPE: String,  streams: Array<Int64>, mediaStreamTrack_ptr: Int64, RtpReceiver_ptr: Int64, RtpTransceiver_ptr: Int64) {
         var tmpMST: CJ_MediaStreamTrack
         this.TYPE = TYPE
         this.streams = streams

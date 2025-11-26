@@ -171,6 +171,7 @@ public class RTCDataChannel <: WebrtcClass & Resource {
             unsafe {dataConnection_get_label_(this.ID)}.toString()
         }
     }
+
     public prop ordered: Bool
     {
         get(){

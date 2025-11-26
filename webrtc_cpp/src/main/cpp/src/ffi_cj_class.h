@@ -10,20 +10,21 @@
 
 namespace CJ_CLASS_BASE {
 
-class FFICangjieClassID {
+class ffiCjClass {
 public:
-    virtual ~FFICangjieClassID() = default;
-    void SetCJClassID(int64_t id) {   // 设置对应cpp的类和仓颉的类之间的id交换
+    virtual ~ffiCjClass() = default;
+    void SetCJClassID(int64_t id)
+    {   // 设置对应cpp的类和仓颉的类之间的id交换
         cj_class_key = id;
     }
-    int64_t GetCJClassID() const {
+    int64_t GetCJClassID() const
+    {
         return cj_class_key;
     }
 protected:
     int64_t cj_class_key = 0;
 };
 
-
 }
 
-#endif //WEBRTC4CJ_FFI_CJ_CLASS_H
+#endif // WEBRTC4CJ_FFI_CJ_CLASS_H

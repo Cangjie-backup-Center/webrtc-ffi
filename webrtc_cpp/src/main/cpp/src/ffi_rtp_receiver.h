@@ -7,47 +7,32 @@
 
 #include "api/rtp_receiver_interface.h"
 #include "api/peer_connection_interface.h"
+#include "peer_connection_factory.h"
+#include "ffi_media_stream_track.h"
+#include "ffi_dtls_transport.h"
 
 namespace webrtc {
 
-class PeerConnectionFactoryWrapper;
-class ffiMediaStreamTrack;
-class ffiDtlsTransport;
-
 class ffiRtpReceiver {
 public:
-    static ffiRtpReceiver* NewInstance(
-        std::shared_ptr<PeerConnectionFactoryWrapper>, rtc::scoped_refptr<PeerConnectionInterface> pc,
+    static ffiRtpReceiver* NewInstance(std::shared_ptr<PeerConnectionFactoryWrapper> factory,
+        rtc::scoped_refptr<PeerConnectionInterface> pc,
         rtc::scoped_refptr<RtpReceiverInterface> receiver);
     ~ffiRtpReceiver();
     rtc::scoped_refptr<RtpReceiverInterface> Get() const;
     
-/*
-    export interface RTCRtpReceiver {
-  readonly track: MediaStreamTrack;
-  readonly transport: RTCDtlsTransport | null;
-
-  getParameters(): RTCRtpReceiveParameters;
-  getStats(): Promise<RTCStatsReport>;
-  getContributingSources(): RTCRtpContributingSource[];
-  getSynchronizationSources(): RTCRtpSynchronizationSource[];
-}
-*/
-    ffiMediaStreamTrack *GetTrack();
-    ffiDtlsTransport *GetTransport();
-    void *GetParameters();// TODO  返回值需要重新定义
-    void *GetStats(); // TODO  返回值需要重新定义
-    void *GetContributingSources(); // TODO  返回值需要重新定义
-    void *GetSynchronizationSources(); // TODO  返回值需要重新定义
+    ffiMediaStreamTrack* GetTrack();
+    ffiDtlsTransport* GetTransport();
+    void* GetParameters();
+    void* GetStats();
+    void* GetContributingSources();
+    void* GetSynchronizationSources();
     
 private:
-    
     std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
     rtc::scoped_refptr<PeerConnectionInterface> pc_;
     rtc::scoped_refptr<RtpReceiverInterface> rtpReceiver_;
-    
 };
 
 }
-
-#endif //WEBRTC4CJ_FFI_RTP_RECEIVER_H
+#endif // WEBRTC4CJ_FFI_RTP_RECEIVER_H

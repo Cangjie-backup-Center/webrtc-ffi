@@ -10,7 +10,7 @@
 #include "audio_input.h"
 #include "audio_output.h"
 #include "event/ffi_event_target.h"
-
+#include "webrtc_func.h"
 #include "modules/audio_device/include/audio_device.h"
 #include "modules/audio_device/fine_audio_buffer.h"
 
@@ -19,7 +19,7 @@
 #include <string>
 #include <memory>
 
-namespace webrtc{
+namespace webrtc {
 
 typedef struct {
     int32_t sampleRate;
@@ -31,16 +31,15 @@ typedef struct {
 
 typedef struct {
     int32_t type;
-    char* message;
+    CHAR_PTR message;
 } CJ_AudioErrorEvent;
 
 class ffiAudioDeviceModule : public AudioInput::Observer,
-                            public AudioOutput::Observer ,
+                            public AudioOutput::Observer,
                             public FFIEventTarget<ffiAudioDeviceModule>,
-                            public CJ_CLASS_BASE::FFICangjieClassID
-{
+                            public CJ_CLASS_BASE::ffiCjClass {
 public:
-    ffiAudioDeviceModule(bool ffiUseStereoInput,bool ffiUseStereoOutput);
+    ffiAudioDeviceModule(bool ffiUseStereoInput, bool ffiUseStereoOutput);
     ~ffiAudioDeviceModule();
     rtc::scoped_refptr<OhosAudioDeviceModule> getAdm();
 
@@ -52,7 +51,7 @@ public:
     void SetOnAudioInputErrorCallback(void (*callback)(int64_t id, CJ_AudioErrorEvent event));
 
 protected:
-    void OnAudioInputError(AudioInput* input, AudioErrorType type,const std::string& message) override;
+    void OnAudioInputError(AudioInput* input, AudioErrorType type, const std::string& message) override;
     void OnAudioInputStateChange(AudioInput* input, AudioStateType newState) override;
     void OnAudioInputDataReady(
         AudioInput* input, void* buffer, int32_t length, int64_t timestampUs, int64_t deleyUs) override;

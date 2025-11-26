@@ -18,35 +18,33 @@
 #include <cstdint>
 namespace webrtc {
 
-class PeerConnectionFactoryWrapper;
-
-
-class ffiRtpSender : public CJ_CLASS_BASE::FFICangjieClassID, public FFIEventTarget<ffiRtpSender>  {
-    
+class ffiRtpSender : public CJ_CLASS_BASE::ffiCjClass, public FFIEventTarget<ffiRtpSender>  {
 public:
-    static ffiRtpSender * NewInstance(
+    static ffiRtpSender* NewInstance(
         std::shared_ptr<PeerConnectionFactoryWrapper> factory, rtc::scoped_refptr<PeerConnectionInterface> pc,
-        rtc::scoped_refptr<RtpSenderInterface> sender) {
-        return new ffiRtpSender(factory, pc,sender);
+        rtc::scoped_refptr<RtpSenderInterface> sender)
+    {
+        return new ffiRtpSender(factory, pc, sender);
     }
 
     ffiRtpSender(std::shared_ptr<PeerConnectionFactoryWrapper> factory, rtc::scoped_refptr<PeerConnectionInterface> pc,
-        rtc::scoped_refptr<RtpSenderInterface> sender) {
+        rtc::scoped_refptr<RtpSenderInterface> sender)
+    {
         factory_= factory;
         pc_= pc;
         rtpSender_ = sender;
     }
     
     ~ffiRtpSender() override ;
-    rtc::scoped_refptr<RtpSenderInterface> Get() const {
+    rtc::scoped_refptr<RtpSenderInterface> Get() const
+    {
         return rtpSender_;
     }
-//    static GetCapabilities  // TODO
+//    static GetCapabilities
 protected:
-
-    int64_t GetTrack();  // 对应仓颉class
-    int64_t GetTransport();// 对应仓颉class
-    int64_t GetDtmf();// 对应仓颉class 
+    int64_t GetTrack();
+    int64_t GetTransport();
+    int64_t GetDtmf();
     void SetParameters(CJ_RTCRtpSendParameters parameters, void (*pe)(int64_t cj_id, int64_t ptr)); // Promise
     CJ_RTCRtpSendParameters GetParameters();
     void ReplaceTrack(ffiMediaStreamTrack* track, void (*pe)(int64_t cj_id, int64_t ptr));  // Promise
@@ -57,12 +55,8 @@ private:
     std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
     rtc::scoped_refptr<PeerConnectionInterface> pc_;
     rtc::scoped_refptr<RtpSenderInterface> rtpSender_;
-    
 };
 
+}
 
-
-};
-
-
-#endif //WEBRTC4CJ_FFI_RTP_SENDER_H
+#endif // WEBRTC4CJ_FFI_RTP_SENDER_H

@@ -10,6 +10,7 @@
 #include <string>
 #include "rtc_base/rtc_certificate_generator.h"
 #include "ffi_ice_candidate.h"
+#include "webrtc_func.h"
 
 const char kEnumIceTransportPolicyAll[] = "all";
 const char kEnumIceTransportPolicyRelay[] = "relay";
@@ -18,14 +19,14 @@ const char kEnumBundlePolicyMaxBundle[] = "max-bundle";
 const char kEnumBundlePolicyMaxCompact[] = "max-compat";
 const char kEnumRtcpMuxPolicyRequire[] = "require";
 
-namespace webrtc{
-
+namespace webrtc {
 
 class FFISetLocalSdpObserver : public SetLocalDescriptionObserverInterface {
 public:
     ffiPeerConnection* fpc_ = nullptr;
     void (*cj_func_callback_)(int64_t id, CJ_ErrorMessage msg) = nullptr;
-    FFISetLocalSdpObserver(ffiPeerConnection* pc, void (*pe)(int64_t id, CJ_ErrorMessage msg)) {
+    FFISetLocalSdpObserver(ffiPeerConnection* pc, void (*pe)(int64_t id, CJ_ErrorMessage msg))
+    {
         fpc_ = pc;
         cj_func_callback_ = pe;
     }
@@ -38,7 +39,8 @@ protected:
             RTC_LOG(LS_ERROR) << "Error: " << error.type() << ", " << error.message();
         }
 
-        cj_func_callback_(this->fpc_->GetCJClassID(), CJ_ErrorMessage{rtcErrorDetailType: (int64_t)error.error_detail(), msg: error.message()});
+        cj_func_callback_(this->fpc_->GetCJClassID(),
+            CJ_ErrorMessage{rtcErrorDetailType: (int64_t)error.error_detail(), msg: error.message()});
     }
 };
 
@@ -46,7 +48,8 @@ class FFISetRemoteSdpObserver : public SetRemoteDescriptionObserverInterface {
 public:
     ffiPeerConnection* pc_ = nullptr;
     void (*cj_func_callback_)(int64_t id, CJ_ErrorMessage msg) = nullptr;
-    FFISetRemoteSdpObserver(ffiPeerConnection* pc, void (*pe)(int64_t id, CJ_ErrorMessage msg)) {
+    FFISetRemoteSdpObserver(ffiPeerConnection* pc, void (*pe)(int64_t id, CJ_ErrorMessage msg))
+    {
         pc_ = pc;
         cj_func_callback_ = pe;
     }
@@ -59,7 +62,8 @@ protected:
             RTC_LOG(LS_ERROR) << "Error: " << error.type() << ", " << error.message();
         }
 
-        cj_func_callback_(this->pc_->GetCJClassID(), CJ_ErrorMessage{rtcErrorDetailType: (int64_t)error.error_detail(), msg: error.message()});
+        cj_func_callback_(this->pc_->GetCJClassID(),
+            CJ_ErrorMessage{rtcErrorDetailType: (int64_t)error.error_detail(), msg: error.message()});
     }
 };
 
@@ -69,7 +73,8 @@ public:
     std::mutex mtx;
     std::condition_variable cv;
 
-    FFICreateSdpObserver() { 
+    FFICreateSdpObserver()
+    {
         ret = CJ_FFICreateSdpObserver_result{};
     }
 
@@ -87,8 +92,8 @@ protected:
         this->ret.isFail = false;
         this->ret.sdp = new char[sdp.size()+1];
         this->ret.RTCSdpType = new char[sdptype.size()+1];
-        strncpy(this->ret.sdp, sdp.data(), sdp.size());
-        strncpy(this->ret.RTCSdpType, sdptype.data(), sdptype.size());
+        webrtc_scp(this->ret.sdp, sdp.size()+1, sdp.data(), sdp.size());
+        webrtc_scp(this->ret.RTCSdpType, sdptype.size()+1, sdptype.data(), sdptype.size());
         delete desc;
         cv.notify_one();
     }
@@ -100,14 +105,15 @@ protected:
         this->ret.isFail = true;
         std::string str = error.message();
         this->ret.msg = new char[str.size()+1];
-        strncpy(this->ret.msg , str.data(), str.size());
+        webrtc_scp(this->ret.msg, str.size()+1, str.data(), str.size());
         cv.notify_one();
     }
 };
 
 rtc::scoped_refptr<rtc::RTCCertificate> ffiPeerConnection::certificate_ = rtc::scoped_refptr<rtc::RTCCertificate>();
 
-bool CangjieToNativeIceServer(CJ_RTCIceServer cjrs, webrtc::PeerConnectionInterface::IceServer& iceServer){
+bool CangjieToNativeIceServer(CJ_RTCIceServer cjrs, webrtc::PeerConnectionInterface::IceServer& iceServer)
+{
     if (cjrs.urls_size) {
          for (int64_t i = 0; i < cjrs.urls_size; i++) {
              std::string tmp(cjrs.urls[i]);
@@ -123,8 +129,8 @@ bool CangjieToNativeIceServer(CJ_RTCIceServer cjrs, webrtc::PeerConnectionInterf
         RTC_LOG(LS_WARNING) << "username is not string";
     }
     if (cjrs.credential_size) {
-        std::string password(cjrs.credential, cjrs.credential_size);
-        iceServer.password = password;
+        std::string p(cjrs.credential, cjrs.credential_size);
+        iceServer.password = p;
     } else {
         RTC_LOG(LS_WARNING) << "credential is not string";
     }
@@ -132,7 +138,8 @@ bool CangjieToNativeIceServer(CJ_RTCIceServer cjrs, webrtc::PeerConnectionInterf
 }
 
 bool CangjieToNativeConfiguration(
-    const CJ_RTCConfiguration& cjConfiguration, PeerConnectionInterface::RTCConfiguration& configuration){
+    const CJ_RTCConfiguration& cjConfiguration, PeerConnectionInterface::RTCConfiguration& configuration)
+{
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
     if (cjConfiguration.iceServers_size) {
         for (int64_t i = 0; i < cjConfiguration.iceServers_size; i++) {
@@ -144,41 +151,41 @@ bool CangjieToNativeConfiguration(
     }
     
     switch (static_cast<FFIRTCIceTransportPolicy>(cjConfiguration.iceTransportPolicy)) {
-    case FFIRTCIceTransportPolicy::ALL: 
-        configuration.type = PeerConnectionInterface::kAll;
-        break;
-    case FFIRTCIceTransportPolicy::RELAY: 
-        configuration.type = PeerConnectionInterface::kRelay;
-        break;
-    default:
-        RTC_LOG(LS_WARNING) << "Invalid iceTransportPolicy";
+        case FFIRTCIceTransportPolicy::ALL:
+            configuration.type = PeerConnectionInterface::kAll;
+            break;
+        case FFIRTCIceTransportPolicy::RELAY:
+            configuration.type = PeerConnectionInterface::kRelay;
+            break;
+        default:
+            RTC_LOG(LS_WARNING) << "Invalid iceTransportPolicy";
     }
     
     switch (static_cast<FFIRTCBundlePolicy>(cjConfiguration.bundlePolicy)) {
-    case FFIRTCBundlePolicy::BALANCED: 
-        configuration.bundle_policy = PeerConnectionInterface::kBundlePolicyBalanced;
-        break;
-    case FFIRTCBundlePolicy::MAX_COMPAT: 
-        configuration.bundle_policy = PeerConnectionInterface::kBundlePolicyMaxCompat;
-        break;
-    case FFIRTCBundlePolicy::MAX_BUNDLE:
-        configuration.bundle_policy = PeerConnectionInterface::kBundlePolicyMaxBundle;
-        break;
-    default:
-        RTC_LOG(LS_WARNING) << "Invalid bundlePolicy";
+        case FFIRTCBundlePolicy::BALANCED:
+            configuration.bundle_policy = PeerConnectionInterface::kBundlePolicyBalanced;
+            break;
+        case FFIRTCBundlePolicy::MAX_COMPAT:
+            configuration.bundle_policy = PeerConnectionInterface::kBundlePolicyMaxCompat;
+            break;
+        case FFIRTCBundlePolicy::MAX_BUNDLE:
+            configuration.bundle_policy = PeerConnectionInterface::kBundlePolicyMaxBundle;
+            break;
+        default:
+            RTC_LOG(LS_WARNING) << "Invalid bundlePolicy";
     }
     
-    switch (static_cast<FFIRTCRtcpMuxPolicy>(cjConfiguration.bundlePolicy)) {
-    case FFIRTCRtcpMuxPolicy::REQUIRE:
-        configuration.rtcp_mux_policy = PeerConnectionInterface::kRtcpMuxPolicyRequire;
-        break;
+    switch (static_cast<FFIRTCRtcpMuxPolicy>(cjConfiguration.rtcpMuxPolicy)) {
+        case FFIRTCRtcpMuxPolicy::REQUIRE:
+            configuration.rtcp_mux_policy = PeerConnectionInterface::kRtcpMuxPolicyRequire;
+            break;
+        default:
+            RTC_LOG(LS_WARNING) << "Invalid rtcpMuxPolicy";
     }
     
     if (cjConfiguration.certificates_size) {
         for (int64_t i = 0; i<cjConfiguration.certificates_size; i++) {
             CJ_RTCCertificate cjrc = cjConfiguration.certificates[i];
-//            rtc::RTCCertificate* certificate = CangjieToNativeCertificate(cjrc);  // TODO 
-//            configuration.certificates.push_back(rtc::scoped_refptr<rtc::RTCCertificate>(certificate));
         }
     }
     
@@ -188,8 +195,10 @@ bool CangjieToNativeConfiguration(
     return true;
 }
 
-ffiPeerConnection::ffiPeerConnection(CJ_RTCConfiguration config, std::shared_ptr<PeerConnectionFactoryWrapper> factory)  {
-    if(factory.get()) {
+ffiPeerConnection::ffiPeerConnection(CJ_RTCConfiguration config,
+    std::shared_ptr<PeerConnectionFactoryWrapper> factory)
+{
+    if (factory.get()) {
         factory_ = factory;
     } else {
         factory_ = PeerConnectionFactoryWrapper::GetDefault();
@@ -210,7 +219,8 @@ ffiPeerConnection::ffiPeerConnection(CJ_RTCConfiguration config, std::shared_ptr
 }
 
 
-int64_t ffiPeerConnection::GenerateCertificate(std::string keyParamsName) {
+int64_t ffiPeerConnection::GenerateCertificate(std::string keyParamsName)
+{
     rtc::KeyParams key_params;
     if (keyParamsName == "RSA" || keyParamsName == "rsa") {
         key_params = rtc::KeyParams::RSA();
@@ -222,18 +232,21 @@ int64_t ffiPeerConnection::GenerateCertificate(std::string keyParamsName) {
     if (ffiPeerConnection::certificate_.get()) {
         free(ffiPeerConnection::certificate_.release());
     }
+
     ffiPeerConnection::certificate_ = rtc::RTCCertificateGenerator::GenerateCertificate(key_params, absl::nullopt);
-    return (int64_t) &certificate_;  // TODO 
+    return reinterpret_cast<int64_t>(&certificate_);
 }
 
-bool ffiPeerConnection::GetCanTrickleIceCandidates() {
+bool ffiPeerConnection::GetCanTrickleIceCandidates()
+{
     if (pc_->can_trickle_ice_candidates()) {
         return pc_->can_trickle_ice_candidates().value();
     }
-    return false; // TODO Undefined
+    return false;
 }
 
-FFIRTCSignalingState ffiPeerConnection::GetSignalingState(){
+FFIRTCSignalingState ffiPeerConnection::GetSignalingState()
+{
     switch (pc_->signaling_state()) {
         case PeerConnectionInterface::kStable:
             return FFIRTCSignalingState::STABLE;
@@ -253,7 +266,9 @@ FFIRTCSignalingState ffiPeerConnection::GetSignalingState(){
     }
     CANGJIE_THROW("Invalid value");
 }
-FFIRTCIceGatheringState ffiPeerConnection::GetIceGatheringState(){
+
+FFIRTCIceGatheringState ffiPeerConnection::GetIceGatheringState()
+{
     switch (pc_->ice_gathering_state()) {
         case PeerConnectionInterface::kIceGatheringNew:
             return FFIRTCIceGatheringState::NEW;
@@ -267,7 +282,9 @@ FFIRTCIceGatheringState ffiPeerConnection::GetIceGatheringState(){
     }
     CANGJIE_THROW("Invalid value");
 }
-FFIRTCIceConnectionState ffiPeerConnection::GetIceConnectionState(){
+
+FFIRTCIceConnectionState ffiPeerConnection::GetIceConnectionState()
+{
     switch (pc_->ice_connection_state()) {
         case PeerConnectionInterface::kIceConnectionNew:
             return FFIRTCIceConnectionState::NEW;
@@ -289,7 +306,9 @@ FFIRTCIceConnectionState ffiPeerConnection::GetIceConnectionState(){
     }
     CANGJIE_THROW("Invalid value");
 }
-FFIRTCPeerConnectionState ffiPeerConnection::GetConnectionState(){
+
+FFIRTCPeerConnectionState ffiPeerConnection::GetConnectionState()
+{
     switch (pc_->peer_connection_state()) {
         case PeerConnectionInterface::PeerConnectionState::kNew:
             return FFIRTCPeerConnectionState::NEW;
@@ -309,7 +328,9 @@ FFIRTCPeerConnectionState ffiPeerConnection::GetConnectionState(){
     }
     CANGJIE_THROW("Invalid value");
 }
-CJ_RTCSessionDescription ffiPeerConnection::GetLocalDescription(){
+
+CJ_RTCSessionDescription ffiPeerConnection::GetLocalDescription()
+{
     // It's only safe to operate on SessionDescriptionInterface on the signaling thread
     std::string sdp;
     std::string type;
@@ -321,7 +342,7 @@ CJ_RTCSessionDescription ffiPeerConnection::GetLocalDescription(){
             }
         }
     });
-    CJ_RTCSessionDescription* desc = new CJ_RTCSessionDescription();  // TODO free
+    CJ_RTCSessionDescription* desc = new CJ_RTCSessionDescription();
     if (sdp.empty()) {
         return *desc;
     }
@@ -336,7 +357,8 @@ CJ_RTCSessionDescription ffiPeerConnection::GetLocalDescription(){
     return *desc;
 }
 
-CJ_RTCSessionDescription ffiPeerConnection::GetRemoteDescription(){
+CJ_RTCSessionDescription ffiPeerConnection::GetRemoteDescription()
+{
      // It's only safe to operate on SessionDescriptionInterface on the signaling thread
     std::string sdp;
     std::string type;
@@ -359,7 +381,9 @@ CJ_RTCSessionDescription ffiPeerConnection::GetRemoteDescription(){
     desc->undefined = false;
     return *desc;
 }
-CJ_RTCSessionDescription ffiPeerConnection::GetCurrentLocalDescription(){
+
+CJ_RTCSessionDescription ffiPeerConnection::GetCurrentLocalDescription()
+{
      // It's only safe to operate on SessionDescriptionInterface on the signaling thread
     std::string sdp;
     std::string type;
@@ -383,7 +407,9 @@ CJ_RTCSessionDescription ffiPeerConnection::GetCurrentLocalDescription(){
     desc->undefined = false;
     return *desc;
 }
-CJ_RTCSessionDescription ffiPeerConnection::GetCurrentRemoteDescription(){
+
+CJ_RTCSessionDescription ffiPeerConnection::GetCurrentRemoteDescription()
+{
     // It's only safe to operate on SessionDescriptionInterface on the signaling thread
     std::string sdp;
     std::string type;
@@ -406,7 +432,9 @@ CJ_RTCSessionDescription ffiPeerConnection::GetCurrentRemoteDescription(){
     desc->undefined = false;
     return *desc;
 }
-CJ_RTCSessionDescription ffiPeerConnection::GetPendingLocalDescription(){
+
+CJ_RTCSessionDescription ffiPeerConnection::GetPendingLocalDescription()
+{
     // It's only safe to operate on SessionDescriptionInterface on the signaling thread
     std::string sdp;
     std::string type;
@@ -429,7 +457,9 @@ CJ_RTCSessionDescription ffiPeerConnection::GetPendingLocalDescription(){
     desc->undefined = false;
     return *desc;
 }
-CJ_RTCSessionDescription ffiPeerConnection::GetPendingRemoteDescription(){
+
+CJ_RTCSessionDescription ffiPeerConnection::GetPendingRemoteDescription()
+{
     // It's only safe to operate on SessionDescriptionInterface on the signaling thread
     std::string sdp;
     std::string type;
@@ -453,7 +483,8 @@ CJ_RTCSessionDescription ffiPeerConnection::GetPendingRemoteDescription(){
     return *desc;
 }
 
-int64_t ffiPeerConnection::GetSctp(){
+int64_t ffiPeerConnection::GetSctp()
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 
     if (!sctpTransportRef_) {
@@ -462,28 +493,34 @@ int64_t ffiPeerConnection::GetSctp(){
 
     auto transport = pc_->GetSctpTransport();
     if (!transport) {
-        return 0;  // TODO 判空
+        return 0;
     }
 
     auto sctpTransport = ffiSctpTransport::NewInstance(factory_, transport);
     sctpTransportRef_ = sctpTransport;
 
-    return (int64_t)sctpTransport;
+    return reinterpret_cast<int64_t>(sctpTransport);
 }
 
-void ffiPeerConnection::SetOnIceCandidate(void (*pe)(int64_t id, CJ_RTCPeerConnectionIceEvent ptr)) {
+void ffiPeerConnection::SetOnIceCandidate(void (*pe)(int64_t id, CJ_RTCPeerConnectionIceEvent ptr))
+{
     this->cj_func_call_OnIceCandidate_ = pe;
 }
 
-void ffiPeerConnection::SetCallBackCreateOffer(void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg)) {
+void ffiPeerConnection::SetCallBackCreateOffer(
+    void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg))
+{
     cj_func_call_CreateOffer_ = pe;
 }
-void ffiPeerConnection::SetCallBackCreateAnswer(void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg)) {
+
+void ffiPeerConnection::SetCallBackCreateAnswer(
+    void (*pe)(int64_t id, bool isSuccess, CJ_RTCSessionDescription ptr, const char* msg))
+{
     cj_func_call_CreateAnswer_ = pe;
 }
 
-
-void ffiPeerConnection::OnIceCandidate(const IceCandidateInterface* candidate) {
+void ffiPeerConnection::OnIceCandidate(const IceCandidateInterface* candidate)
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 
     if (!candidate) {
@@ -515,12 +552,15 @@ void ffiPeerConnection::OnIceCandidate(const IceCandidateInterface* candidate) {
     );
 }
 
-void ffiPeerConnection::SetOnIceCandidateError(void (*pe)(int64_t id, CJ_RTCPeerConnectionIceErrorEvent ptr)){
+void ffiPeerConnection::SetOnIceCandidateError(void (*pe)(int64_t id, CJ_RTCPeerConnectionIceErrorEvent ptr))
+{
     this->cj_func_call_OnIceCandidateError_= pe;
 }
+
 void ffiPeerConnection::OnIceCandidateError(
     const std::string& address, int port, const std::string& url, int errorCode,
-    const std::string& errorText) {
+    const std::string& errorText)
+{
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 
     Dispatch(CallbackEvent<ffiPeerConnection>::Create(
@@ -539,14 +579,19 @@ void ffiPeerConnection::OnIceCandidateError(
             }
         }));
 }
-void ffiPeerConnection::OnIceCandidatesRemoved(const std::vector<cricket::Candidate>& candidates) {
+
+void ffiPeerConnection::OnIceCandidatesRemoved(const std::vector<cricket::Candidate>& candidates)
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 }
 
-void ffiPeerConnection::SetOnSignalingChange(void (*pe)(int64_t id, CJ_Event ptr)) {
+void ffiPeerConnection::SetOnSignalingChange(void (*pe)(int64_t id, CJ_Event ptr))
+{
     this->cj_func_call_OnSignalingChange_ = pe;
 }
-void ffiPeerConnection::OnSignalingChange(PeerConnectionInterface::SignalingState newState) {
+
+void ffiPeerConnection::OnSignalingChange(PeerConnectionInterface::SignalingState newState)
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__ << " newState=" << newState;
 
     Dispatch(CallbackEvent<ffiPeerConnection>::Create([this, newState](ffiPeerConnection& target) {
@@ -560,73 +605,91 @@ void ffiPeerConnection::OnSignalingChange(PeerConnectionInterface::SignalingStat
     }));
 }
 
-void ffiPeerConnection::OnIceConnectionChange(PeerConnectionInterface::IceConnectionState newState) {
+void ffiPeerConnection::OnIceConnectionChange(PeerConnectionInterface::IceConnectionState newState)
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__ << " newState=" << newState;
 }
 
-void ffiPeerConnection::SetOnStandardizedIceConnectionChange(void (*pe)(int64_t id, CJ_Event ptr)) {
+void ffiPeerConnection::SetOnStandardizedIceConnectionChange(void (*pe)(int64_t id, CJ_Event ptr))
+{
     cj_func_call_OnStandardizedIceConnectionChange_ = pe;
 }
 
-void ffiPeerConnection::OnStandardizedIceConnectionChange(PeerConnectionInterface::IceConnectionState newState) {
+void ffiPeerConnection::OnStandardizedIceConnectionChange(
+    PeerConnectionInterface::IceConnectionState newState)
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__ << " newState=" << newState;
     Dispatch(CallbackEvent<ffiPeerConnection>::Create([this, newState](ffiPeerConnection& target) {
         RTC_DCHECK_EQ(this, &target);
-        if(cj_func_call_OnStandardizedIceConnectionChange_) {
-            cj_func_call_OnStandardizedIceConnectionChange_(this->cj_class_key, CJ_Event{type: "iceconnectionstatechange"});
+        if (cj_func_call_OnStandardizedIceConnectionChange_) {
+            cj_func_call_OnStandardizedIceConnectionChange_(
+                this->cj_class_key, CJ_Event{type: "iceconnectionstatechange"});
         }
     }));
 }
 
-void ffiPeerConnection::SetOnConnectionChange(void (*pe)(int64_t id, CJ_Event ptr)) {
+void ffiPeerConnection::SetOnConnectionChange(void (*pe)(int64_t id, CJ_Event ptr))
+{
     cj_func_call_OnConnectionChange_ = pe;
 }
 
-void ffiPeerConnection::OnConnectionChange(PeerConnectionInterface::PeerConnectionState newState) {
+void ffiPeerConnection::OnConnectionChange(PeerConnectionInterface::PeerConnectionState newState)
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__ << " newState=" << newState;
     Dispatch(CallbackEvent<ffiPeerConnection>::Create([this, newState](ffiPeerConnection& target) {
         RTC_DCHECK_EQ(this, &target);
-        if(cj_func_call_OnConnectionChange_) {
-            cj_func_call_OnConnectionChange_(this->cj_class_key, CJ_Event{type: "connectionstatechange"});
+        if (cj_func_call_OnConnectionChange_) {
+            cj_func_call_OnConnectionChange_(this->cj_class_key,
+                                             CJ_Event {
+                                                type: "connectionstatechange"
+                                             });
         }
     }));
 }
 
-void ffiPeerConnection::OnIceConnectionReceivingChange(bool receiving) {
+void ffiPeerConnection::OnIceConnectionReceivingChange(bool receiving)
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 }
 
-void ffiPeerConnection::SetOnIceGatheringChange(void (*pe)(int64_t id, CJ_Event ptr)) {
+void ffiPeerConnection::SetOnIceGatheringChange(void (*pe)(int64_t id, CJ_Event ptr))
+{
     cj_func_call_OnIceGatheringChange_ = pe;
 }
 
-void ffiPeerConnection::OnIceGatheringChange(PeerConnectionInterface::IceGatheringState newState) {
+void ffiPeerConnection::OnIceGatheringChange(PeerConnectionInterface::IceGatheringState newState)
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__ << " newState=" << newState;
     Dispatch(CallbackEvent<ffiPeerConnection>::Create([this, newState](ffiPeerConnection& target) {
         RTC_DCHECK_EQ(this, &target);
-        if(cj_func_call_OnIceGatheringChange_) {
+        if (cj_func_call_OnIceGatheringChange_) {
             cj_func_call_OnIceGatheringChange_(this->cj_class_key, CJ_Event{type: "icegatheringstatechange"});
         }
     }));
 }
 
-void ffiPeerConnection::OnIceSelectedCandidatePairChanged(const cricket::CandidatePairChangeEvent& event) {
+void ffiPeerConnection::OnIceSelectedCandidatePairChanged(const cricket::CandidatePairChangeEvent& event)
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 }
 
-void ffiPeerConnection::OnAddStream(rtc::scoped_refptr<MediaStreamInterface> stream) {
+void ffiPeerConnection::OnAddStream(rtc::scoped_refptr<MediaStreamInterface> stream)
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 }
 
-void ffiPeerConnection::OnRemoveStream(rtc::scoped_refptr<MediaStreamInterface> stream) {
+void ffiPeerConnection::OnRemoveStream(rtc::scoped_refptr<MediaStreamInterface> stream)
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 }
 
-void ffiPeerConnection::SetOnDataChannel(void (*pe)(int64_t that, int64_t ptr)) {
+void ffiPeerConnection::SetOnDataChannel(void (*pe)(int64_t that, int64_t ptr))
+{
     this->cj_func_call_OnDataChannel_ = pe;
 }
 
-void ffiPeerConnection::OnDataChannel(rtc::scoped_refptr<DataChannelInterface> channel) { // TODO
+void ffiPeerConnection::OnDataChannel(rtc::scoped_refptr<DataChannelInterface> channel)
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
     if (!channel) {
         RTC_LOG(LS_ERROR) << "The channel is nullptr";
@@ -635,8 +698,7 @@ void ffiPeerConnection::OnDataChannel(rtc::scoped_refptr<DataChannelInterface> c
     auto observer = std::make_unique<ffiDataChannelObserverTemp>(channel);
     Dispatch(CallbackEvent<ffiPeerConnection>::Create(
         [this, obs = observer.release()]
-        (ffiPeerConnection& target)
-        {
+        (ffiPeerConnection& target) {
             RTC_DCHECK_EQ(this, &target);
             if (this->cj_func_call_OnDataChannel_) {
                 CJ_RTCDataChannelEvent* crdce = new CJ_RTCDataChannelEvent();
@@ -648,15 +710,17 @@ void ffiPeerConnection::OnDataChannel(rtc::scoped_refptr<DataChannelInterface> c
     ));
 }
 
-void ffiPeerConnection::SetOnRenegotiationNeeded(void (*pe)(int64_t id, CJ_Event ptr)) {
+void ffiPeerConnection::SetOnRenegotiationNeeded(void (*pe)(int64_t id, CJ_Event ptr))
+{
     cj_func_call_OnRenegotiationNeeded_ = pe;
 }
-void ffiPeerConnection::OnRenegotiationNeeded() {
+
+void ffiPeerConnection::OnRenegotiationNeeded()
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
     Dispatch(CallbackEvent<ffiPeerConnection>::Create(
         [this]
-        (ffiPeerConnection& target)
-        {
+        (ffiPeerConnection& target) {
             RTC_DCHECK_EQ(this, &target);
             if (this->cj_func_call_OnRenegotiationNeeded_) {
                 this->cj_func_call_OnRenegotiationNeeded_(this->cj_class_key, CJ_Event{type: "negotiationneeded"});
@@ -665,41 +729,42 @@ void ffiPeerConnection::OnRenegotiationNeeded() {
     ));
 }
 
-void ffiPeerConnection::OnNegotiationNeededEvent(uint32_t eventId) {
+void ffiPeerConnection::OnNegotiationNeededEvent(uint32_t eventId)
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__ << " eventId=" << eventId;
 }
 
 void ffiPeerConnection::OnAddTrack(
     rtc::scoped_refptr<RtpReceiverInterface> receiver,
-    const std::vector<rtc::scoped_refptr<MediaStreamInterface>>& streams) {
+    const std::vector<rtc::scoped_refptr<MediaStreamInterface>>& streams)
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
     // use OnTrack
 }
 
 
-void ffiPeerConnection::SetOnTrack(void (*pe)(int64_t that, CJ_RTCTrackEvent localVideoTrack)){
+void ffiPeerConnection::SetOnTrack(void (*pe)(int64_t that, CJ_RTCTrackEvent localVideoTrack))
+{
     cj_func_call_OnTrack_ = pe;
 }
 
-char* copyStringToChar(const std::string str) {
+char* copyStringToChar(const std::string str)
+{
     if (str.empty()) {
         CANGJIE_THROW("str is empty");
         return nullptr;
     }
-    char* copy = new char[str.size() + 1];
-    strncpy(copy, str.c_str(), str.size()+1);
+    CHAR_PTR copy = new char[str.size() + 1];
+    webrtc_scp(copy, str.size()+1, str.c_str(), str.size()+1);
     return copy;
 }
 
-
-
-
-void ffiPeerConnection::OnTrack(rtc::scoped_refptr<RtpTransceiverInterface> transceiver) {
+void ffiPeerConnection::OnTrack(rtc::scoped_refptr<RtpTransceiverInterface> transceiver)
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
     Dispatch(CallbackEvent<ffiPeerConnection>::Create(
         [this, transceiver]
-        (ffiPeerConnection& target)
-        {
+        (ffiPeerConnection& target) {
             auto receiver = transceiver->receiver();
             if (!receiver) {
                 RTC_LOG(LS_ERROR) << "No receiver in the transceiver";
@@ -707,7 +772,7 @@ void ffiPeerConnection::OnTrack(rtc::scoped_refptr<RtpTransceiverInterface> tran
             }
             auto streams = receiver->streams();
 
-            if (this->cj_func_call_OnTrack_){
+            if (this->cj_func_call_OnTrack_) {
                 int64_t* result = new int64_t[streams.size()];
                 for (uint32_t i = 0; i < streams.size(); i++) {
                     result[i] = (int64_t)streams[i].get();
@@ -725,16 +790,13 @@ void ffiPeerConnection::OnTrack(rtc::scoped_refptr<RtpTransceiverInterface> tran
     ));
 }
 
-void ffiPeerConnection::OnRemoveTrack(rtc::scoped_refptr<RtpReceiverInterface> receiver) {
+void ffiPeerConnection::OnRemoveTrack(rtc::scoped_refptr<RtpReceiverInterface> receiver)
+{
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 }
-//
-//void ffiPeerConnection::OnRemoveTrack(rtc::scoped_refptr<RtpReceiverInterface> receiver) {
-//    RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-//}
 
-
-int64_t ffiPeerConnection::addTrack(ffiMediaStreamTrack* track, std::vector<webrtc::FFIMediaStream*> streamVec) {
+int64_t ffiPeerConnection::addTrack(ffiMediaStreamTrack* track, std::vector<webrtc::FFIMediaStream*> streamVec)
+{
     RTC_LOG(LS_INFO) << __FUNCTION__;
 
     std::vector<std::string> streamIds;
@@ -764,19 +826,21 @@ int64_t ffiPeerConnection::addTrack(ffiMediaStreamTrack* track, std::vector<webr
     }
 
     sender_ = ffiRtpSender::NewInstance(this->factory_, this->pc_, result.value());
-    return (int64_t)sender_;
+    return reinterpret_cast<int64_t>(sender_);
 }
 
 // void ffiPeerConnection::removeTrack(ffiRtpReceiver* receiver) {
 //     RTC_LOG(LS_INFO) << __FUNCTION__;
 // }
 
-
-void ffiPeerConnection::setLocalDescription(CJ_RTCSessionDescription description, void (*pe)(int64_t cj_id, CJ_ErrorMessage msg)) {
+void ffiPeerConnection::setLocalDescription(
+    CJ_RTCSessionDescription description,
+    void (*pe)(int64_t cj_id, CJ_ErrorMessage msg))
+{
     RTC_LOG(LS_INFO) << __FUNCTION__;
     std::unique_ptr<SessionDescriptionInterface> desc;
     
-    if (!description.undefined){
+    if (!description.undefined) {
         std::string sdp = "";
         sdp = description.sdp;
         std::string type = description.RTCSdpType;
@@ -798,7 +862,10 @@ void ffiPeerConnection::setLocalDescription(CJ_RTCSessionDescription description
     return ;
 }
 
-void ffiPeerConnection::setRemoteDescription(CJ_RTCSessionDescription description, void (*pe)(int64_t cj_id, CJ_ErrorMessage msg)) {
+void ffiPeerConnection::setRemoteDescription(
+    CJ_RTCSessionDescription description,
+    void (*pe)(int64_t cj_id, CJ_ErrorMessage msg))
+{
     RTC_LOG(LS_INFO) << __FUNCTION__;
     std::string sdp = "";
     sdp = description.sdp;
@@ -818,7 +885,8 @@ void ffiPeerConnection::setRemoteDescription(CJ_RTCSessionDescription descriptio
     pc_->SetRemoteDescription(std::move(desc), observer);
 }
 
-CJ_FFICreateSdpObserver_result ffiPeerConnection::createOffer(bool iceRestart){
+CJ_FFICreateSdpObserver_result ffiPeerConnection::createOffer(bool iceRestart)
+{
     PeerConnectionInterface::RTCOfferAnswerOptions options;
     options.ice_restart = iceRestart;
     auto observer = rtc::make_ref_counted<FFICreateSdpObserver>();
@@ -829,7 +897,8 @@ CJ_FFICreateSdpObserver_result ffiPeerConnection::createOffer(bool iceRestart){
     return observer.get()->ret;
 }
 
-CJ_FFICreateSdpObserver_result ffiPeerConnection::createAnswer() {
+CJ_FFICreateSdpObserver_result ffiPeerConnection::createAnswer()
+{
     RTC_LOG(LS_INFO) << __FUNCTION__;
     auto observer = rtc::make_ref_counted<FFICreateSdpObserver>();
     auto obs = observer.get();
@@ -840,7 +909,8 @@ CJ_FFICreateSdpObserver_result ffiPeerConnection::createAnswer() {
     return observer.get()->ret;
 }
 
-int64_t ffiPeerConnection::createDataChannel(char* label, CJ_RTCDataChannelInit dataChannelDict) {
+int64_t ffiPeerConnection::createDataChannel(CHAR_PTR label, CJ_RTCDataChannelInit dataChannelDict)
+{
     RTC_LOG(LS_INFO) << __FUNCTION__;
     std::string label_ = label;
 
@@ -855,7 +925,7 @@ int64_t ffiPeerConnection::createDataChannel(char* label, CJ_RTCDataChannelInit 
             CANGJIE_THROW("CreateDataChannel error");
         }
         ffiDataChannelObserverTemp* observerPtr = new ffiDataChannelObserverTemp(result.value());
-        return (int64_t)observerPtr;
+        return reinterpret_cast<int64_t>(observerPtr);
     }
     
     DataChannelInit options;
@@ -869,18 +939,20 @@ int64_t ffiPeerConnection::createDataChannel(char* label, CJ_RTCDataChannelInit 
     return (int64_t)observerPtr;
 }
 
-void ffiPeerConnection::SetAddIceCandidate(void (*pe)(int64_t id, const char* msg)){
+void ffiPeerConnection::SetAddIceCandidate(void (*pe)(int64_t id, const char* msg))
+{
     this->cj_func_call_addIceCandidate = pe;
 }
 
 
-void ffiPeerConnection::addIceCandidate(CJ_RTCIceCandidateInit iceCandidate) {
+void ffiPeerConnection::addIceCandidate(CJ_RTCIceCandidateInit iceCandidate)
+{
     RTC_LOG(LS_INFO) << __FUNCTION__;
     std::string sdp;
     std::string sdpMid;
     int sdpMLineIndex = 0;
 
-    if(iceCandidate.isBuild) {
+    if (iceCandidate.isBuild) {
         sdp = iceCandidate.candidate;
         if (strcmp(iceCandidate.sdpMid, "")) {
             sdpMid = iceCandidate.sdpMid;
@@ -915,7 +987,8 @@ void ffiPeerConnection::addIceCandidate(CJ_RTCIceCandidateInit iceCandidate) {
 }
 
 
-int64_t* ffiPeerConnection::getSenders() {
+int64_t* ffiPeerConnection::getSenders()
+{
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
 
     auto senders = pc_->GetSenders();
@@ -927,7 +1000,8 @@ int64_t* ffiPeerConnection::getSenders() {
     return retSenders;
 }
 
-int64_t* ffiPeerConnection::getReceivers() {
+int64_t* ffiPeerConnection::getReceivers()
+{
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
     auto receivers = pc_->GetReceivers();
     int64_t* retReceivers = new int64_t[receivers.size()];
@@ -936,10 +1010,10 @@ int64_t* ffiPeerConnection::getReceivers() {
         retReceivers[i] = reinterpret_cast<int64_t>(ffiReceiverPtr);
     }
     return retReceivers;
-
 }
 
-int64_t* ffiPeerConnection::getTransceivers() {
+int64_t* ffiPeerConnection::getTransceivers()
+{
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
     auto transceivers = pc_->GetTransceivers();
 
@@ -951,16 +1025,18 @@ int64_t* ffiPeerConnection::getTransceivers() {
     return retTransceivers;
 }
 
-void ffiPeerConnection::restartIce() {
+void ffiPeerConnection::restartIce()
+{
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
     pc_->RestartIce();
     return ;
 }
 
-void ffiPeerConnection::setConfiguration(CJ_RTCConfiguration cjConfig) {
+void ffiPeerConnection::setConfiguration(CJ_RTCConfiguration cjConfig)
+{
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
     PeerConnectionInterface::RTCConfiguration config;
-    if(!CangjieToNativeConfiguration(cjConfig, config)) {
+    if (!CangjieToNativeConfiguration(cjConfig, config)) {
         LOGI("CangjieToNativeConfiguration error");
     }
 
@@ -999,7 +1075,8 @@ void ffiPeerConnection::setConfiguration(CJ_RTCConfiguration cjConfig) {
 
 // }
 
-void ffiPeerConnection::close() {
+void ffiPeerConnection::close()
+{
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
     pc_->signaling_thread()->PostTask([pc = pc_] {
         RTC_DLOG(LS_INFO) << "Do Close";
@@ -1008,24 +1085,18 @@ void ffiPeerConnection::close() {
     return ;
 }
 
-void ffiPeerConnection::setAudioRecording(bool recording) {
+void ffiPeerConnection::setAudioRecording(bool recording)
+{
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
     pc_->SetAudioRecording(recording);
     return ;
 }
 
-void ffiPeerConnection::setAudioPlayout(bool playout) {
+void ffiPeerConnection::setAudioPlayout(bool playout)
+{
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
     pc_->SetAudioPlayout(playout);
     return ;
 }
 
-
 }
-
-
-
-
-
-
-

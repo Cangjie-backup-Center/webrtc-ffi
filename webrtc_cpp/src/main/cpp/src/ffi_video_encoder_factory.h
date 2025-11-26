@@ -12,21 +12,21 @@
 
 #define OHOS_LOG_DOMAIN 0xD001234
 
-namespace webrtc{
+namespace webrtc {
 
-class ffiHardwareVideoEncoderFactory {
+class ffiVideoEncoderFactory {
 public:
-    explicit ffiHardwareVideoEncoderFactory();
+    explicit ffiVideoEncoderFactory();
     std::shared_ptr<EglContext> getSharedContext();
     bool getEnableH264HighProfile();
-    ~ffiHardwareVideoEncoderFactory();
+    ~ffiVideoEncoderFactory();
 
 private:
     std::shared_ptr<EglContext> sharedContext_;
     bool enableH264HighProfile_{false};
 };
 
-std::unique_ptr<VideoEncoderFactory> createHardwareVideoEncoderFactory(ffiHardwareVideoEncoderFactory* ffiHVEF);
+std::unique_ptr<VideoEncoderFactory> createHardwareVideoEncoderFactory(ffiVideoEncoderFactory* ffiHVEF);
 
 }
 
