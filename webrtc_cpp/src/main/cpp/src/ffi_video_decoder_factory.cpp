@@ -4,6 +4,8 @@
 
 #include "ffi_video_decoder_factory.h"
 #include "video_codec/hardware_video_decoder_factory.h"
+#include "render/egl_env.h"
+#include "video_codec/default_video_decoder_factory.h"
 
 namespace webrtc {
 
@@ -24,6 +26,11 @@ std::unique_ptr<VideoDecoderFactory> createHardwareVideoDecoderFactory(ffiVideoD
         return std::make_unique<adapter::HardwareVideoDecoderFactory>(sharedContext);
     }
     return nullptr;
+}
+
+std::unique_ptr<VideoDecoderFactory> CreateDefaultVideoDecoderFactory()
+{
+    return std::make_unique<adapter::DefaultVideoDecoderFactory>(EglEnv::GetDefault().GetContext());
 }
 
 }

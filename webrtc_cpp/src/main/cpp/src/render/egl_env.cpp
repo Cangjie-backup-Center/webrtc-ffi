@@ -384,48 +384,4 @@ void EglEnv::SetupExtensions()
     }
 }
 
-using namespace Napi;
-
-FunctionReference NapiEglEnv::constructor_;
-
-void NapiEglEnv::Init(Napi::Env env, Napi::Object exports)
-{
-    Function func = DefineClass(
-        env, kClassName,
-        {
-            InstanceMethod<&NapiEglEnv::GetContext>(kMethodNameGetContext),
-            InstanceMethod<&NapiEglEnv::ToJson>(kMethodNameToJson),
-        });
-    exports.Set(kClassName, func);
-
-    constructor_ = Persistent(func);
-}
-
-NapiEglEnv::NapiEglEnv(const Napi::CallbackInfo& info) : Napi::ObjectWrap<NapiEglEnv>(info)
-{
-    RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-
-    eglEnv_ = EglEnv::Create(nullptr, EglConfigAttributes::DEFAULT);
-}
-
-NapiEglEnv::~NapiEglEnv() = default;
-
-Napi::Value NapiEglEnv::GetContext(const Napi::CallbackInfo& info)
-{
-    RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-    return NapiEglContext::NewInstance(info.Env(), eglEnv_->GetContext());
-}
-
-Napi::Value NapiEglEnv::ToJson(const Napi::CallbackInfo& info)
-{
-    RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-
-    auto json = Object::New(info.Env());
-#ifndef NDEBUG
-    json.Set("__native_class__", String::New(info.Env(), "NapiEglEnv"));
-#endif
-
-    return json;
-}
-
 } // namespace webrtc

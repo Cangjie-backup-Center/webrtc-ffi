@@ -26,8 +26,6 @@
 #include "modules/audio_device/include/audio_device.h"
 #include "modules/audio_device/fine_audio_buffer.h"
 
-#include "napi.h"
-
 #include "audio_input.h"
 #include "audio_output.h"
 #include "ohos_local_audio_source.h"
@@ -166,60 +164,6 @@ private:
     // Sets all recorded samples to zero if `microphoneMute_` is true, i.e., ensures that
     // the microphone is muted.
     std::atomic<bool> microphoneMute_{false};
-};
-
-class NapiAudioDeviceModule : public Napi::ObjectWrap<NapiAudioDeviceModule>,
-                              public AudioInput::Observer,
-                              public AudioOutput::Observer {
-public:
-    static void Init(Napi::Env env, Napi::Object exports);
-
-    ~NapiAudioDeviceModule() override;
-
-    rtc::scoped_refptr<OhosAudioDeviceModule> Get() const
-    {
-        return adm_;
-    }
-
-protected:
-    friend class ObjectWrap;
-
-    explicit NapiAudioDeviceModule(const Napi::CallbackInfo& info);
-
-    Napi::Value GetEventHandler(const Napi::CallbackInfo& info);
-    void SetEventHandler(const Napi::CallbackInfo& info, const Napi::Value& value);
-
-    Napi::Value SetSpeakerMute(const Napi::CallbackInfo& info);
-    Napi::Value SetMicrophoneMute(const Napi::CallbackInfo& info);
-    Napi::Value SetNoiseSuppressorEnabled(const Napi::CallbackInfo& info);
-    Napi::Value ToJson(const Napi::CallbackInfo& info);
-
-    static Napi::Value isBuiltInAcousticEchoCancelerSupported(const Napi::CallbackInfo& info);
-    static Napi::Value isBuiltInNoiseSuppressorSupported(const Napi::CallbackInfo& info);
-
-protected:
-    // Implements AudioInput::Observer
-    void OnAudioInputError(AudioInput* input, AudioErrorType type, const std::string& message) override;
-    void OnAudioInputStateChange(AudioInput* input, AudioStateType newState) override;
-    void OnAudioInputDataReady(
-        AudioInput* input, void* buffer, int32_t length, int64_t timestampUs, int64_t deleyUs) override;
-
-    // Implements AudioOutput::Observer
-    void OnAudioOutputError(AudioOutput* output, AudioErrorType type, const std::string& message) override;
-    void OnAudioOutputStateChange(AudioOutput* output, AudioStateType newState) override;
-
-private:
-    static Napi::FunctionReference constructor_;
-
-    rtc::scoped_refptr<OhosAudioDeviceModule> adm_;
-
-    struct EventHandler {
-        Napi::FunctionReference ref;
-        Napi::ThreadSafeFunction tsfn;
-    };
-
-    mutable std::mutex mutex_;
-    std::map<std::string, EventHandler> eventHandlers_;
 };
 
 rtc::scoped_refptr<OhosAudioDeviceModule> CreateDefaultAudioDeviceModule();

@@ -12,7 +12,6 @@ typedef struct {
     int64_t id;
 } CallbackData;
 
-
 CJ_ReturnEnumerateDevicesInfo FFIMediaDevices::enumerateDevices()
 {
     cameraDevices_ = CameraEnumerator::GetDevices();
@@ -241,8 +240,8 @@ int64_t FFIMediaDevices::getDisplayMedia(const CJ_TO_CPP_DisplayMediaStreamOptio
         video_ = constraints;
     }
 
-    auto ffiMDA_ = std::make_shared<FFIMediaDevicesAssist>();
-    return ffiMDA_->getDisplayMediaAssist(video_, audio_, systemAudio_);
+    this->ffiMDA_ = std::make_shared<FFIMediaDevicesAssist>();
+    return this->ffiMDA_->getDisplayMediaAssist(video_, audio_, systemAudio_);
 }
 
 int64_t FFIMediaDevices::getDisplayMedia(MediaTrackConstraints video,

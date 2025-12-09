@@ -4,6 +4,8 @@
 
 #include "ffi_video_encoder_factory.h"
 #include "video_codec/hardware_video_encoder_factory.h"
+#include "render/egl_env.h"
+#include "video_codec/default_video_encoder_factory.h"
 
 namespace webrtc {
 
@@ -33,6 +35,11 @@ std::unique_ptr<VideoEncoderFactory> createHardwareVideoEncoderFactory(ffiVideoE
         return std::make_unique<adapter::HardwareVideoEncoderFactory>(sharedContext, enableH264HighProfile);
     }
     return nullptr;
+}
+
+std::unique_ptr<VideoEncoderFactory> CreateDefaultVideoEncoderFactory()
+{
+    return std::make_unique<adapter::DefaultVideoEncoderFactory>(EglEnv::GetDefault().GetContext(), false);
 }
 
 }

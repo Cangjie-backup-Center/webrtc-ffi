@@ -15,7 +15,6 @@
 
 #include "camera_capturer.h"
 #include "../video/video_frame_receiver_gl.h"
-#include "../utils/marcos.h"
 
 #include <ohcamera/camera_device.h>
 

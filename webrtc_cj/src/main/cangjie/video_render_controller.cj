@@ -32,10 +32,6 @@ public class VideoRenderController <: XComponentController {
         renderer = unsafe {ffi_newNativeVideoRenderer(Int64.parse(mySurfaceId))}
     }
 
-//    public func setVideoTrack(mst : VideoTrack): Unit {
-//        unsafe {ffi_setVideoTrack(renderer, mst.getID())}
-//    }
-
     public func setVideoTrack(mst : MediaStreamTrack): Unit {
         if (renderer == 0) {
             newNativeVideoRenderer()
@@ -51,10 +47,6 @@ public class VideoRenderController <: XComponentController {
         let FFISme = FFIScalingModeEnum.GET(scalingMode)
         unsafe {ffi_setScalingMode(renderer, FFIScalingModeEnum.GET(scalingMode))}
     }
-
-//    public func setScalingMode(scalingMode : Int32) {
-//        unsafe {ffi_setScalingMode(renderer, scalingMode)}
-//    }
 
    protected override func onSurfaceDestroyed(surfaceId: String) {
    }

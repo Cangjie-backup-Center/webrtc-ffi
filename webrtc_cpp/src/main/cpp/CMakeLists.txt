@@ -67,10 +67,11 @@ add_library(cj_webrtc SHARED
                         ${CPP_FILES}
                         )
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
     target_compile_definitions(cj_webrtc
         PUBLIC  NODE_ADDON_API_DISABLE_DEPRECATED             # 对当前目标及依赖目标可见
 #        PUBLIC  NDEBUG             # 对当前目标及依赖目标可见
+        PUBLIC  DCHECK_ALWAYS_ON             # 对当前目标及依赖目标可见 - 修复Release模式下UnreachableCodeReached()未定义的问题
         PUBLIC  NAPI_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
         PUBLIC  NDK_HELPER_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
         PUBLIC  NODE_ADDON_API_ENABLE_TYPE_CHECK_ON_AS             # 对当前目标及依赖目标可见

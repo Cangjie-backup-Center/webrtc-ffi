@@ -6,7 +6,6 @@
 #include "ffi_exception.h"
 #include <cstdint>
 #include <hilog/log.h>
-#include "webrtc_func.h"
 
 #define OHOS_LOG_DOMAIN 0xD001234
 

@@ -65,12 +65,9 @@ sealed abstract class WebrtcClass {
 }
 
 public class AudioDeviceModule <: WebrtcClass {
-
     public init(useStereoInput: Bool, useStereoOutput: Bool) {
         super(unsafe {ffi_newAudioDeviceModule(useStereoInput, useStereoOutput)}, this)
     }
-
-
 }
 
 public class PeerConnectionFactory <: WebrtcClass {
@@ -108,13 +105,9 @@ public class AudioSource <: WebrtcClass {
     public init(pcf: PeerConnectionFactory, options: FFIAudioOptions) {
         super(unsafe {ffi_createAudioSource(pcf.ID, options)}, this)
     }
-//    public func createAudioSourceID(pcf: PeerConnectionFactory, options: FFIAudioOptions) {
-//        this.ID = cj_createAudioSource(pcf.ID, options)
-//    }
 }
 
 public class VideoTrack <: MediaStreamTrack {
-
     public init(pcf: PeerConnectionFactory, tag: String) {
         super( unsafe {ffi_createVideoTrack(pcf.ID,LibC.mallocCString(tag))}, this)
     }
@@ -136,10 +129,9 @@ public class AudioTrack <: MediaStreamTrack {
 }
 
 public class VideoSource <: WebrtcClass {
-    public init(pcf: PeerConnectionFactory, ffiCVSP: CJ_TO_CPP_DisplayMediaStreamOptions, isScreen: Bool) {
-        super(unsafe{ffi_createVideoSource(pcf.ID, ffiCVSP, isScreen)}, this)
+    public init(pcf: PeerConnectionFactory, ffiCVSP: CJ_MediaTrackConstraintSet, isScreen: Bool) {
+        super(unsafe{ffi_createVideoSource(pcf.ID, CJ_TO_CPP_DisplayMediaStreamOptions(ffiCVSP), isScreen)}, this)
     }
-
 }
 
 public open class MediaStreamTrack <: WebrtcClass {
@@ -162,6 +154,18 @@ public open class MediaStreamTrack <: WebrtcClass {
         this.enabled = ffiMST.enabled
         this.readyState = ffiMST.readyState.toString()
         this.id = ffiMST.id.toString()
+    }
+
+    public func GetSource(): Int64 {
+        unsafe {
+            return ffi_webrtc_ffiMediaStreamTrack_GetSource(this.ID)
+        }
+    }
+
+    public func ToJson(): CJ_ffiMediaStreamTrackJson {
+        unsafe {
+            return ffi_webrtc_ffiMediaStreamTrack_ToJson(this.ID)
+        }
     }
 }
 
@@ -189,7 +193,7 @@ public class MediaStream <: WebrtcClass {
     public func getTracks(): Array<MediaStreamTrack> {
         checkThis()
         unsafe {
-            let ret:CJ_ReturnArray = ffi_webrtc_FFIMediaStream_GetTracks(this.ID)
+            let ret : CJ_ReturnArray = ffi_webrtc_FFIMediaStream_GetTracks(this.ID)
             let arr = Array<MediaStreamTrack>(ret.size, repeat: unsafe {zeroValue<MediaStreamTrack>()})
             for (i in 0..ret.size) {
                 arr[i] = VideoTrack(ret.ptr.read(i))
@@ -229,15 +233,20 @@ public class MediaDevices <: WebrtcClass {
         super(unsafe {ffi_webrtc_mediaDevices_create()}, this)
     }
 
-    public func getDisplayMedia(video: CJ_TO_CPP_DisplayMediaStreamOptions,
+    public func getDisplayMedia(video: CJ_MediaTrackConstraintSet,
                                 audio: Bool,
                                 systemAudio: Bool): MediaStream
     {
+        var captureVideo: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(video)
         var captureAudio: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(audio)
         var captureohosSystemAudio: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(systemAudio)
 
         unsafe {
-             return MediaStream(ffi_webrtc_mediaDevices_getDisplayMedia(this.ID, video, captureAudio, captureohosSystemAudio))
+            let ret = ffi_webrtc_mediaDevices_enumerateDevices(this.ID);
+        }
+
+        unsafe {
+             return MediaStream(ffi_webrtc_mediaDevices_getDisplayMedia(this.ID, captureVideo, captureAudio, captureohosSystemAudio))
         }
     }
 }
@@ -281,6 +290,7 @@ foreign {
                                                         audio:CJ_TO_CPP_DisplayMediaStreamOptions): Int64  // TODO
     func ffi_webrtc_mediaDevices_enumerateDevices(mediaDevicesPtr: Int64): CJ_ReturnEnumerateDevicesInfo
     func ffi_webrtc_mediaDevices_getSupportedConstraints(mediaDevicesPtr: Int64): Int64
+
     // webrtc::FFIMediaStream
     func ffi_webrtc_FFIMediaStream_AddTrack(FFIMediaStreamPtr: Int64,mst: Int64): Unit
     func ffi_webrtc_FFIMediaStream_RemoveTrack(FFIMediaStreamPtr: Int64,mst: Int64): Unit
@@ -289,8 +299,8 @@ foreign {
     func ffi_webrtc_FFIMediaStream_GetAudioTracks(FFIMediaStreamPtr: Int64): CJ_ReturnArray
     func ffi_webrtc_FFIMediaStream_GetVideoTracks(FFIMediaStreamPtr: Int64): CJ_ReturnArray
     // webrtc::ffiMediaStreamTrack
-    func ffi_webrtc_ffiMediaStreamTrack_ToJson(ffiMediaStreamTrackPtr: Int64): CJ_ffiMediaStreamTrackJson
     func ffi_webrtc_ffiMediaStreamTrack_GetSource(ffiMediaStreamTrackPtr: Int64): Int64
+    func ffi_webrtc_ffiMediaStreamTrack_ToJson(ffiMediaStreamTrackPtr: Int64): CJ_ffiMediaStreamTrackJson
 
     func peerConnection_addTrack(cpp_ptr: Int64, ffiMST_ptr: Int64, streamVec: CJ_ArrayMediaStream): Int64
     func peerConnection_setLocalDescription(cpp_ptr: Int64, description: CJ_RTCSessionDescription, pe: CFunc<(Int64, CJ_ErrorMessage) -> Unit>): Unit
@@ -306,11 +316,20 @@ foreign {
     func peerConnection_close(cpp_ptr: Int64): Unit
     func peerConnection_setAudioRecording(cpp_ptr: Int64, recording: Bool): Unit
     func peerConnection_setAudioPlayout(cpp_ptr: Int64, playout: Bool): Unit
+    func peerConnection_SetCallBackCreateOffer_(cpp_ptr: Int64, pe: CFunc<(Int64, Bool, CJ_RTCSessionDescription, CString) -> Unit>): Unit
+    func peerConnection_SetCallBackCreateAnswer_(cpp_ptr: Int64, pe: CFunc<(Int64, Bool, CJ_RTCSessionDescription, CString) -> Unit>): Unit
+    func peerConnection_SetAddIceCandidate_(cpp_ptr: Int64, pe: CFunc<(Int64, CString) -> Unit>): Unit
+    func peerConnection_getReceivers(cpp_ptr: Int64): CPointer<Int64>
 
     func ffiMediaStreamTrack_getKind(cpp_ptr: Int64): CString
     func ffiMediaStreamTrack_getEnabled(cpp_ptr: Int64): Bool
     func ffiMediaStreamTrack_getReadyState(cpp_ptr: Int64): CString
     func ffiMediaStreamTrack_getId(cpp_ptr: Int64): CString
+    func ffiMediaStreamTrack_Stop(cpp_ptr: Int64):Unit
 
-    func deleteChar(ch: CString): Unit
+    func ffiDtmfSender_set_class_key(cpp_ptr: Int64, classKey: Int64): Unit
+    func ffiDtmfSender_GetCanInsertDTMF(cpp_ptr: Int64): Bool
+    func ffiDtmfSender_GetToneBuffer(cpp_ptr: Int64): CString
+    func ffiDtmfSender_InsertDTMF(cpp_ptr: Int64, tones: CString, duration: Int64, interToneGap: Int64): Bool
+    func ffiDtmfSender_set_OnToneChange(cpp_ptr: Int64, pe: CFunc<(Int64, CString) -> Unit>): Unit
 }

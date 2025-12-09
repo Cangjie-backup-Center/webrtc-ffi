@@ -78,9 +78,9 @@ extern "C" {
     CJ_ReturnArray ffi_webrtc_FFIMediaStream_GetTracks(int64_t FFIMediaStreamPtr);
     CJ_ReturnArray ffi_webrtc_FFIMediaStream_GetAudioTracks(int64_t FFIMediaStreamPtr);
     CJ_ReturnArray ffi_webrtc_FFIMediaStream_GetVideoTracks(int64_t FFIMediaStreamPtr);
-    
-    // webrtc::ffiMediaStreamTrack
     CJ_ffiMediaStreamTrackJson ffi_webrtc_ffiMediaStreamTrack_ToJson(int64_t ffiMediaStreamTrackPtr);
+
+    // webrtc::ffiMediaStreamTrack
     int64_t ffi_webrtc_ffiMediaStreamTrack_GetSource(int64_t ffiMediaStreamTrackPtr);
     char* ffiMediaStreamTrack_GetKind(int64_t cpp_ptr);
     char* ffiMediaStreamTrack_GetId(int64_t cpp_ptr);

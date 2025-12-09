@@ -66,16 +66,16 @@ enum class FFIScreenCaptureAudioFilterEnum { CURRENT_APP, NOTIFICATION };
 
 typedef struct {
     bool echo_cancellation;
-    bool auto_gain_control;
+    // bool auto_gain_control;
     bool noise_suppression;
-    bool highpass_filter;
-    bool stereo_swapping;
-    int32_t audio_jitter_buffer_max_packets;
-    bool audio_jitter_buffer_fast_accelerate;
-    int audio_jitter_buffer_min_delay_ms;
-    bool audio_network_adaptor;
-    std::string audio_network_adaptor_config;
-    bool init_recording_on_send;
+    // bool highpass_filter;
+    // bool stereo_swapping;
+    // int32_t audio_jitter_buffer_max_packets;
+    // bool audio_jitter_buffer_fast_accelerate;
+    // int audio_jitter_buffer_min_delay_ms;
+    // bool audio_network_adaptor;
+    // std::string audio_network_adaptor_config;
+    // bool init_recording_on_send;
 }FFIAudioOptions;
 
 typedef struct {

@@ -12,7 +12,7 @@
 #include "ffi_dtmf_sender.h"
 #include "ffi_media_stream.h"
 #include "ffi_rtp_receiver.h"
-#include "peer_connection_interface.h"
+#include "api/peer_connection_interface.h"
 #include "ffi_dtls_transport.h"
 
 #include <cstdint>

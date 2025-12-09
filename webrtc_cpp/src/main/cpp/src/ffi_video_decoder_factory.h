@@ -23,6 +23,7 @@ private:
 
 std::unique_ptr<VideoDecoderFactory> createHardwareVideoDecoderFactory(ffiVideoDecoderFactory* ffiHVDF);
 
+std::unique_ptr<VideoDecoderFactory> CreateDefaultVideoDecoderFactory();
 }
 
 #endif
