@@ -18,6 +18,9 @@ public class VideoRenderController <: XComponentController {
         mySurfaceId = surfaceId
         unsafe {
             ffi_SetSurfaceId(Int64.parse(surfaceId))
+            if (renderer == 0) {
+                newNativeVideoRenderer()
+            }
         }
     }
 
@@ -33,17 +36,14 @@ public class VideoRenderController <: XComponentController {
     }
 
     public func setVideoTrack(mst : MediaStreamTrack): Unit {
-        if (renderer == 0) {
-            newNativeVideoRenderer()
-        }
         unsafe {ffi_setVideoTrack(renderer, mst.getID())}
     }
 
-    public func setMirror(mirrorVerticallyBool: Bool) {
+    public func setMirror(mirrorVerticallyBool: Bool): Unit {
         unsafe  {ffi_setMirror(renderer, mirrorVerticallyBool)}
     }
 
-    public func setScalingMode(scalingMode : FFIScalingModeEnum) {
+    public func setScalingMode(scalingMode : FFIScalingModeEnum): Unit {
         let FFISme = FFIScalingModeEnum.GET(scalingMode)
         unsafe {ffi_setScalingMode(renderer, FFIScalingModeEnum.GET(scalingMode))}
     }

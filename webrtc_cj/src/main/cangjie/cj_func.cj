@@ -74,9 +74,6 @@ public class PeerConnectionFactory <: WebrtcClass {
     public init(adm: AudioDeviceModule) {
         super(unsafe {ffi_newPeerConnectionFactory(adm.ID, ffi_newHardwareVideoEncoderFactory() , ffi_newHardwareVideoDecoderFactory())}, this)
     }
-//    public func createPeerConnectionFactoryID(adm: AudioDeviceModule) {
-//        this.ID = cj_newPeerConnectionFactory(adm.ID, cj_newHardwareVideoEncoderFactory() , cj_newHardwareVideoDecoderFactory())
-//    }
 
     public func createPeerConnection(config: RTCConfiguration): RTCPeerConnection {
         unsafe {
@@ -84,7 +81,7 @@ public class PeerConnectionFactory <: WebrtcClass {
         }
     }
 
-    public func SetDefault(){
+    public func SetDefault(): Unit{
         unsafe {
             ffi_SetDefault(this.ID)
         }
@@ -94,7 +91,7 @@ public class PeerConnectionFactory <: WebrtcClass {
         return unsafe {ffi_StartAecDump(this.getID(), fd, max_size_bytes)}
     }
 
-    public func stopAecDump() {
+    public func stopAecDump(): Unit{
         unsafe {
             ffi_StopAecDump(this.getID())
         }

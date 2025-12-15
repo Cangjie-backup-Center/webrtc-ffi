@@ -135,11 +135,6 @@ public class RTCIceCandidate <: Serializable<RTCIceCandidate> {
         this.usernameFragment = usernameFragment
     }
 
-//    @OverflowWrapping
-//    public func toJson(): RTCIceCandidateInit {
-//        return RTCIceCandidateInit(true, candidate, Int32(sdpMLineIndex), sdpMid, usernameFragment)
-//    }
-
      /* 实现 Serializable 接口的序列化方法 */
     public func serialize(): DataModel {
         return DataModelStruct().add(field<String>("candidate", candidate))

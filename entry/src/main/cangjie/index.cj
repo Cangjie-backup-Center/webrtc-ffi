@@ -781,13 +781,25 @@ class EntryView {
             var sdp = cjmsg.sdp.getOrThrow()
              if (sdp.RTCSdpType == "offer") {
                     AppLog.info("receive offer")
-                    this.pc?.setRemoteDescription(sdp, {_ =>})
-                    this.setStatus("Remote SDP set")
-                    this.sendAnswer()
+                    this.pc?.setRemoteDescription(sdp, {event =>
+                        if (event.errorDetail != FFIRTCErrorDetailType.NONE) {
+                            AppLog.info("Set remote description error: ${event.msg}")
+                            this.setError("Set remote description error: ${event.msg}")
+                        } else {
+                            this.setStatus("Remote SDP set")
+                            this.sendAnswer()
+                        }
+                    })
              } else if (sdp.RTCSdpType == "answer") {
                     AppLog.info("receive answer")
-                    this.pc?.setRemoteDescription(sdp, {_ =>})
-                    this.setStatus("Remote SDP set");
+                    this.pc?.setRemoteDescription(sdp, {event =>
+                        if (event.errorDetail != FFIRTCErrorDetailType.NONE) {
+                            AppLog.info("Set remote description error: ${event.msg}")
+                            this.setError("Set remote description error: ${event.msg}")
+                        } else{
+                            this.setStatus("Remote SDP set");
+                        }
+                    })
              }
         }
     }
