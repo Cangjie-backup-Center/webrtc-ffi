@@ -22,7 +22,6 @@
 #include <string>
 #include <vector>
 
-#include "napi.h"
 
 #include "api/audio_options.h"
 
@@ -62,7 +61,6 @@ public:
 
     static std::vector<std::string> GetSupportedConstraints();
     static bool IsConstraintSupported(const std::string& name);
-    static void JsToNative(const Napi::Value& jsTrackConstraints, MediaTrackConstraints& nativeTrackConstraints);
 };
 
 } // namespace webrtc

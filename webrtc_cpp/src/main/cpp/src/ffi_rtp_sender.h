@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 #ifndef WEBRTC4CJ_FFI_RTP_SENDER_H
 #define WEBRTC4CJ_FFI_RTP_SENDER_H
 

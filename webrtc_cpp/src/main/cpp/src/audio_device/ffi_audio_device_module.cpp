@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 #include "ffi_audio_device_module.h"
 #include "audio_common.h"
 #include "modules/audio_device/audio_device_buffer.h"
@@ -12,19 +8,30 @@
 #include <utility>
 
 namespace webrtc {
-ffiAudioDeviceModule::ffiAudioDeviceModule(bool ffiUseStereoInput, bool ffiUseStereoOutput)
+ffiAudioDeviceModule::ffiAudioDeviceModule(CJ_AudioDeviceModuleOptions options)
 {
     AudioInputOptions inputOptions;
-    AudioOutputOptions outputOptions;
-
-    bool useStereoInput = ffiUseStereoInput;
+    AudioOutputOptions outputOptions; 
+    
+    inputOptions.source = options.inputOptionsSource;
+    inputOptions.sampleRate = options.inputOptionsSampleRate;
+    inputOptions.useLowLatency = options.inputOptionsUseLowLatency;
+    
+    outputOptions.sampleRate = options.outputOptionsSampleRate;
+    outputOptions.usage = options.outputOptionsUsage;
+    outputOptions.useLowLatency = options.outputOptionsUseLowLatency;
+    
+    bool useStereoInput = options.useStereoInput;
     inputOptions.channelCount = useStereoInput ? kAudioChannelCount_Stereo : kAudioChannelCount_Mono;
 
-    bool useStereoOutput = ffiUseStereoOutput;
+    bool useStereoOutput = options.useStereoOutput;
     outputOptions.channelCount = useStereoOutput ? kAudioChannelCount_Stereo : kAudioChannelCount_Mono;
  
     adm_ = rtc::make_ref_counted<OhosAudioDeviceModule>(
         std::move(inputOptions), std::move(outputOptions), AudioDeviceModule::kPlatformDefaultAudio);
+    if (!adm_) {
+        CANGJIE_THROW("Failed to create audio device module");
+    }
     
     adm_->RegisterInputObserver(this);
     adm_->RegisterOutputObserver(this);
@@ -46,6 +53,7 @@ void ffiAudioDeviceModule::SetOnAudioInputErrorCallback(void (*callback)(int64_t
 void ffiAudioDeviceModule::OnAudioInputError(AudioInput* input, AudioErrorType type, const std::string& message)
 {
     RTC_LOG(LS_INFO) << __FUNCTION__ << "Audio input error: " << type << " " << message;
+    std::lock_guard<std::mutex> lock(mutex_);
     this->Dispatch(CallbackEvent<ffiAudioDeviceModule>::Create(
         [this, type, message]
         (ffiAudioDeviceModule& target) {
@@ -69,6 +77,7 @@ void ffiAudioDeviceModule::SetOnAudioInputStateChangeCallback(void (*callback)(i
 void ffiAudioDeviceModule::OnAudioInputStateChange(AudioInput* input, AudioStateType newState)
 {
     RTC_LOG(LS_INFO) << __FUNCTION__ << "Audio output state change: " << newState;
+    std::lock_guard<std::mutex> lock(mutex_);
     this->Dispatch(CallbackEvent<ffiAudioDeviceModule>::Create(
         [this, newState](ffiAudioDeviceModule& target) {
             RTC_DCHECK_EQ(this, &target);
@@ -87,6 +96,7 @@ void ffiAudioDeviceModule::SetOnAudioInputDataReadyCallback(void (*callback)(int
 void ffiAudioDeviceModule::OnAudioInputDataReady(AudioInput* input, void* buffer,
     int32_t length, int64_t timestampUs, int64_t deleyUs)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     auto copyData = new rtc::CopyOnWriteBuffer((uint8_t*)buffer, length);
 
     this->Dispatch(CallbackEvent<ffiAudioDeviceModule>::Create(
@@ -115,6 +125,7 @@ void ffiAudioDeviceModule::SetOnAudioOutputErrorCallback(void (*callback)(int64_
 void ffiAudioDeviceModule::OnAudioOutputError(AudioOutput* output, AudioErrorType type, const std::string& message)
 {
     RTC_LOG(LS_INFO) << __FUNCTION__ << "Audio output error: " << type << " " << message;
+    std::lock_guard<std::mutex> lock(mutex_);
     this->Dispatch(CallbackEvent<ffiAudioDeviceModule>::Create(
         [this, type, message]
         (ffiAudioDeviceModule& target) {
@@ -139,6 +150,7 @@ void ffiAudioDeviceModule::SetOnAudioOutputStateChangeCallback(void (*callback)(
 void ffiAudioDeviceModule::OnAudioOutputStateChange(AudioOutput* output, AudioStateType newState)
 {
     RTC_LOG(LS_INFO) << __FUNCTION__ << "Audio output state change: " << newState;
+    std::lock_guard<std::mutex> lock(mutex_);
     this->Dispatch(CallbackEvent<ffiAudioDeviceModule>::Create(
         [this, newState]
         (ffiAudioDeviceModule& target) {

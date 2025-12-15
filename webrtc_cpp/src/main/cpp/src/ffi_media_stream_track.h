@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 #ifndef WEBRTC_FFI_MEDIA_STREAM_TRACK_H
 #define WEBRTC_FFI_MEDIA_STREAM_TRACK_H
 
@@ -15,13 +11,13 @@
 #include "api/scoped_refptr.h"
 
 #include "peer_connection_factory.h"
-#include "logging/ohos_log.h"
 #include "./utils/marcos.h"
 #include "ffi_define_struct.h"
+#include "ffi_media_source.h"
 
 namespace webrtc {
 
-class ffiMediaStreamTrack {
+class ffiMediaStreamTrack: public ObserverInterface {
 public:
     ffiMediaStreamTrack(std::shared_ptr<PeerConnectionFactoryWrapper> factory,
                         rtc::scoped_refptr<MediaStreamTrackInterface> track);
@@ -48,6 +44,7 @@ public:
 
 protected:
     void RemoveAllVideoSinks();
+    void OnChanged() override;
 private:
     std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
     rtc::scoped_refptr<MediaStreamTrackInterface> track_;
@@ -55,11 +52,6 @@ private:
     // rtc::scoped_refptr<OhosVideoTrackSource> videosource_;
     // rtc::scoped_refptr<OhosLocalAudioSource>* audiosource_ptr_ = nullptr;
     // rtc::scoped_refptr<OhosVideoTrackSource>* videosource_ptr_ = nullptr;
-
-    CHAR_PTR kind_ = nullptr;
-    CHAR_PTR id_ = nullptr;
-    bool enabled_ = false;
-    CHAR_PTR readyState_ = nullptr;
 
     std::mutex sinksMutex_;
     std::set<rtc::VideoSinkInterface<VideoFrame>*> videoSinks_;

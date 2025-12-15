@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 package webrtc_cj
 
 import kit.UIKit.*
@@ -16,38 +12,27 @@ public class VideoRenderController <: XComponentController {
 
     protected override func onSurfaceCreated(surfaceId: String) {
         mySurfaceId = surfaceId
-        unsafe {
-            ffi_SetSurfaceId(Int64.parse(surfaceId))
+        launch{
+            unsafe {
+                renderer = ffi_newNativeVideoRenderer(LibC.mallocCString(mySurfaceId))
+            }
         }
-    }
-
-    protected override func onSurfaceChanged(surfaceId: String, rect: SurfaceRect) {
-        // 在onSurfaceChanged中调用ChangeSurface绘制内容
-        unsafe {
-            ffi_ChangeSurface(Int64.parse(surfaceId), 1134.0, 1002.0)
-        }
-    }
-
-    private func newNativeVideoRenderer(): Unit {
-        renderer = unsafe {ffi_newNativeVideoRenderer(Int64.parse(mySurfaceId))}
     }
 
     public func setVideoTrack(mst : MediaStreamTrack): Unit {
-        if (renderer == 0) {
-            newNativeVideoRenderer()
-        }
         unsafe {ffi_setVideoTrack(renderer, mst.getID())}
     }
 
-    public func setMirror(mirrorVerticallyBool: Bool) {
+    public func setMirror(mirrorVerticallyBool: Bool): Unit {
         unsafe  {ffi_setMirror(renderer, mirrorVerticallyBool)}
     }
 
-    public func setScalingMode(scalingMode : FFIScalingModeEnum) {
+    public func setScalingMode(scalingMode : FFIScalingModeEnum): Unit {
         let FFISme = FFIScalingModeEnum.GET(scalingMode)
         unsafe {ffi_setScalingMode(renderer, FFIScalingModeEnum.GET(scalingMode))}
     }
 
    protected override func onSurfaceDestroyed(surfaceId: String) {
+        AppLog.info("------ XComponentController onSurfaceDestroyed ")
    }
 }

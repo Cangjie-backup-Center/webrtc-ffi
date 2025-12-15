@@ -6,6 +6,20 @@
       "default",
       "tablet",
       "2in1"
+    ],
+    "requestPermissions": [
+      {
+        "name" : "ohos.permission.INTERNET",
+        "reason": "$string:internet"
+      },
+      {
+        "name" : "ohos.permission.CAMERA",
+        "reason": "$string:camera"
+      },
+      {
+        "name": "ohos.permission.MICROPHONE",
+        "reason": "$string:microphone"
+      }
     ]
   }
 }

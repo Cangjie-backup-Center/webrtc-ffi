@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 #ifndef WEBRTC_FFI_OHOS_AUDIO_DEVICE_MODULE_H_
 #define WEBRTC_FFI_OHOS_AUDIO_DEVICE_MODULE_H_
 
@@ -13,6 +9,7 @@
 #include "webrtc_func.h"
 #include "modules/audio_device/include/audio_device.h"
 #include "modules/audio_device/fine_audio_buffer.h"
+#include "../ffi_define_struct.h"
 
 #include <map>
 #include <list>
@@ -39,7 +36,7 @@ class ffiAudioDeviceModule : public AudioInput::Observer,
                             public FFIEventTarget<ffiAudioDeviceModule>,
                             public CJ_CLASS_BASE::ffiCjClass {
 public:
-    ffiAudioDeviceModule(bool ffiUseStereoInput, bool ffiUseStereoOutput);
+    ffiAudioDeviceModule(CJ_AudioDeviceModuleOptions options);
     ~ffiAudioDeviceModule();
     rtc::scoped_refptr<OhosAudioDeviceModule> getAdm();
 

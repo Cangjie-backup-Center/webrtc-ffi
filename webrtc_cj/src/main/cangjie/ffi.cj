@@ -1,9 +1,7 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
 package webrtc_cj
 
 internal import stdx.serialization.serialization.*
+import kit.AudioKit.*
 
 foreign func setThrowCangjieException(f: CFunc<(CString) -> Unit>): Unit
 
@@ -73,44 +71,44 @@ public struct CJ_ReturnArray {
 }
 
 @C // see ffi_define_struct.h
-public struct CJ_MediaTrackConstraintSet{
-    public var width: Float64
-    public var height: Float64
+public struct CJ_MediaTrackConstraintSet {
+    public var width: Int32
+    public var height: Int32
     public var aspectRatio: Float64
     public var frameRate: Float64
     public var facingMode: CString
     public var resizeMode: CString
-    public var sampleRate: Float64
-    public var sampleSize: Float64
+    public var sampleRate: Int32
+    public var sampleSize: Int32
     public var echoCancellation: Bool
     public var autoGainControl: Bool
     public var noiseSuppression: Bool
     public var latency: Float64
-    public var channelCount: Float64
+    public var channelCount: Int32
     public var deviceId: CString
     public var groupId: CString
     public var ohosScreenCaptureMode: CString
-    public var ohosScreenCaptureDisplayId: Float64
+    public var ohosScreenCaptureDisplayId: Int32
     public var ohosScreenCaptureMissionId: CString
     public var ohosScreenCaptureWindowFilter: CString
     public var ohosScreenCaptureAudioFilter: CString
     public var ohosScreenCaptureSkipPrivacyMode: CString
     public var ohosScreenCaptureAutoRotation: Bool
 
-    public init(width!: Float64 = 0.0, height!: Float64 = 0.0, aspectRatio!: Float64 = 0.0, frameRate!: Float64 = 0.0,
+    public init(width!: Int32 = 0, height!: Int32 = 0, aspectRatio!: Float64 = 0.0, frameRate!: Float64 = 0.0,
         facingMode!: String = "",
         resizeMode!: String = "",
-        sampleRate!: Float64 = 0.0,
-        sampleSize!: Float64 = 0.0,
+        sampleRate!: Int32 = 0,
+        sampleSize!: Int32 = 0,
         echoCancellation!: Bool = false,
         autoGainControl!: Bool = false,
         noiseSuppression!: Bool = false,
         latency!: Float64 = 0.0,
-        channelCount!: Float64 = 0.0,
+        channelCount!: Int32 = 0,
         deviceId!: String = "",
         groupId!: String = "",
         ohosScreenCaptureMode!: String = "",
-        ohosScreenCaptureDisplayId!: Float64 = 0.0,
+        ohosScreenCaptureDisplayId!: Int32 = 0,
         ohosScreenCaptureMissionId!: String = "",
         ohosScreenCaptureWindowFilter!: String = "",
         ohosScreenCaptureAudioFilter!: String = "",
@@ -150,17 +148,17 @@ public struct CJ_SupportedConstraints {
 @C
 public struct CJ_RTCSessionDescription {
     public var sdp: CString = unsafe {zeroValue<CString>()}
-    public var sdp_size: Int64 = 0
+    public var sdp_size: UInt64 = 0
     public var RTCSdpType: CString = unsafe {zeroValue<CString>()}
-    public var RTCSdpType_size: Int64 = 0
+    public var RTCSdpType_size: UInt64 = 0
     public var undefined: Bool = true
 
     public init(sdp: String, RTCSdpType: String) {
         unsafe {
             this.sdp = LibC.mallocCString(sdp)
-            this.sdp_size = sdp.size
+            this.sdp_size = UInt64(sdp.size)
             this.RTCSdpType =LibC.mallocCString(RTCSdpType)
-            this.RTCSdpType_size = RTCSdpType.size
+            this.RTCSdpType_size = UInt64(RTCSdpType.size)
             this.undefined = false
         }
     }
@@ -185,7 +183,7 @@ public class ErrorMessage {
     }
     ~init() {
         unsafe {
-            LibC.free(this.cpp.msg)
+//            LibC.free(this.cpp.msg)  // 存在bug. 提前析构
         }
     }
 }
@@ -389,41 +387,25 @@ public struct CJ_RTCIceCandidateInit {
 
 public class RTCIceCandidateInit <: Serializable<RTCIceCandidateInit> {
 
-    var isBuild_: Bool = false
-    var candidate_: String = ""
-    var sdpMLineIndex_: Int32 = 0
-    var sdpMid_: String = ""
-    var usernameFragment_: String = ""
+    public var candidate: String = ""
+    public var sdpMLineIndex: Int32 = 0
+    public var sdpMid: String = ""
+    public var usernameFragment: String = ""
 
-    public prop isBuild: Bool {get() {this.isBuild_}}
-    public prop candidate: String {get() {this.candidate_.toString()}}
-    public prop sdpMLineIndex: Int32{get() {this.sdpMLineIndex_}}
-    public prop sdpMid: String {get() {this.sdpMid_.toString()}}
-    public prop usernameFragment: String {get() {this.usernameFragment_.toString()}}
-
-    public init(isBuild: Bool, candidate: String, sdpMLineIndex: Int32, sdpMid: String, usernameFragment: String) {
-        if (isBuild) {
-            unsafe {
-                this.isBuild_ = isBuild
-                this.candidate_ = candidate
-                this.sdpMLineIndex_ = sdpMLineIndex
-                this.sdpMid_ = sdpMid
-                this.usernameFragment_ = usernameFragment
-            }
-        }
-    }
-
-    ~init(){
+    public init(candidate: String, sdpMLineIndex: Int32, sdpMid: String, usernameFragment: String) {
+        this.candidate = candidate
+        this.sdpMLineIndex = sdpMLineIndex
+        this.sdpMid = sdpMid
+        this.usernameFragment = usernameFragment
     }
 
     /* 实现 Serializable 接口的序列化方法 */
     public func serialize(): DataModel {
         return DataModelStruct()
-                .add(field<Bool>("isBuild_", isBuild_))
-                .add(field<String>("candidate_", candidate_))
-                .add(field<Int32>("sdpMLineIndex_", sdpMLineIndex_))
-                .add(field<String>("sdpMid_", sdpMid_))
-                .add(field<String>("usernameFragment_", usernameFragment_))
+                .add(field<String>("candidate", candidate))
+                .add(field<Int32>("sdpMLineIndex", sdpMLineIndex))
+                .add(field<String>("sdpMid", sdpMid))
+                .add(field<String>("usernameFragment", usernameFragment))
     }
 
     /* 实现反序列化方法 JSON.*/
@@ -433,11 +415,10 @@ public class RTCIceCandidateInit <: Serializable<RTCIceCandidateInit> {
             case _ => throw Exception("this data is not DataModelStruct")
         }
         let result = RTCIceCandidateInit(
-            Bool.deserialize(dms.get("isBuild_")),
-            String.deserialize(dms.get("candidate_")),
-            Int32.deserialize(dms.get("sdpMLineIndex_")),
-            String.deserialize(dms.get("sdpMid_")),
-            String.deserialize(dms.get("usernameFragment_")),
+            String.deserialize(dms.get("candidate")),
+            Int32.deserialize(dms.get("sdpMLineIndex")),
+            String.deserialize(dms.get("sdpMid")),
+            String.deserialize(dms.get("usernameFragment")),
         )
         return result
     }
@@ -466,6 +447,90 @@ public struct CJ_FFICreateSdpObserver_result {
     let RTCSdpType: CString = unsafe{zeroValue<CString>()}
     let isFail: Bool = true // 如果 true , 其他值就无效了
     let msg: CString = unsafe{zeroValue<CString>()}
+}
+
+public struct inputOptions {
+    public var Source : SourceType
+    public var SampleRate : Int32
+    public var UseLowLatency : Bool
+    public init(Source!: SourceType = SourceType.SOURCE_TYPE_VOICE_COMMUNICATION,
+        SampleRate!: Int32 = 48000,
+        UseLowLatency!: Bool = false
+        ) {
+    	this.Source = Source
+        this.SampleRate = SampleRate
+        this.UseLowLatency = UseLowLatency
+    }
+}
+
+public struct outputOptions {
+    public var Usage : StreamUsage
+    public var SampleRate : Int32
+    public var UseLowLatency : Bool
+    public init(Usage!: StreamUsage = StreamUsage.STREAM_USAGE_VOICE_COMMUNICATION,
+        SampleRate!: Int32 = 48000,
+        UseLowLatency!: Bool = false
+        ) {
+    	this.Usage = Usage
+        this.SampleRate = SampleRate
+        this.UseLowLatency = UseLowLatency
+    }
+}
+
+public struct admOptions {
+    public var input : inputOptions
+    public var output : outputOptions
+    public var audioSampleFormat : AudioSampleFormat
+    public var useStereoInput : Bool
+    public var useStereoOutput : Bool
+
+    public init(
+        input!: inputOptions = inputOptions(),
+        output!: outputOptions = outputOptions(),
+        audioSampleFormat!: AudioSampleFormat = AudioSampleFormat.SAMPLE_FORMAT_S16LE,
+        useStereoInput!: Bool = false,
+        useStereoOutput!: Bool = false
+    ) {
+        this.input = input
+        this.output = output
+        this.audioSampleFormat = audioSampleFormat
+        this.useStereoInput = useStereoInput
+        this.useStereoOutput = useStereoOutput
+    }
+}
+
+@C
+public struct CJ_AudioDeviceModuleOptions {
+    public var inputOptionsSource : Int32
+    public var inputOptionsSampleRate : Int32
+    public var inputOptionsUseLowLatency : Bool
+    public var outputOptionsSampleRate : Int32
+    public var outputOptionsUsage : Int32
+    public var outputOptionsUseLowLatency : Bool
+    public var useStereoInput : Bool
+    public var useStereoOutput : Bool
+    public var audioSampleFormat : Int32
+
+    public init(inputOptionsSource!: Int32 = ffiSourceType.GET(SourceType.SOURCE_TYPE_VOICE_COMMUNICATION),
+        inputOptionsSampleRate!: Int32 = 48000,
+        inputOptionsUseLowLatency!: Bool = false,
+        outputOptionsSampleRate!: Int32 = 48000,
+        outputOptionsUsage!: Int32 = ffiStreamUsage.GET(StreamUsage.STREAM_USAGE_VOICE_COMMUNICATION),
+        outputOptionsUseLowLatency!: Bool = false,
+        useStereoInput!: Bool = false,
+        useStereoOutput!: Bool = false,
+        audioSampleFormat!: Int32 = ffiAudioSampleFormat.GET(AudioSampleFormat.SAMPLE_FORMAT_S16LE)
+        ) {
+        this.inputOptionsSource = inputOptionsSource
+        this.inputOptionsSampleRate = inputOptionsSampleRate
+        this.inputOptionsUseLowLatency = inputOptionsUseLowLatency
+        this.outputOptionsSampleRate = outputOptionsSampleRate
+        this.outputOptionsUsage = outputOptionsUsage
+        this.outputOptionsUseLowLatency = outputOptionsUseLowLatency
+        this.useStereoInput = useStereoInput
+        this.useStereoOutput = useStereoOutput
+        this.audioSampleFormat = audioSampleFormat
+    }
 }
 
 public class RTCSessionDescription <: Serializable<RTCSessionDescription> {
@@ -517,7 +582,7 @@ public class RTCSessionDescription <: Serializable<RTCSessionDescription> {
 
     /* 实现 Serializable 接口的序列化方法 */
     public func serialize(): DataModel {
-        return DataModelStruct().add(field<String>("sdp_", sdp_)).add(field<String>("RTCSdpType_", RTCSdpType_))
+        return DataModelStruct().add(field<String>("sdp", sdp_)).add(field<String>("type", RTCSdpType_))
     }
 
     /* 实现反序列化方法 */
@@ -526,7 +591,7 @@ public class RTCSessionDescription <: Serializable<RTCSessionDescription> {
             case data: DataModelStruct => data
             case _ => throw Exception("this data is not DataModelStruct")
         }
-        let result = RTCSessionDescription(String.deserialize(dms.get("sdp_")), String.deserialize(dms.get("RTCSdpType_")))
+        let result = RTCSessionDescription(String.deserialize(dms.get("sdp")), String.deserialize(dms.get("type")))
         return result
     }
 }

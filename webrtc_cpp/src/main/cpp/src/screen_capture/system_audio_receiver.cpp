@@ -56,7 +56,7 @@ SystemAudioReceiver::~SystemAudioReceiver()
 {
     RTC_DLOG(LS_INFO) << __FUNCTION__;
 
-    // RTC_DCHECK(threadChecker_.IsCurrent());
+     RTC_DCHECK(threadChecker_.IsCurrent());
     Terminate();
 }
 
@@ -64,7 +64,7 @@ int32_t SystemAudioReceiver::Init()
 {
     RTC_LOG(LS_INFO) << __FUNCTION__;
 
-    // RTC_DCHECK(threadChecker_.IsCurrent());
+     RTC_DCHECK(threadChecker_.IsCurrent());
     return 0;
 }
 
@@ -72,7 +72,7 @@ int32_t SystemAudioReceiver::Terminate()
 {
     RTC_LOG(LS_INFO) << __FUNCTION__;
 
-    // RTC_DCHECK(threadChecker_.IsCurrent());
+     RTC_DCHECK(threadChecker_.IsCurrent());
     StopRecording();
     threadChecker_.Detach();
 
@@ -83,7 +83,7 @@ int32_t SystemAudioReceiver::InitRecording()
 {
     RTC_LOG(LS_INFO) << __FUNCTION__;
 
-    // RTC_DCHECK(threadChecker_.IsCurrent());
+     RTC_DCHECK(threadChecker_.IsCurrent());
     if (initialized_) {
         // Already initialized.
         return 0;
@@ -105,7 +105,7 @@ int32_t SystemAudioReceiver::StartRecording()
 {
     RTC_LOG(LS_INFO) << __FUNCTION__;
 
-    // RTC_DCHECK(threadChecker_.IsCurrent());
+     RTC_DCHECK(threadChecker_.IsCurrent());
     if (recording_) {
         // Already recording.
         return 0;
@@ -127,7 +127,7 @@ int32_t SystemAudioReceiver::StopRecording()
 {
     RTC_LOG(LS_INFO) << __FUNCTION__;
 
-    // RTC_DCHECK(threadChecker_.IsCurrent());
+     RTC_DCHECK(threadChecker_.IsCurrent());
     if (!initialized_ || !recording_) {
         return 0;
     }

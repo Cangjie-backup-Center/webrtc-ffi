@@ -1,9 +1,6 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 #include "ffi_media_stream_track.h"
 #include "ffi_exception.h"
+#include "ffi_media_source.h"
 #include <cstdint>
 #include <hilog/log.h>
 
@@ -17,23 +14,17 @@ ffiMediaStreamTrack::ffiMediaStreamTrack(
 {
     factory_ = factory;
     track_ = track;
+    track_->RegisterObserver(this);
 }
 
 ffiMediaStreamTrack::~ffiMediaStreamTrack()
 {
-    if (kind_) {
-        delete[] kind_;
-        kind_ = nullptr;
-    }
-
-    if (id_) {
-        delete[] id_;
-        id_ = nullptr;
-    }
-
-    if (readyState_) {
-        delete[] readyState_;
-        readyState_ = nullptr;
+    track_->UnregisterObserver(this);
+    RemoveAllVideoSinks();
+    if (IsAudioTrack()){
+        factory_->RemoveAudioSource(track_);
+    } else if (IsVideoTrack()) {
+        factory_->RemoveVideoSource(track_);
     }
 }
 
@@ -52,7 +43,6 @@ void ffiMediaStreamTrack::RemoveVideoSink(rtc::VideoSinkInterface<VideoFrame>* s
     {
         std::lock_guard<std::mutex> lock(sinksMutex_);
         if (videoSinks_.erase(sink) == 0) {
-            LOGI("Failed to erase video sink");
             return;
         }
     }
@@ -67,7 +57,6 @@ void ffiMediaStreamTrack::AddVideoSink(rtc::VideoSinkInterface<VideoFrame>* sink
         std::lock_guard<std::mutex> lock(sinksMutex_);
         auto setRet = videoSinks_.insert(sink);
         if (!setRet.second) {
-            LOGI("Failed to insert video sink");
             return;
         }
     }
@@ -85,14 +74,11 @@ char* ffiMediaStreamTrack::GetKind()
     }
 
     auto retKind = track_->kind();
-    if (kind_) {
-        delete[] kind_;
-        kind_ = nullptr;
-    }
-    kind_ = new char[retKind.size() + 1];
-    webrtc_scp(kind_, retKind.size() + 1, retKind.c_str(), retKind.size());
 
-    return kind_;
+    auto kind = new char[retKind.size() + 1];
+    webrtc_scp(kind, retKind.size() + 1, retKind.c_str(), retKind.size());
+
+    return kind;
 }
 
 char* ffiMediaStreamTrack::GetId()
@@ -104,14 +90,11 @@ char* ffiMediaStreamTrack::GetId()
     }
 
     auto retId = track_->id();
-    if (id_) {
-        delete[] id_;
-        id_ = nullptr;
-    }
-    id_ = new char[retId.size() + 1];
-    webrtc_scp(id_, retId.size() + 1, retId.c_str(), retId.size());
 
-    return id_;
+    auto id = new char[retId.size() + 1];
+    webrtc_scp(id, retId.size() + 1, retId.c_str(), retId.size());
+
+    return id;
 }
 
 bool ffiMediaStreamTrack::GetEnabled()
@@ -139,20 +122,20 @@ char* ffiMediaStreamTrack::GetReadyState()
     auto state = track_->state();
     switch (state) {
         case MediaStreamTrackInterface::kLive: {
-            readyState_ = new char[mediaStreamTrackStateLive.size() + 1];
-            webrtc_scp(readyState_,
+            auto readyState = new char[mediaStreamTrackStateLive.size() + 1];
+            webrtc_scp(readyState,
                 mediaStreamTrackStateLive.size() + 1,
                 mediaStreamTrackStateLive.c_str(),
                 mediaStreamTrackStateLive.size());
-            return readyState_;
+            return readyState;
         }
         case MediaStreamTrackInterface::kEnded: {
-            readyState_ = new char[mediaStreamTrackStateEnded.size() + 1];
-            webrtc_scp(readyState_,
+            auto readyState = new char[mediaStreamTrackStateEnded.size() + 1];
+            webrtc_scp(readyState,
                 mediaStreamTrackStateEnded.size() + 1,
                 mediaStreamTrackStateEnded.c_str(),
                 mediaStreamTrackStateEnded.size());
-            return readyState_;
+            return readyState;
         }
         default: {
             break;
@@ -214,6 +197,13 @@ void ffiMediaStreamTrack::RemoveAllVideoSinks()
     }
 }
 
+void ffiMediaStreamTrack::OnChanged()
+{
+    RTC_DLOG(LS_INFO) << __FUNCTION__ << "(" << track_->kind() << ") state=" << track_->state()
+                      << ", enabled=" << track_->enabled();
+}
+
+
 CJ_ffiMediaStreamTrackJson ffiMediaStreamTrack::ToJson()
 {
     CJ_ffiMediaStreamTrackJson js;
@@ -248,16 +238,16 @@ int64_t ffiMediaStreamTrack::GetSource()
     if (IsAudioTrack()) {
         auto audioSource = factory_->GetAudioSource(track_);
         if (audioSource) {
-            return 0;
+            return (int64_t)FFIAudioSource::NewInstance(audioSource);
         }
     } else if (IsVideoTrack()) {
         auto videoSource = factory_->GetVideoSource(track_);
         if (videoSource) {
-            return 0;
+            return (int64_t)FFIVideoSource::NewInstance(videoSource);
         }
     }
 
     return -1;
 }
 
-}
+} // namespace webrtc

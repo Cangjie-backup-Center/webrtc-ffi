@@ -1,5 +1,3 @@
-# Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
-
 # the minimum version of CMake.
 cmake_minimum_required(VERSION 3.5.0)
 project(webrtc4cj)
@@ -67,37 +65,25 @@ add_library(cj_webrtc SHARED
                         ${CPP_FILES}
                         )
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    target_compile_definitions(cj_webrtc
-        PUBLIC  NODE_ADDON_API_DISABLE_DEPRECATED             # 对当前目标及依赖目标可见
-#        PUBLIC  NDEBUG             # 对当前目标及依赖目标可见
-        PUBLIC  DCHECK_ALWAYS_ON             # 对当前目标及依赖目标可见 - 修复Release模式下UnreachableCodeReached()未定义的问题
-        PUBLIC  NAPI_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
-        PUBLIC  NDK_HELPER_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
-        PUBLIC  NODE_ADDON_API_ENABLE_TYPE_CHECK_ON_AS             # 对当前目标及依赖目标可见
-        PUBLIC  WEBRTC_POSIX             # 对当前目标及依赖目标可见
-        PUBLIC  WEBRTC_OHOS             # 对当前目标及依赖目标可见
-        PUBLIC  WEBRTC_LINUX             # 对当前目标及依赖目标可见
-        PUBLIC  OHOS             # 对当前目标及依赖目标可见
-    )
-else()
-    target_compile_definitions(cj_webrtc
-        PUBLIC  NODE_ADDON_API_DISABLE_DEPRECATED             # 对当前目标及依赖目标可见
-        PUBLIC  DCHECK_ALWAYS_ON             # 对当前目标及依赖目标可见
-        PUBLIC  NAPI_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
-        PUBLIC  NDK_HELPER_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
-        PUBLIC  NODE_ADDON_API_ENABLE_TYPE_CHECK_ON_AS             # 对当前目标及依赖目标可见
-        PUBLIC  WEBRTC_POSIX             # 对当前目标及依赖目标可见
-        PUBLIC  WEBRTC_OHOS             # 对当前目标及依赖目标可见
-        PUBLIC  WEBRTC_LINUX             # 对当前目标及依赖目标可见
-        PUBLIC  OHOS             # 对当前目标及依赖目标可见
-    )
-endif()
+target_compile_definitions(cj_webrtc
+    PUBLIC  NODE_ADDON_API_DISABLE_DEPRECATED             # 对当前目标及依赖目标可见
+    PUBLIC  NAPI_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
+    PUBLIC  NDK_HELPER_DISABLE_CPP_EXCEPTIONS             # 对当前目标及依赖目标可见
+    PUBLIC  NODE_ADDON_API_ENABLE_TYPE_CHECK_ON_AS             # 对当前目标及依赖目标可见
+    PUBLIC  DLOG_ALWAYS_ON             # 对当前目标及依赖目标可见
+    PUBLIC  DCHECK_ALWAYS_ON             # 对当前目标及依赖目标可见
+    PUBLIC  WEBRTC_POSIX             # 对当前目标及依赖目标可见
+    PUBLIC  WEBRTC_OHOS             # 对当前目标及依赖目标可见
+    PUBLIC  WEBRTC_LINUX             # 对当前目标及依赖目标可见
+    PUBLIC  OHOS             # 对当前目标及依赖目标可见
+    PUBLIC  WEBRTC_ENABLE_AVX2             # 对当前目标及依赖目标可见
+    PUBLIC  WEBRTC_NON_STATIC_TRACE_EVENT_HANDLERS=1             # 对当前目标及依赖目标可见
+)
 
 # so 文件 链接的so
 target_compile_options(cj_webrtc PRIVATE -fno-rtti) # 若 WebRTC 禁用 RTTI，则项目中需同步禁用
 
-target_link_libraries(cj_webrtc
+target_link_libraries(cj_webrtc PRIVATE
                                 libace_napi.z.so
                                 libhilog_ndk.z.so
                                 libohaudio.so
@@ -117,7 +103,6 @@ target_link_libraries(cj_webrtc
                                 libnative_avscreen_capture.so
                                 libnative_drawing.so
                                 libnative_display_manager.so
-                                "-v -Wl,--whole-archive"
+                                librt.so
                                 ${CMAKE_CURRENT_SOURCE_DIR}/libwebrtc.a # 除 ohos_webrtc arkts代码的 集合
-                                "-Wl,--no-whole-archive"
                                 )

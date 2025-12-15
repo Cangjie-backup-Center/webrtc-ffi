@@ -1,11 +1,7 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 #include "ffi_media_devices.h"
 #include <cstdint>
 
-using namespace webrtc;
+namespace webrtc{
 
 typedef struct {
     FFIMediaDevices* md;
@@ -17,7 +13,7 @@ CJ_ReturnEnumerateDevicesInfo FFIMediaDevices::enumerateDevices()
     cameraDevices_ = CameraEnumerator::GetDevices();
     audioDevices_ = AudioDeviceEnumerator::GetDevices();
   
-    CJ_EnumerateDevicesInfo* result = new CJ_EnumerateDevicesInfo[cameraDevices_.size() + audioDevices_.size()];
+    CJ_EnumerateDevicesInfo* result = new CJ_EnumerateDevicesInfo[cameraDevices_.size() + audioDevices_.size()];  // TODO 这里不应new结构体 
     for (uint32_t index = 0; index < cameraDevices_.size(); index++) {
         CJ_EnumerateDevicesInfo ed;
         ed.deviceId = (const char*)cameraDevices_[index].deviceId.c_str();
@@ -87,17 +83,6 @@ void FFIMediaDevices::getUserMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video,
         } else {
             video_ = MediaTrackConstraints();
         }
-    } else {
-        std::string errorMessage;
-        MediaTrackConstraintSet basic;
-        if (!ffiValidateAndCopyConstraintSet(*video,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
-            LOGI("Failed to parse track constraints: ", errorMessage.c_str());
-            video_ = MediaTrackConstraints();
-        }
-        std::vector<MediaTrackConstraintSet> advanced;
-        MediaTrackConstraints constraints;
-        constraints.Initialize(basic, advanced);
-        video_ = constraints;
     }
 
     if (video->isBool) {
@@ -108,17 +93,6 @@ void FFIMediaDevices::getUserMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video,
         } else {
             audio_ = MediaTrackConstraints();
         }
-    } else {
-        std::string errorMessage;
-        MediaTrackConstraintSet basic;
-        if (!ffiValidateAndCopyConstraintSet(*audio,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
-            LOGI("Failed to parse track constraints: ", errorMessage.c_str());
-            audio_ = MediaTrackConstraints();
-        }
-        std::vector<MediaTrackConstraintSet> advanced;
-        MediaTrackConstraints constraints;
-        constraints.Initialize(basic, advanced);
-        audio_ = constraints;
     }
     getUserMedia(video_, audio_, id, pe);
 }
@@ -185,17 +159,6 @@ int64_t FFIMediaDevices::getDisplayMedia(const CJ_TO_CPP_DisplayMediaStreamOptio
         } else {
             audio_ = MediaTrackConstraints();
         }
-    } else {
-        std::string errorMessage;
-        MediaTrackConstraintSet basic;
-        if (!ffiValidateAndCopyConstraintSet(audio,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
-            LOGI("Failed to parse track constraints: ", errorMessage.c_str());
-            audio_ = MediaTrackConstraints();
-        }
-        std::vector<MediaTrackConstraintSet> advanced;
-        MediaTrackConstraints constraints;
-        constraints.Initialize(basic, advanced);
-        audio_ = constraints;
     }
 
     if (systemAudio.isBool) {
@@ -206,32 +169,12 @@ int64_t FFIMediaDevices::getDisplayMedia(const CJ_TO_CPP_DisplayMediaStreamOptio
         } else {
             systemAudio_ = MediaTrackConstraints();
         }
-    } else {
-        std::string errorMessage;
-        MediaTrackConstraintSet basic;
-        if (!ffiValidateAndCopyConstraintSet(systemAudio,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
-            LOGI("Failed to parse track constraints: ", errorMessage.c_str());
-            systemAudio_ = MediaTrackConstraints();
-        }
-        std::vector<MediaTrackConstraintSet> advanced;
-        MediaTrackConstraints constraints;
-        constraints.Initialize(basic, advanced);
-        systemAudio_ = constraints;
     }
 
-    if (video.isBool) {
-        if (video.boolean) {
-            MediaTrackConstraints constraints;
-            constraints.Initialize();
-            video_ = constraints;
-        } else {
-            video_ = MediaTrackConstraints();
-        }
-    } else {
+    if (!video.isBool) {
         std::string errorMessage;
         MediaTrackConstraintSet basic;
         if (!ffiValidateAndCopyConstraintSet(video,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
-            LOGI("Failed to parse track constraints: ", errorMessage.c_str());
             video_ = MediaTrackConstraints();
         }
         std::vector<MediaTrackConstraintSet> advanced;
@@ -445,7 +388,7 @@ int64_t FFIMediaDevicesAssist::getDisplayMediaAssist(MediaTrackConstraints video
     systemAudioConstraints_ = std::move(systemAudio);
     videoConstraints_ = std::move(video);
     
-    factory_ = PeerConnectionFactoryWrapper::GetDefault();
+    factory_ = std::move(PeerConnectionFactoryWrapper::GetDefault());
 
     display_media_stream_ = factory_->GetFactory()->CreateLocalMediaStream(rtc::CreateRandomUuid());
     if (!display_media_stream_) {
@@ -494,9 +437,11 @@ int64_t FFIMediaDevicesAssist::getDisplayMediaAssist(MediaTrackConstraints video
             display_media_stream_->AddTrack(videoTrack);
         } else {
             CANGJIE_THROW(errorMessage);
+            return 0;
         }
     }
     
     this->ffiDisplayMediaStream_ = new FFIMediaStream(this->factory_, this->display_media_stream_);
     return (int64_t)this->ffiDisplayMediaStream_;
 }
+}  // namespace webrtc{

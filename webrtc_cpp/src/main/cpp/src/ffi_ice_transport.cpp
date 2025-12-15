@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 #include "ffi_ice_transport.h"
 
 namespace webrtc {
@@ -127,6 +123,7 @@ void ffiIceTransport::OnGatheringStateChange(cricket::IceTransportInternal* iceT
 void ffiIceTransport::OnSelectedCandidatePairChange(const cricket::CandidatePairChangeEvent& event)
 {
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
+
     this->Dispatch(CallbackEvent<ffiIceTransport>::Create(
         [this, state = iceTransportState_.load()](ffiIceTransport& target) {
         RTC_DCHECK_EQ(this, &target);

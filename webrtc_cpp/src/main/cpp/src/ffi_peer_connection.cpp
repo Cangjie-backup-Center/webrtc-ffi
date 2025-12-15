@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 #include "ffi_peer_connection.h"
 #include "ffi_data_channel.h"
 #include "ffi_exception.h"
@@ -61,9 +57,12 @@ protected:
         if (!error.ok()) {
             RTC_LOG(LS_ERROR) << "Error: " << error.type() << ", " << error.message();
         }
-
-        cj_func_callback_(this->pc_->GetCJClassID(),
+        
+        auto workerThread_ = std::thread([this, error]() {
+            cj_func_callback_(this->pc_->GetCJClassID(),
             CJ_ErrorMessage{rtcErrorDetailType: (int64_t)error.error_detail(), msg: error.message()});
+        });
+        workerThread_.join();
     }
 };
 
@@ -90,10 +89,10 @@ protected:
         std::string sdptype = webrtc::SdpTypeToString(desc->GetType());
 
         this->ret.isFail = false;
-        this->ret.sdp = new char[sdp.size()+1];
-        this->ret.RTCSdpType = new char[sdptype.size()+1];
-        webrtc_scp(this->ret.sdp, sdp.size()+1, sdp.data(), sdp.size());
-        webrtc_scp(this->ret.RTCSdpType, sdptype.size()+1, sdptype.data(), sdptype.size());
+        this->ret.sdp = new char[sdp.size()];
+        this->ret.RTCSdpType = new char[sdptype.size()];
+        strncpy(this->ret.sdp, sdp.data(), sdp.size());
+        strncpy(this->ret.RTCSdpType, sdptype.data(), sdptype.size());
         // delete desc;
         cv.notify_one();
     }
@@ -104,8 +103,8 @@ protected:
         RTC_LOG(LS_ERROR) << "CreateSessionDescription failed";
         this->ret.isFail = true;
         std::string str = error.message();
-        this->ret.msg = new char[str.size()+1];
-        webrtc_scp(this->ret.msg, str.size()+1, str.data(), str.size());
+        this->ret.msg = new char[str.size()];
+        strncpy(this->ret.msg, str.data(), str.size());
         cv.notify_one();
     }
 };
@@ -234,7 +233,7 @@ int64_t ffiPeerConnection::GenerateCertificate(std::string keyParamsName)
     }
 
     ffiPeerConnection::certificate_ = rtc::RTCCertificateGenerator::GenerateCertificate(key_params, absl::nullopt);
-    return reinterpret_cast<int64_t>(&certificate_);
+    return reinterpret_cast<int64_t>(&certificate_);  // 问题点1
 }
 
 bool ffiPeerConnection::GetCanTrickleIceCandidates()
@@ -313,7 +312,7 @@ FFIRTCPeerConnectionState ffiPeerConnection::GetConnectionState()
         case PeerConnectionInterface::PeerConnectionState::kNew:
             return FFIRTCPeerConnectionState::NEW;
         case PeerConnectionInterface::PeerConnectionState::kConnecting:
-            return FFIRTCPeerConnectionState::CONNECTED;
+            return FFIRTCPeerConnectionState::CONNECTING;
         case PeerConnectionInterface::PeerConnectionState::kConnected:
             return FFIRTCPeerConnectionState::CONNECTED;
         case PeerConnectionInterface::PeerConnectionState::kDisconnected:
@@ -321,7 +320,7 @@ FFIRTCPeerConnectionState ffiPeerConnection::GetConnectionState()
         case PeerConnectionInterface::PeerConnectionState::kFailed:
             return FFIRTCPeerConnectionState::FAILED;
         case PeerConnectionInterface::PeerConnectionState::kClosed:
-            return FFIRTCPeerConnectionState::FAILED;
+            return FFIRTCPeerConnectionState::CLOSED;
         default:
             RTC_LOG(LS_WARNING) << "Invalid value of connectionState";
             break;
@@ -370,16 +369,10 @@ CJ_RTCSessionDescription ffiPeerConnection::GetRemoteDescription()
             }
         }
     });
-    CJ_RTCSessionDescription* desc = new CJ_RTCSessionDescription();
     if (sdp.empty()) {
-        return *desc;
+        return CJ_RTCSessionDescription{nullptr,0,nullptr,0,true};
     }
-    desc->sdp = strdup(sdp.c_str());
-    desc->sdp_size = sdp.size();
-    desc->RTCSdpType = strdup(type.c_str());
-    desc->RTCSdpType_size = type.size();
-    desc->undefined = false;
-    return *desc;
+    return CJ_RTCSessionDescription{strdup(sdp.c_str()), sdp.size(), strdup(type.c_str()), type.size(),false};
 }
 
 CJ_RTCSessionDescription ffiPeerConnection::GetCurrentLocalDescription()
@@ -395,17 +388,10 @@ CJ_RTCSessionDescription ffiPeerConnection::GetCurrentLocalDescription()
             }
         }
     });
-
-    CJ_RTCSessionDescription* desc = new CJ_RTCSessionDescription();
     if (sdp.empty()) {
-        return *desc;
+        return CJ_RTCSessionDescription{nullptr,0,nullptr,0,true};
     }
-    desc->sdp = strdup(sdp.c_str());
-    desc->sdp_size = sdp.size();
-    desc->RTCSdpType = strdup(type.c_str());
-    desc->RTCSdpType_size = type.size();
-    desc->undefined = false;
-    return *desc;
+    return CJ_RTCSessionDescription{strdup(sdp.c_str()), sdp.size(), strdup(type.c_str()), type.size(),false};
 }
 
 CJ_RTCSessionDescription ffiPeerConnection::GetCurrentRemoteDescription()
@@ -421,16 +407,11 @@ CJ_RTCSessionDescription ffiPeerConnection::GetCurrentRemoteDescription()
             }
         }
     });
-    CJ_RTCSessionDescription* desc = new CJ_RTCSessionDescription();
+
     if (sdp.empty()) {
-        return *desc;
+        return CJ_RTCSessionDescription{nullptr,0,nullptr,0,true};
     }
-    desc->sdp = strdup(sdp.c_str());
-    desc->sdp_size = sdp.size();
-    desc->RTCSdpType = strdup(type.c_str());
-    desc->RTCSdpType_size = type.size();
-    desc->undefined = false;
-    return *desc;
+    return CJ_RTCSessionDescription{strdup(sdp.c_str()), sdp.size(), strdup(type.c_str()), type.size(),false};
 }
 
 CJ_RTCSessionDescription ffiPeerConnection::GetPendingLocalDescription()
@@ -446,16 +427,10 @@ CJ_RTCSessionDescription ffiPeerConnection::GetPendingLocalDescription()
             }
         }
     });
-    CJ_RTCSessionDescription* desc = new CJ_RTCSessionDescription();
     if (sdp.empty()) {
-        return *desc;
+        return CJ_RTCSessionDescription{nullptr,0,nullptr,0,true};
     }
-    desc->sdp = strdup(sdp.c_str());
-    desc->sdp_size = sdp.size();
-    desc->RTCSdpType = strdup(type.c_str());
-    desc->RTCSdpType_size = type.size();
-    desc->undefined = false;
-    return *desc;
+    return CJ_RTCSessionDescription{strdup(sdp.c_str()), sdp.size(), strdup(type.c_str()), type.size(),false};
 }
 
 CJ_RTCSessionDescription ffiPeerConnection::GetPendingRemoteDescription()
@@ -471,25 +446,19 @@ CJ_RTCSessionDescription ffiPeerConnection::GetPendingRemoteDescription()
             }
         }
     });
-    CJ_RTCSessionDescription* desc = new CJ_RTCSessionDescription();
     if (sdp.empty()) {
-        return *desc;
+        return CJ_RTCSessionDescription{nullptr,0,nullptr,0,true};
     }
-    desc->sdp = strdup(sdp.c_str());
-    desc->sdp_size = sdp.size();
-    desc->RTCSdpType = strdup(type.c_str());
-    desc->RTCSdpType_size = type.size();
-    desc->undefined = false;
-    return *desc;
+    return CJ_RTCSessionDescription{strdup(sdp.c_str()), sdp.size(), strdup(type.c_str()), type.size(),false};
 }
 
 int64_t ffiPeerConnection::GetSctp()
 {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 
-    if (!sctpTransportRef_) {
-        return (int64_t)sctpTransportRef_;
-    }
+//    if (!sctpTransportRef_) {
+//        return (int64_t)sctpTransportRef_;
+//    }
 
     auto transport = pc_->GetSctpTransport();
     if (!transport) {
@@ -497,7 +466,7 @@ int64_t ffiPeerConnection::GetSctp()
     }
 
     auto sctpTransport = ffiSctpTransport::NewInstance(factory_, transport);
-    sctpTransportRef_ = sctpTransport;
+//    sctpTransportRef_ = sctpTransport;
 
     return reinterpret_cast<int64_t>(sctpTransport);
 }
@@ -561,6 +530,8 @@ void ffiPeerConnection::OnIceCandidateError(
     const std::string& address, int port, const std::string& url, int errorCode,
     const std::string& errorText)
 {
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 
     Dispatch(CallbackEvent<ffiPeerConnection>::Create(
@@ -636,15 +607,15 @@ void ffiPeerConnection::SetOnConnectionChange(void (*pe)(int64_t id, CJ_Event pt
 void ffiPeerConnection::OnConnectionChange(PeerConnectionInterface::PeerConnectionState newState)
 {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__ << " newState=" << newState;
-    Dispatch(CallbackEvent<ffiPeerConnection>::Create([this, newState](ffiPeerConnection& target) {
-        RTC_DCHECK_EQ(this, &target);
+//    Dispatch(CallbackEvent<ffiPeerConnection>::Create([this, newState](ffiPeerConnection& target) {
+//        RTC_DCHECK_EQ(this, &target);
         if (cj_func_call_OnConnectionChange_) {
             cj_func_call_OnConnectionChange_(this->cj_class_key,
                                              CJ_Event {
                                                 type: "connectionstatechange"
                                              });
         }
-    }));
+//    }));
 }
 
 void ffiPeerConnection::OnIceConnectionReceivingChange(bool receiving)
@@ -695,15 +666,13 @@ void ffiPeerConnection::OnDataChannel(rtc::scoped_refptr<DataChannelInterface> c
         RTC_LOG(LS_ERROR) << "The channel is nullptr";
         return;
     }
-    auto observer = std::make_unique<ffiDataChannelObserverTemp>(channel);
+    ffiDataChannelObserverTemp* observer = new ffiDataChannelObserverTemp(factory_, channel);
     Dispatch(CallbackEvent<ffiPeerConnection>::Create(
-        [this, obs = observer.release()]
+        [this, observer]
         (ffiPeerConnection& target) {
             RTC_DCHECK_EQ(this, &target);
             if (this->cj_func_call_OnDataChannel_) {
-                CJ_RTCDataChannelEvent* crdce = new CJ_RTCDataChannelEvent();
-                crdce->channel = (int64_t)obs;
-                this->cj_func_call_OnDataChannel_(this->cj_class_key, (int64_t)crdce);
+                this->cj_func_call_OnDataChannel_(this->cj_class_key, (int64_t)observer);
             }
         }
     ));
@@ -747,17 +716,6 @@ void ffiPeerConnection::SetOnTrack(void (*pe)(int64_t that, CJ_RTCTrackEvent loc
     cj_func_call_OnTrack_ = pe;
 }
 
-char* copyStringToChar(const std::string str)
-{
-    if (str.empty()) {
-        CANGJIE_THROW("str is empty");
-        return nullptr;
-    }
-    CHAR_PTR copy = new char[str.size() + 1];
-    webrtc_scp(copy, str.size()+1, str.c_str(), str.size()+1);
-    return copy;
-}
-
 void ffiPeerConnection::OnTrack(rtc::scoped_refptr<RtpTransceiverInterface> transceiver)
 {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
@@ -772,17 +730,13 @@ void ffiPeerConnection::OnTrack(rtc::scoped_refptr<RtpTransceiverInterface> tran
             auto streams = receiver->streams();
 
             if (this->cj_func_call_OnTrack_) {
-                int64_t* result = new int64_t[streams.size()];
-                for (uint32_t i = 0; i < streams.size(); i++) {
-                    result[i] = (int64_t)streams[i].get();
-                }
-                this->cj_func_call_OnTrack_(this->cj_class_key, CJ_RTCTrackEvent{
-                    type : "track",
-                    streams : result,
-                    streams_size : (int64_t)streams.size(),
-                    MediaStreamTrack_ptr : (int64_t)new ffiMediaStreamTrack(this->factory_, receiver->track()),
-                    RtpReceiver_ptr : (int64_t)ffiRtpReceiver::NewInstance(this->factory_, this->pc_, receiver),
-                    RtpTransceiver_ptr : (int64_t)ffiRtpTransceiver::NewInstance(this->factory_, this->pc_, transceiver)
+               this->cj_func_call_OnTrack_(this->cj_class_key, CJ_RTCTrackEvent{ 
+                     type : "track",	 
+                     streams : nullptr,	 
+                     streams_size : 0,	 
+                     MediaStreamTrack_ptr : (int64_t)new ffiMediaStreamTrack(this->factory_, receiver->track()),	 
+                     RtpReceiver_ptr : 0,
+                     RtpTransceiver_ptr : 0
                 });  // see SetOnTrack function.
             }
         }
@@ -824,8 +778,8 @@ int64_t ffiPeerConnection::addTrack(ffiMediaStreamTrack* track, std::vector<webr
         }
     }
 
-    sender_ = ffiRtpSender::NewInstance(this->factory_, this->pc_, result.value());
-    return reinterpret_cast<int64_t>(sender_);
+    auto sender = ffiRtpSender::NewInstance(this->factory_, this->pc_, result.value());
+    return reinterpret_cast<int64_t>(sender);
 }
 
 // void ffiPeerConnection::removeTrack(ffiRtpReceiver* receiver) {
@@ -923,7 +877,7 @@ int64_t ffiPeerConnection::createDataChannel(CHAR_PTR label, CJ_RTCDataChannelIn
             auto& error = result.error();
             CANGJIE_THROW("CreateDataChannel error");
         }
-        ffiDataChannelObserverTemp* observerPtr = new ffiDataChannelObserverTemp(result.value());
+        ffiDataChannelObserverTemp* observerPtr = new ffiDataChannelObserverTemp(factory_, result.value());
         return reinterpret_cast<int64_t>(observerPtr);
     }
     
@@ -934,8 +888,8 @@ int64_t ffiPeerConnection::createDataChannel(CHAR_PTR label, CJ_RTCDataChannelIn
         CANGJIE_THROW("CreateDataChannelOrError error");
     }
 
-    ffiDataChannelObserverTemp* observerPtr = new ffiDataChannelObserverTemp(result.value());
-    return (int64_t)observerPtr;
+    ffiDataChannelObserverTemp* observerPtr = new ffiDataChannelObserverTemp(factory_, result.value());
+    return reinterpret_cast<int64_t>(observerPtr);
 }
 
 void ffiPeerConnection::SetAddIceCandidate(void (*pe)(int64_t id, const char* msg))
@@ -962,27 +916,24 @@ void ffiPeerConnection::addIceCandidate(CJ_RTCIceCandidateInit iceCandidate)
         }
     }
 
+//    delete [] iceCandidate.candidate;
+//    delete [] iceCandidate.sdpMid;
+//    delete [] iceCandidate.usernameFragment;
+
     SdpParseError error;
     auto candidate = CreateIceCandidate(sdpMid, sdpMLineIndex, sdp, &error);
     if (!candidate) {
         CANGJIE_THROW("CreateIceCandidate error");
+        return;
     }
 
-    delete [] iceCandidate.candidate;
-    delete [] iceCandidate.sdpMid;
-    delete [] iceCandidate.usernameFragment;
-
-    this->Dispatch(
-        CallbackEvent<ffiPeerConnection>::Create([this, candidate](ffiPeerConnection& target) {
-            pc_->AddIceCandidate(std::unique_ptr<IceCandidateInterface>(candidate), [this](RTCError error) {
-                RTC_DLOG(LS_INFO) << "AddIceCandidate complete: " << error.ok();
-                auto type = error.type();
-                auto message = error.message();
-                if (this->cj_func_call_addIceCandidate)
-                    this->cj_func_call_addIceCandidate(this->cj_class_key, message);
-            });
-        })
-    );
+    pc_->AddIceCandidate(std::unique_ptr<IceCandidateInterface>(candidate), [this](RTCError error) {
+        RTC_DLOG(LS_INFO) << "AddIceCandidate complete: " << error.ok();
+        auto type = error.type();
+        auto message = error.message();
+        if (this->cj_func_call_addIceCandidate)
+            this->cj_func_call_addIceCandidate(this->cj_class_key, message);
+    });
 }
 
 
@@ -1036,7 +987,7 @@ void ffiPeerConnection::setConfiguration(CJ_RTCConfiguration cjConfig)
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
     PeerConnectionInterface::RTCConfiguration config;
     if (!CangjieToNativeConfiguration(cjConfig, config)) {
-        LOGI("CangjieToNativeConfiguration error");
+//        LOGI("CangjieToNativeConfiguration error");
     }
 
     auto error = pc_->SetConfiguration(config);

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 #ifndef WEBRTC4CJ_FFI_SCTP_TRANSPORT_H
 #define WEBRTC4CJ_FFI_SCTP_TRANSPORT_H
 
@@ -27,13 +23,16 @@ public:
         return  new ffiSctpTransport(factory, transport);
     }
 
-    ~ffiSctpTransport() {}
+    ~ffiSctpTransport() {
+        factory_->GetNetworkThread()->BlockingCall([this] { sctpTransport_->UnregisterObserver(); });
+    }
 
     ffiSctpTransport(std::shared_ptr<PeerConnectionFactoryWrapper> factory,
         rtc::scoped_refptr<SctpTransportInterface> transport)
     {
         factory_ = factory;
         sctpTransport_ = transport;
+        factory_->GetNetworkThread()->BlockingCall([this] { sctpTransport_->RegisterObserver(this); });
     }
 
     void SetOnStateChange(void (*pe)(int64_t id, CJ_Event ptr));

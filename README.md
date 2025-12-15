@@ -107,7 +107,7 @@ import webrtc_cj.*
 ## 约束与限制
 1. 在下述版本验证通过：
 
-- DevEco Studio 5.1.1 Release(5.1.1.840)
+- DevEco Studio 5.1.1 Release(5.1.1.851)
 
 
 ## 开源协议

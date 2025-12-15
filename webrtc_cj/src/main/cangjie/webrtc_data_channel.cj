@@ -1,8 +1,6 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 package webrtc_cj
+import std.sync.AtomicBool
+import ohos.base.AppLog
 
 foreign {
     func dataConnection_set_class_key(cpp_ptr: Int64, id: Int64): Unit
@@ -33,7 +31,7 @@ foreign {
     func RTCDataChannel_CPP_FREE(cpp_ptr: Int64): Unit
 }
 
-public enum DataChannelState {
+public enum DataChannelState <: Equatable<DataChannelState> {
     CLOSED | CLOSING | CONNECTING | OPEN
 
     static func GET(id: Int64): DataChannelState {
@@ -53,6 +51,20 @@ public enum DataChannelState {
             case OPEN=> 3
         }
     }
+
+    public operator func ==(rhs: DataChannelState): Bool {
+        return match ((this, rhs)) {
+            case (CLOSED, CLOSED) => true
+            case (CLOSING, CLOSING) => true
+            case (CONNECTING, CONNECTING) => true
+            case (OPEN, OPEN) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: DataChannelState): Bool {
+        return !(this == rhs)
+    }
+
 }
 public enum BinaryType {
     BLOB | ARRAYBUFFER
@@ -78,17 +90,20 @@ public class RTCDataChannel <: WebrtcClass & Resource {
     var onclose_: ?((pc: RTCDataChannel, dc: Event) -> Unit) = None
     var onmessage_: ?((pc: RTCDataChannel, dc: MessageEvent) -> Unit) = None
     var onerror_: ?((pc: RTCDataChannel, dc: RTCErrorEvent) -> Unit) = None
-    var closed: Bool = false
-
-    public init(id: Int64) {
+//    var closed: AtomicBool = AtomicBool(false)
+    let queue = ExecutorService.new()
+    var pc_: RTCPeerConnection = unsafe { zeroValue<RTCPeerConnection>() }
+    public init(id: Int64, pc: RTCPeerConnection) {
         super(id, this)
+        this.pc_ = pc
         unsafe {dataConnection_set_class_key(this.ID, this.randomid)}
     }
+
     ~init() {
-        unsafe {
-            RTCDataChannel_CPP_FREE(this.ID)
-        }
+        queue.shutdown()
+
     }
+
     public mut prop onopen: ((pc: RTCDataChannel, dc: Event) -> Unit) {
         get (){onopen_ ?? {_,_=>}}
         set(value) {
@@ -96,7 +111,13 @@ public class RTCDataChannel <: WebrtcClass & Resource {
                 unsafe {
                     dataConnection_set_cj_func_Onopen_(this.ID, { id: Int64, event: CJ_Event =>
                         let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
-                        obj.onopen(obj, Event(event.eventType.toString()))
+                        let e =  Event(event.eventType.toString())
+                        if (obj.isClosed()) {
+                            return
+                        }
+                        obj.queue.execute({=>
+                            obj.onopen(obj, e)
+                        })
                     })
                 }
             }
@@ -111,7 +132,13 @@ public class RTCDataChannel <: WebrtcClass & Resource {
                 unsafe {
                      dataConnection_set_cj_func_Onclosing_(this.ID, { id: Int64, event: CJ_Event =>
                         let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
-                        obj.onclosing(obj, Event(event.eventType.toString()))
+                        let e = Event(event.eventType.toString())
+                        if (obj.isClosed()) {
+                            return
+                        }
+                        obj.queue.execute({=>
+                            obj.onclosing(obj, e)
+                        })
                     })
                 }
             }
@@ -126,7 +153,13 @@ public class RTCDataChannel <: WebrtcClass & Resource {
                 unsafe {
                      dataConnection_set_cj_func_Onclose_(this.ID, { id: Int64, event: CJ_Event =>
                         let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
-                        obj.onclose(obj, Event(event.eventType.toString()))
+                        let e = Event(event.eventType.toString())
+                        if (obj.isClosed()) {
+                            return
+                        }
+                        obj.queue.execute({=>
+                            obj.onclose(obj, e)
+                        })
                     })
                 }
             }
@@ -141,14 +174,27 @@ public class RTCDataChannel <: WebrtcClass & Resource {
                 unsafe {
                     dataConnection_set_cj_func_Onmessage_(this.ID, { id: Int64, event: CJ_MessageEvent =>
                         let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
+                        if (obj.isClosed()) {
+                            return
+                        }
                         if (event.binary) {
                             let arr = Array<Byte>(event.data_arr_size, repeat: 0)
                             for(i in 0..event.data_arr_size) {
                                 arr[i] = event.data_arr.read(i)
                             }
-                            obj.onmessage(obj, MessageEvent(event.TYPE.toString(), ARRAY_BUFFER(arr)))
+                            let e = MessageEvent(event.TYPE.toString(), ARRAY_BUFFER(arr))
+                            obj.queue.execute({=>
+                                obj.onmessage(obj, e)
+                            })
                         } else{
-                            obj.onmessage(obj, MessageEvent(event.TYPE.toString(), STRING(event.data_str.toString())))
+                            try{
+                                let e = MessageEvent(event.TYPE.toString(), STRING(event.data_str.toString()))  // TODO  无效的utf8数组序列
+                                obj.queue.execute({=>
+                                    obj.onmessage(obj, e)
+                                })
+                            } catch (e: Exception) {
+                                AppLog.error("无效的utf8数组序列")
+                            }
                         }
                     })
                 }
@@ -269,16 +315,23 @@ public class RTCDataChannel <: WebrtcClass & Resource {
     }
 
     public func close(): Unit {
+        if (isClosed()) {
+            return
+        }
+//        this.closed.store( true)
+//        this.onopen_ = None
+//        this.onclosing_ = None
+//        this.onclose_ = None
+//        this.onmessage_ = None
+//        this.onerror_ = None
+//        queue.shutdown(self: true)
         unsafe {
-            if (!this.closed){
-                dataConnection_Close(this.ID)
-                this.closed = true
-            }
+            dataConnection_Close(this.ID)
         }
     }
 
     public func isClosed(): Bool {
-        this.closed
+        this.readyState == DataChannelState.CLOSED
     }
 
 }

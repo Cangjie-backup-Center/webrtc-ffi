@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 #ifndef WEBRTC_FFI_WINDOW_RENDER_H
 #define WEBRTC_FFI_WINDOW_RENDER_H
 
@@ -25,7 +21,7 @@ public:
     ffiNativeVideoRenderer();
     ~ffiNativeVideoRenderer();
 
-    void ffiNativeVideoRendererInit(int64_t surfaceId);
+    void ffiNativeVideoRendererInit(char* surfaceId);
     void setVideoTrack(int64_t ffiMST);
     void setMirror(bool mirrorBool);
     void setMirrorVertically(bool mirrorVerticallyBool);

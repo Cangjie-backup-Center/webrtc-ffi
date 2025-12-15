@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 #ifndef WEBRTC4CJ_FFI_DTMF_SENDER_H
 #define WEBRTC4CJ_FFI_DTMF_SENDER_H
 
@@ -10,6 +6,7 @@
 #include "event/ffi_event_target.h"
 #include "ffi_cj_class.h"
 #include <cstdint>
+#include <hilog/log.h>
 namespace webrtc {
 
 class ffiDtmfSender : public FFIEventTarget<ffiDtmfSender>,
@@ -24,9 +21,13 @@ public:
     ffiDtmfSender(rtc::scoped_refptr<DtmfSenderInterface> dtmfSender)
     {
         dtmfSender_ = dtmfSender;
+        dtmfSender_->RegisterObserver(this);
+        
     }
     
-    ~ffiDtmfSender() {}
+    ~ffiDtmfSender() {
+        OH_LOG_Print(LOG_APP, LOG_ERROR, 66666, "ohos_webrtc", "----- ffiDtmfSender::~ffiDtmfSender");
+    }
 public:
     bool GetCanInsertDTMF();
     const char* GetToneBuffer();
