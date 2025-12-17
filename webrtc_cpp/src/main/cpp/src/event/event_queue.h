@@ -47,6 +47,12 @@ public:
         return event;
     }
 
+    bool IsEmpty() const
+    {
+        UNUSED std::lock_guard<std::mutex> lock(mutex_);
+        return events_.empty();
+    }
+
 protected:
     bool Empty() {
         return events_.empty();
@@ -54,7 +60,8 @@ protected:
     
 private:
     std::queue<std::unique_ptr<Event<T>>> events_;
-    std::mutex mutex_;
+//    std::mutex mutex_;
+    mutable std::mutex mutex_;
 };
 
 } // namespace webrtc
