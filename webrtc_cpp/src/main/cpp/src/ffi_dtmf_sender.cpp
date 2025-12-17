@@ -3,6 +3,7 @@
  */
 
 #include "ffi_dtmf_sender.h"
+#include "ffi_exception.h"
 
 namespace webrtc {
 

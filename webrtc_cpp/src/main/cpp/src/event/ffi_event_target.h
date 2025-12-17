@@ -6,6 +6,7 @@
 #define WEBRTC_EVENT_FFI_EVENT_TARGET_H
 
 #include <map>
+#include <any>
 #include <queue>
 #include <mutex>
 #include <thread>
@@ -33,7 +34,7 @@ public:
         });
     }
 
-    ~FFIEventTarget() override
+    ~FFIEventTarget()
     {
         Stop();
         if (workerThread_.joinable()) {

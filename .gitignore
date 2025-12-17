@@ -25,7 +25,6 @@
 /webrtc_cpp/src/main/cpp/include/**/*.cpp
 /webrtc_cpp/src/main/cpp/include/**/*.c
 /webrtc_cpp/src/main/cpp/back/
-/webrtc_cj/libs/arm64-v8a/
 #*.so
 *lock*
 /log.txt
