@@ -250,7 +250,7 @@ public class MediaDevices <: WebrtcClass {
 
 foreign {
     func ffiPeerConnectionFactory_ffiCreatePeerConnection(cpp_ptr: Int64, config: CJ_RTCConfiguration): Int64
-    func ffi_newNativeVideoRenderer(surfaceId: Int64): Int64
+    func ffi_newNativeVideoRenderer(surfaceId: CString): Int64
     func ffi_setVideoTrack(ffiNVR: Int64, surfaceId: Int64): Unit
     func ffi_setMirror(ffiNVR: Int64, mirrorBool: Bool): Unit
     func ffi_setMirrorVertically(ffiNVR: Int64, mirrorVerticallyBool: Bool): Unit

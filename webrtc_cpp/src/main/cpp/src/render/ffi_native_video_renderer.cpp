@@ -44,9 +44,10 @@ void ffiNativeVideoRenderer::addSink()
     ffiMST_->AddSink(renderer_.get());
 }
 
-void ffiNativeVideoRenderer::ffiNativeVideoRendererInit(int64_t surfaceId)
+void ffiNativeVideoRenderer::ffiNativeVideoRendererInit(char* surfaceId)
 {
-    surfaceId_ = std::to_string(surfaceId);
+    surfaceId_ = std::string(surfaceId);
+    delete[] surfaceId;
     sharedContext_ = EglEnv::GetDefault().GetContext();
     auto nativeWindow = ohos::NativeWindow::CreateFromSurfaceId(std::stoull(*surfaceId_));
     if (nativeWindow.IsEmpty()) {

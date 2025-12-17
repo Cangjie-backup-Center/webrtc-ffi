@@ -25,7 +25,7 @@ public:
     ffiNativeVideoRenderer();
     ~ffiNativeVideoRenderer();
 
-    void ffiNativeVideoRendererInit(int64_t surfaceId);
+    void ffiNativeVideoRendererInit(char* surfaceId);
     void setVideoTrack(int64_t ffiMST);
     void setMirror(bool mirrorBool);
     void setMirrorVertically(bool mirrorVerticallyBool);

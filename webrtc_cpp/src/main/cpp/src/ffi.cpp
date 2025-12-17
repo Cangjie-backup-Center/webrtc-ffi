@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-int64_t ffi_newNativeVideoRenderer(int64_t surfaceId)
+int64_t ffi_newNativeVideoRenderer(char* surfaceId)
 {
     webrtc::ffiNativeVideoRenderer* ffiNVR = new webrtc::ffiNativeVideoRenderer();
     ffiNVR->ffiNativeVideoRendererInit(surfaceId);
@@ -123,40 +123,6 @@ void ffi_StopAecDump(int64_t ffiPCF_int64)
 {
     webrtc::ffiPeerConnectionFactory* ffiPCF_ptr = (webrtc::ffiPeerConnectionFactory*)ffiPCF_int64;
     ffiPCF_ptr->StopAecDump();
-}
-
-void ffi_SetSurfaceId(int64_t surfaceId)
-{
-    PluginManager::SetSurfaceId(surfaceId);
-}
-
-void ffi_ChangeSurface(int64_t surfaceId, double width, double height)
-{
-    PluginManager::ChangeSurface(surfaceId, width, height);
-}
-
-void ffi_DrawPattern(int64_t surfaceId)
-{
-    PluginManager::DrawPattern(surfaceId);
-}
-void ffi_ChangeColor(int64_t surfaceId)
-{
-    PluginManager::ChangeColor(surfaceId);
-}
-
-void ffi_DestroySurface(int64_t surfaceId)
-{
-    PluginManager::DestroySurface(surfaceId);
-}
-
-bool ffi_GetXComponentHasDraw(int64_t surfaceId)
-{
-    return PluginManager::GetXComponentHasDraw(surfaceId);
-}
-
-bool ffi_XComponentHasChangeColor(int64_t surfaceId)
-{
-    return PluginManager::GetXComponentHasChangeColor(surfaceId);
 }
 
 int64_t ffi_webrtc_mediaDevices_create()

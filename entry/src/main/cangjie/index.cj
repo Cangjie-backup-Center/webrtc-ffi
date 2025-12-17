@@ -443,11 +443,14 @@ class EntryView {
                 }
             })
             syncCounter.waitUntilZero()
+            let syncCounter2: SyncCounter = SyncCounter(1)
             this.createPeerConnectionFactory({
                 value => launch {
                     this.pcf = value
+                    syncCounter2.dec()
                 }
             })
+            syncCounter2.waitUntilZero()
         }
     }
 

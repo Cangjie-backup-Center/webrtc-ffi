@@ -26,7 +26,7 @@
 using namespace NativeXComponentSample;
 
 extern "C" {
-    int64_t ffi_newNativeVideoRenderer(int64_t surfaceId);
+    int64_t ffi_newNativeVideoRenderer(char* surfaceId);
     void ffi_setVideoTrack(int64_t ffiNVR, int64_t ffiMST);
     void ffi_setMirror(int64_t ffiNVR, bool mirrorBool);
     void ffi_setMirrorVertically(int64_t ffiNVR, bool mirrorVerticallyBool);
@@ -47,14 +47,6 @@ extern "C" {
     void ffi_SetDefault(int64_t ffiPCF_int64);
     bool ffi_StartAecDump(int64_t ffiPCF_int64, int fd, int max_size_bytes);
     void ffi_StopAecDump(int64_t ffiPCF_int64);
-
-    void ffi_SetSurfaceId(int64_t surfaceId);
-    void ffi_ChangeSurface(int64_t surfaceId, double width, double height);
-    void ffi_DrawPattern(int64_t surfaceId);
-    void ffi_ChangeColor(int64_t surfaceId);
-    void ffi_DestroySurface(int64_t surfaceId);
-    bool ffi_GetXComponentHasDraw(int64_t surfaceId);
-    bool ffi_XComponentHasChangeColor(int64_t surfaceId);
 
     // webrtc::MediaDevices
     int64_t ffi_webrtc_mediaDevices_create();
