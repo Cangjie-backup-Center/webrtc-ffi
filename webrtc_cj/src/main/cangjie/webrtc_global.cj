@@ -55,7 +55,7 @@ public class ExecutorService {
         this.TASK.enqueue(fn)
     }
 
-    public func shutdown(self!: Bool = false) {
+    public func shutdown(self!: Bool = false): Unit {
         isShutdown.store(true)
         this.TASK.enqueue(Option<() -> Unit>.None)
         if (self) {
