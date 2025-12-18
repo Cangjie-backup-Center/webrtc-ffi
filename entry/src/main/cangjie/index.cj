@@ -434,24 +434,16 @@ class EntryView {
         this.ws.on(OnOffType.CLOSE, closeCallBack)
         this.ws.on(OnOffType.ERROR, errorCallBack)
         this.ws.on(OnOffType.MESSAGE, messageCallBack)
-        spawn {
-            let syncCounter: SyncCounter = SyncCounter(1)
-            this.createAudioDeviceModule({
-                value => launch {
-                    this.adm = value
-                    syncCounter.dec()
-                }
-            })
-            syncCounter.waitUntilZero()
-            let syncCounter2: SyncCounter = SyncCounter(1)
-            this.createPeerConnectionFactory({
-                value => launch {
-                    this.pcf = value
-                    syncCounter2.dec()
-                }
-            })
-            syncCounter2.waitUntilZero()
-        }
+
+        let audioDeviceModule = AudioDeviceModule(true, true)
+        this.adm = audioDeviceModule
+        let ret = PeerConnectionFactory(audioDeviceModule)
+        this.pcf = ret
+        ret.SetDefault()
+        let filesDir = getContext().filesDir
+        let file = FileFs.open("${filesDir}/test.txt", mode: (READ_WRITE.mode | CREATE.mode))
+        this.pcf?.startAecDump(file.fd, -1)
+
     }
 
     protected override func aboutToDisappear() {
@@ -492,8 +484,7 @@ class EntryView {
             })
     }
 
-    func sendOffer(): Future<Unit> {
-        spawn {
+    func sendOffer(): Unit {
              try {
                 let offer = this.pc.getOrThrow().createOffer()
                 match (offer) {
@@ -508,26 +499,23 @@ class EntryView {
              } catch (e: Exception) {
                 AppLog.error('${Index_WebRTC_TAG} sendOffer: ${e}')
              }
-        }
     }
 
-    func sendMessage(message: String): Future<Unit> {
-        spawn {
-            this.ws.send(MessageData.STRING_DATA(message), {
-                errorCode: Option<AsyncError>, data: Option<Bool> => if (let Some(e) <- errorCode) {
-                    AppLog.error("${Index_WebRTC_TAG} websocket send errorCode: ${e.code}")
-                } else {
-                    if (let Some(value) <- data) {
-                        AppLog.info("${Index_WebRTC_TAG} websocket send:${message}")
-                        if (value) {
-                            AppLog.info("${Index_WebRTC_TAG} websocket send success:${message}")
-                        } else {
-                            AppLog.error("${Index_WebRTC_TAG} websocket send error:${errorCode.isNone()}")
-                        }
+    func sendMessage(message: String) {
+        this.ws.send(MessageData.STRING_DATA(message), {
+            errorCode: Option<AsyncError>, data: Option<Bool> => if (let Some(e) <- errorCode) {
+                AppLog.error("${Index_WebRTC_TAG} websocket send errorCode: ${e.code}")
+            } else {
+                if (let Some(value) <- data) {
+                    AppLog.info("${Index_WebRTC_TAG} websocket send:${message}")
+                    if (value) {
+                        AppLog.info("${Index_WebRTC_TAG} websocket send success:${message}")
+                    } else {
+                        AppLog.error("${Index_WebRTC_TAG} websocket send error:${errorCode.isNone()}")
                     }
                 }
-            })
-        }
+            }
+        })
     }
 
     func getRandomId(): String {
@@ -545,26 +533,7 @@ class EntryView {
         this.statusText = error
     }
 
-    func createAudioDeviceModule(callback: (admID: AudioDeviceModule) -> Unit): Future<Unit> {
-        spawn {
-            let retAdm: AudioDeviceModule = AudioDeviceModule(true, true)
-            callback(retAdm)
-        }
-    }
-
-    func createPeerConnectionFactory(callback: (pcf: PeerConnectionFactory) -> Unit): Future<Unit> {
-        spawn {
-            let ret: PeerConnectionFactory = PeerConnectionFactory(this.adm.getOrThrow())
-            callback(ret)
-            ret.SetDefault()
-            let filesDir = getContext().filesDir
-            let file = FileFs.open("${filesDir}/test.txt", mode: (READ_WRITE.mode | CREATE.mode))
-            this.pcf?.startAecDump(file.fd, -1)
-        }
-    }
-
-    func prepareLocalMedia(): Future<Unit> {
-        spawn {
+    func prepareLocalMedia(): Unit {
             if (this.localAudioTrack.isNone()) {
                 var ffiao: FFIAudioOptions = FFIAudioOptions()
                 ffiao.noise_suppression = true
@@ -579,11 +548,9 @@ class EntryView {
                 this.mXComponentController1.setMirror(true)
                 this.mXComponentController1.setScalingMode(FFIScalingModeEnum.ASPECTFIT)
             }
-        }
     }
 
-    func prepareDisplayMedia(): Future<Unit> {
-        spawn {
+    func prepareDisplayMedia(): Unit {
             if (this.displayMediaStream.isNone()) {
                 this.displayMediaStream = mediaDevices.getDisplayMedia(CJ_MediaTrackConstraintSet(width: 720.0, height: 1280.0, ohosScreenCaptureAudioFilter: "current-app"), true, true)
                 this.retVideoTrack = this.displayMediaStream.getVideoTracks()
@@ -601,14 +568,13 @@ class EntryView {
                      AppLog.error('${Index_WebRTC_TAG} audioTrack2: ${this.localAudioTrack.getOrThrow().getID()}')
                 }
             }
-        }
     }
 
 
     func createPeerConnection(): Future<Unit> {
         spawn {
             // prepareLocalMedia().get()
-            prepareDisplayMedia().get()
+            prepareDisplayMedia()
             this.pc = this.pcf?.createPeerConnection(RTCConfiguration(iceServers: [RTCIceServer(urls: [STUN_SERVER])]))
             if (this.pc.isNone()) {
                 AppLog.error('${Index_WebRTC_TAG} failed to create RTCPeerConnection')
@@ -633,7 +599,7 @@ class EntryView {
         }
         this.pc?.onconnectionstatechange = { pc, event =>
                       AppLog.info('${Index_WebRTC_TAG} onconnectionstatechange: ${this.pc?.connectionState}')
-            if (this.pc?.connectionState.toString() == 'failed') {
+            if (this.pc?.connectionState.toString() == 'FAILED') {
                 this.setError("Peer connection failed")
                 this.ws.close({
                         errorCode: Option<AsyncError>, data: Option<Bool> => match (errorCode) {
@@ -664,7 +630,7 @@ class EntryView {
         }
         this.pc?.oniceconnectionstatechange = { pc, event =>
           AppLog.info('${Index_WebRTC_TAG} oniceconnect/ionstatechange: ${this.pc?.iceConnectionState}')
-          if (this.pc?.iceConnectionState.toString() == 'failed') {
+          if (this.pc?.iceConnectionState.toString() == 'FAILED') {
             this.setError("Ice connection failed")
             this.ws.close(
                 {
@@ -748,7 +714,7 @@ class EntryView {
 
     func onDataChannelError(pc: RTCDataChannel, event: Event): Unit {
         // this is webrtc.RTCDataChannel
-         AppLog.info("${Index_WebRTC_TAG} dataChannel.OnError")
+        AppLog.info("${Index_WebRTC_TAG} dataChannel.OnError")
     }
 
     func onDataChannelClose(pc: RTCDataChannel, event: Event): Unit {
@@ -756,7 +722,7 @@ class EntryView {
         AppLog.info("${Index_WebRTC_TAG} dataChannel.OnClose")
     }
 
-    func sendAnswer(): Future<Unit> {
+    func sendAnswer(): Unit {
         spawn {
             this.setStatus("Got SDP offer, creating answer")
             try {
@@ -778,8 +744,7 @@ class EntryView {
     }
 
 
-    func receiveSdp(cjmsg: CJ_MessageData): Future<Unit> {
-        spawn {
+    func receiveSdp(cjmsg: CJ_MessageData): Unit {
             // CJ_RTCSessionDescription.GET()
             var sdp = cjmsg.sdp.getOrThrow()
              if (sdp.RTCSdpType == "offer") {
@@ -804,14 +769,11 @@ class EntryView {
                         }
                     })
              }
-        }
     }
 
-    func receiveIce(cjmsg: CJ_MessageData): Future<Unit> {
-        spawn {
+    func receiveIce(cjmsg: CJ_MessageData): Unit {
             AppLog.error('${Index_WebRTC_TAG} receive icecandidate')
             var ice = cjmsg.ice.getOrThrow()
             this.pc?.addIceCandidate(ice)
-        }
     }
 }

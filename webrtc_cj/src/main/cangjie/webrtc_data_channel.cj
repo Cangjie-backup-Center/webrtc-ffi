@@ -80,11 +80,14 @@ public class RTCDataChannel <: WebrtcClass & Resource {
     var onerror_: ?((pc: RTCDataChannel, dc: RTCErrorEvent) -> Unit) = None
     var closed: Bool = false
 
+    let queue = ExecutorService.new()
     public init(id: Int64) {
         super(id, this)
         unsafe {dataConnection_set_class_key(this.ID, this.randomid)}
     }
     ~init() {
+        queue.shutdown()
+        DelObject(this.ID)
         unsafe {
             RTCDataChannel_CPP_FREE(this.ID)
         }
@@ -96,7 +99,10 @@ public class RTCDataChannel <: WebrtcClass & Resource {
                 unsafe {
                     dataConnection_set_cj_func_Onopen_(this.ID, { id: Int64, event: CJ_Event =>
                         let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
-                        obj.onopen(obj, Event(event.eventType.toString()))
+                        let e =  Event(event.eventType.toString())
+                        obj.queue.execute({=>
+                            obj.onopen(obj, e)
+                        })
                     })
                 }
             }
@@ -111,7 +117,10 @@ public class RTCDataChannel <: WebrtcClass & Resource {
                 unsafe {
                      dataConnection_set_cj_func_Onclosing_(this.ID, { id: Int64, event: CJ_Event =>
                         let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
-                        obj.onclosing(obj, Event(event.eventType.toString()))
+                        let e = Event(event.eventType.toString())
+                        obj.queue.execute({=>
+                            obj.onclosing(obj, e)
+                        })
                     })
                 }
             }
@@ -126,7 +135,10 @@ public class RTCDataChannel <: WebrtcClass & Resource {
                 unsafe {
                      dataConnection_set_cj_func_Onclose_(this.ID, { id: Int64, event: CJ_Event =>
                         let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
-                        obj.onclose(obj, Event(event.eventType.toString()))
+                        let e = Event(event.eventType.toString())
+                        obj.queue.execute({=>
+                            obj.onclose(obj, e)
+                        })
                     })
                 }
             }
@@ -146,9 +158,15 @@ public class RTCDataChannel <: WebrtcClass & Resource {
                             for(i in 0..event.data_arr_size) {
                                 arr[i] = event.data_arr.read(i)
                             }
-                            obj.onmessage(obj, MessageEvent(event.TYPE.toString(), ARRAY_BUFFER(arr)))
+                            let e = MessageEvent(event.TYPE.toString(), ARRAY_BUFFER(arr))
+                            obj.queue.execute({=>
+                                obj.onmessage(obj, e)
+                            })
                         } else{
-                            obj.onmessage(obj, MessageEvent(event.TYPE.toString(), STRING(event.data_str.toString())))
+                            let e = MessageEvent(event.TYPE.toString(), STRING(event.data_str.toString()))
+                            obj.queue.execute({=>
+                                obj.onmessage(obj, e)
+                            })
                         }
                     })
                 }

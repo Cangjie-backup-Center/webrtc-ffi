@@ -17,17 +17,9 @@ public class VideoRenderController <: XComponentController {
     protected override func onSurfaceCreated(surfaceId: String) {
         mySurfaceId = surfaceId
         unsafe {
-//            ffi_SetSurfaceId(Int64.parse(surfaceId))
-            renderer = unsafe {ffi_newNativeVideoRenderer(LibC.mallocCString(mySurfaceId))}
+            renderer = ffi_newNativeVideoRenderer(LibC.mallocCString(mySurfaceId))
         }
     }
-
-//    protected override func onSurfaceChanged(surfaceId: String, rect: SurfaceRect) {
-//        // 在onSurfaceChanged中调用ChangeSurface绘制内容
-//        unsafe {
-//            ffi_ChangeSurface(Int64.parse(surfaceId), 1134.0, 1002.0)
-//        }
-//    }
 
     public func setVideoTrack(mst : MediaStreamTrack): Unit {
         unsafe {ffi_setVideoTrack(renderer, mst.getID())}

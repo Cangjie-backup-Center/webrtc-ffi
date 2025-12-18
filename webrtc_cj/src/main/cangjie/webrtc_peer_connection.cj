@@ -44,6 +44,7 @@ public class RTCPeerConnection <: WebrtcClass {
     var setLocalDescription_callback_: ((ErrorMessage) -> Unit) = {_=>}
     var setRemoteDescription_callback_: ((ErrorMessage) -> Unit) = {_=>}
 
+    let queue = ExecutorService.new()
 
     public mut prop ondatachannel: ((pc: RTCPeerConnection, dc: RTCDataChannel) -> Unit) {
         get() {ondatachannel_ ?? {_,_=>}}
@@ -52,7 +53,9 @@ public class RTCPeerConnection <: WebrtcClass {
                 unsafe {
                     peerConnection_SetOnDataChannel_(this.ID, { id: Int64, ptr: Int64 =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
-                        ffipc.ondatachannel(ffipc, RTCDataChannel(ptr))
+                        ffipc.queue.execute({ =>
+                            ffipc.ondatachannel(ffipc, RTCDataChannel(ptr))
+                        })
                     })
                 }
             }
@@ -66,7 +69,10 @@ public class RTCPeerConnection <: WebrtcClass {
                 unsafe {
                     peerConnection_SetOnSignalingChange_(this.ID, { id: Int64, ptr: CJ_Event =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
-                        ffipc.onSignalingChange(ffipc, Event(ptr.eventType.toString()))
+                        let event = Event(ptr.eventType.toString())
+                        ffipc.queue.execute({ =>
+                            ffipc.onSignalingChange(ffipc, event)
+                        })
                     })
                 }
             }
@@ -80,14 +86,17 @@ public class RTCPeerConnection <: WebrtcClass {
                 unsafe {
                     peerConnection_SetOnIceCandidateError_(this.ID, { id: Int64, ptr: CJ_RTCPeerConnectionIceErrorEvent =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
-                        ffipc.onIceCandidateError(ffipc, RTCPeerConnectionIceErrorEvent(
-                            ptr.TYPE.toString(),
-                            ptr.address.toString(),
-                            ptr.port,
-                            ptr.url.toString(),
-                            ptr.errorCode,
-                            ptr.errorText.toString()
-                        ))
+                        let event = RTCPeerConnectionIceErrorEvent(
+                                ptr.TYPE.toString(),
+                                ptr.address.toString(),
+                                ptr.port,
+                                ptr.url.toString(),
+                                ptr.errorCode,
+                                ptr.errorText.toString()
+                            )
+                        ffipc.queue.execute({ =>
+                            ffipc.onIceCandidateError(ffipc, event)
+                        })
                     })
                 }
             }
@@ -106,15 +115,18 @@ public class RTCPeerConnection <: WebrtcClass {
                         for(i in 0..ptr.streams_size) {
                             arr[i] = ptr.streams.read(i)
                         }
-                        ffipc.onTrack(
-                            ffipc, RTCTrackEvent(
+                        let event = RTCTrackEvent(
                                 ptr.TYPE.toString(),
                                 arr,
                                 ptr.MediaStreamTrack_ptr,
                                 ptr.RtpReceiver_ptr,
                                 ptr.RtpTransceiver_ptr
                             )
-                        )
+                        ffipc.queue.execute({ =>
+                            ffipc.onTrack(
+                                ffipc,event
+                            )
+                        })
                     })
                 }
             }
@@ -128,7 +140,10 @@ public class RTCPeerConnection <: WebrtcClass {
                 unsafe {
                     peerConnection_SetOnConnectionChange_(this.ID, { id: Int64, ptr: CJ_Event =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
-                        ffipc.onconnectionstatechange( ffipc, Event(ptr.eventType.toString()) )
+                        let event = Event(ptr.eventType.toString())
+                        ffipc.queue.execute({ =>
+                            ffipc.onconnectionstatechange( ffipc, event)
+                        })
                     })
                 }
             }
@@ -142,7 +157,10 @@ public class RTCPeerConnection <: WebrtcClass {
                 unsafe {
                     peerConnection_SetOnRenegotiationNeeded_(this.ID, { id: Int64, ptr: CJ_Event =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
-                        ffipc.onnegotiationneeded( ffipc, Event(ptr.eventType.toString()) )
+                        let event = Event(ptr.eventType.toString())
+                        ffipc.queue.execute({ =>
+                            ffipc.onnegotiationneeded( ffipc, event)
+                        })
                     })
                 }
             }
@@ -156,7 +174,10 @@ public class RTCPeerConnection <: WebrtcClass {
                 unsafe {
                     peerConnection_SetOnStandardizedIceConnectionChange_(this.ID, { id: Int64, ptr: CJ_Event =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
-                        ffipc.oniceconnectionstatechange( ffipc, Event(ptr.eventType.toString()) )
+                        let event = Event(ptr.eventType.toString())
+                        ffipc.queue.execute({ =>
+                            ffipc.oniceconnectionstatechange( ffipc, event)
+                        })
                     })
                 }
             }
@@ -170,7 +191,10 @@ public class RTCPeerConnection <: WebrtcClass {
                 unsafe {
                     peerConnection_SetOnIceGatheringChange_(this.ID, { id: Int64, ptr: CJ_Event =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
-                        ffipc.onicegatheringstatechange( ffipc, Event(ptr.eventType.toString()) )
+                        let event = Event(ptr.eventType.toString())
+                        ffipc.queue.execute({ =>
+                            ffipc.onicegatheringstatechange( ffipc, event)
+                        })
                     })
                 }
             }
@@ -183,7 +207,10 @@ public class RTCPeerConnection <: WebrtcClass {
                 unsafe {
                     peerConnection_SetOnIceCandidate_(this.ID, { id: Int64, ptr: CJ_RTCPeerConnectionIceEvent =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
-                        ffipc.onIceCandidate( ffipc, RTCPeerConnectionIceEvent(ptr) )
+                        let event = RTCPeerConnectionIceEvent(ptr)
+                        ffipc.queue.execute({ =>
+                            ffipc.onIceCandidate(ffipc, event)
+                        })
                     })
                 }
             }
@@ -207,6 +234,8 @@ public class RTCPeerConnection <: WebrtcClass {
     }
 
     ~init() {
+        queue.shutdown()
+        DelObject(this.ID)
         unsafe {
             peerConnection_CPP_FREE(this.ID)
         }

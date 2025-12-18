@@ -61,9 +61,12 @@ protected:
         if (!error.ok()) {
             RTC_LOG(LS_ERROR) << "Error: " << error.type() << ", " << error.message();
         }
-
-        cj_func_callback_(this->pc_->GetCJClassID(),
+        
+        auto workerThread_ = std::thread([this, error]() {
+            cj_func_callback_(this->pc_->GetCJClassID(),
             CJ_ErrorMessage{rtcErrorDetailType: (int64_t)error.error_detail(), msg: error.message()});
+        });
+        workerThread_.join();
     }
 };
 
@@ -962,27 +965,24 @@ void ffiPeerConnection::addIceCandidate(CJ_RTCIceCandidateInit iceCandidate)
         }
     }
 
-    SdpParseError error;
-    auto candidate = CreateIceCandidate(sdpMid, sdpMLineIndex, sdp, &error);
-    if (!candidate) {
-        CANGJIE_THROW("CreateIceCandidate error");
-    }
-
     delete [] iceCandidate.candidate;
     delete [] iceCandidate.sdpMid;
     delete [] iceCandidate.usernameFragment;
 
-    this->Dispatch(
-        CallbackEvent<ffiPeerConnection>::Create([this, candidate](ffiPeerConnection& target) {
-            pc_->AddIceCandidate(std::unique_ptr<IceCandidateInterface>(candidate), [this](RTCError error) {
-                RTC_DLOG(LS_INFO) << "AddIceCandidate complete: " << error.ok();
-                auto type = error.type();
-                auto message = error.message();
-                if (this->cj_func_call_addIceCandidate)
-                    this->cj_func_call_addIceCandidate(this->cj_class_key, message);
-            });
-        })
-    );
+    SdpParseError error;
+    auto candidate = CreateIceCandidate(sdpMid, sdpMLineIndex, sdp, &error);
+    if (!candidate) {
+        CANGJIE_THROW("CreateIceCandidate error");
+        return;
+    }
+
+    pc_->AddIceCandidate(std::unique_ptr<IceCandidateInterface>(candidate), [this](RTCError error) {
+        RTC_DLOG(LS_INFO) << "AddIceCandidate complete: " << error.ok();
+        auto type = error.type();
+        auto message = error.message();
+        if (this->cj_func_call_addIceCandidate)
+            this->cj_func_call_addIceCandidate(this->cj_class_key, message);
+    });
 }
 
 

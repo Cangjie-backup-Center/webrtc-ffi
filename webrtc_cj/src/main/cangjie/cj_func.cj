@@ -116,6 +116,9 @@ public class VideoTrack <: MediaStreamTrack {
     public init(id: Int64) {
         super(id, this)
     }
+    ~init(){
+        DelObject(this.ID)
+    }
 }
 
 public class AudioTrack <: MediaStreamTrack {
@@ -170,11 +173,17 @@ public class RtpReceiver <: WebrtcClass {
     public init(id: Int64) {
         super(id, this)
     }
+    ~init(){
+        DelObject(this.ID)
+    }
 }
 
 public class RtpTransceiver <: WebrtcClass {
     public init(id: Int64) {
         super(id, this)
+    }
+    ~init(){
+        DelObject(this.ID)
     }
 }
 
@@ -185,6 +194,9 @@ public class MediaStream <: WebrtcClass {
 
     public init() {
         super(this)
+    }
+    ~init(){
+        DelObject(this.ID)
     }
 
     public func getTracks(): Array<MediaStreamTrack> {
