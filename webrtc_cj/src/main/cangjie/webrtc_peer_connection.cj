@@ -2,6 +2,7 @@
  * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
  */
 package webrtc_cj
+import std.sync.{Mutex, Condition, AtomicBool}
 
 foreign func peerConnection_set_class_key(cpp_ptr: Int64, id: Int64): Unit
 foreign func peerConnection_SetOnDataChannel_(cpp_ptr: Int64, fn: CFunc<(id: Int64, ptr: Int64) -> Unit>): Unit
@@ -43,8 +44,9 @@ public class RTCPeerConnection <: WebrtcClass {
     var onIceCandidate_: ?((pc: RTCPeerConnection, dc: RTCPeerConnectionIceEvent) -> Unit) = None
     var setLocalDescription_callback_: ((ErrorMessage) -> Unit) = {_=>}
     var setRemoteDescription_callback_: ((ErrorMessage) -> Unit) = {_=>}
-
     let queue = ExecutorService.new()
+
+    var closed: AtomicBool = AtomicBool(false)
 
     public mut prop ondatachannel: ((pc: RTCPeerConnection, dc: RTCDataChannel) -> Unit) {
         get() {ondatachannel_ ?? {_,_=>}}
@@ -53,8 +55,11 @@ public class RTCPeerConnection <: WebrtcClass {
                 unsafe {
                     peerConnection_SetOnDataChannel_(this.ID, { id: Int64, ptr: Int64 =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
+                        if (ffipc.closed.load()) {
+                            return
+                        }
                         ffipc.queue.execute({ =>
-                            ffipc.ondatachannel(ffipc, RTCDataChannel(ptr))
+                            ffipc.ondatachannel(ffipc, RTCDataChannel(ptr, ffipc))
                         })
                     })
                 }
@@ -70,6 +75,9 @@ public class RTCPeerConnection <: WebrtcClass {
                     peerConnection_SetOnSignalingChange_(this.ID, { id: Int64, ptr: CJ_Event =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
                         let event = Event(ptr.eventType.toString())
+                        if (ffipc.closed.load()) {
+                            return
+                        }
                         ffipc.queue.execute({ =>
                             ffipc.onSignalingChange(ffipc, event)
                         })
@@ -94,6 +102,9 @@ public class RTCPeerConnection <: WebrtcClass {
                                 ptr.errorCode,
                                 ptr.errorText.toString()
                             )
+                        if (ffipc.closed.load()) {
+                            return
+                        }
                         ffipc.queue.execute({ =>
                             ffipc.onIceCandidateError(ffipc, event)
                         })
@@ -122,6 +133,9 @@ public class RTCPeerConnection <: WebrtcClass {
                                 ptr.RtpReceiver_ptr,
                                 ptr.RtpTransceiver_ptr
                             )
+                        if (ffipc.closed.load()) {
+                            return
+                        }
                         ffipc.queue.execute({ =>
                             ffipc.onTrack(
                                 ffipc,event
@@ -141,6 +155,9 @@ public class RTCPeerConnection <: WebrtcClass {
                     peerConnection_SetOnConnectionChange_(this.ID, { id: Int64, ptr: CJ_Event =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
                         let event = Event(ptr.eventType.toString())
+                        if (ffipc.closed.load()) {
+                            return
+                        }
                         ffipc.queue.execute({ =>
                             ffipc.onconnectionstatechange( ffipc, event)
                         })
@@ -158,6 +175,9 @@ public class RTCPeerConnection <: WebrtcClass {
                     peerConnection_SetOnRenegotiationNeeded_(this.ID, { id: Int64, ptr: CJ_Event =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
                         let event = Event(ptr.eventType.toString())
+                        if (ffipc.closed.load()) {
+                            return
+                        }
                         ffipc.queue.execute({ =>
                             ffipc.onnegotiationneeded( ffipc, event)
                         })
@@ -175,6 +195,9 @@ public class RTCPeerConnection <: WebrtcClass {
                     peerConnection_SetOnStandardizedIceConnectionChange_(this.ID, { id: Int64, ptr: CJ_Event =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
                         let event = Event(ptr.eventType.toString())
+                        if (ffipc.closed.load()) {
+                            return
+                        }
                         ffipc.queue.execute({ =>
                             ffipc.oniceconnectionstatechange( ffipc, event)
                         })
@@ -192,6 +215,9 @@ public class RTCPeerConnection <: WebrtcClass {
                     peerConnection_SetOnIceGatheringChange_(this.ID, { id: Int64, ptr: CJ_Event =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
                         let event = Event(ptr.eventType.toString())
+                        if (ffipc.closed.load()) {
+                            return
+                        }
                         ffipc.queue.execute({ =>
                             ffipc.onicegatheringstatechange( ffipc, event)
                         })
@@ -208,6 +234,9 @@ public class RTCPeerConnection <: WebrtcClass {
                     peerConnection_SetOnIceCandidate_(this.ID, { id: Int64, ptr: CJ_RTCPeerConnectionIceEvent =>
                         let ffipc: RTCPeerConnection = GetObject<RTCPeerConnection>(id)
                         let event = RTCPeerConnectionIceEvent(ptr)
+                        if (ffipc.closed.load()) {
+                            return
+                        }
                         ffipc.queue.execute({ =>
                             ffipc.onIceCandidate(ffipc, event)
                         })
@@ -220,7 +249,7 @@ public class RTCPeerConnection <: WebrtcClass {
     public static func GenerateCertificate(keyname: String): Int64{
         return unsafe {
             let str = LibC.mallocCString(keyname)
-            let ret = peerConnection_static_GenerateCertificate(str)
+            let ret = peerConnection_static_GenerateCertificate(str) // 问题点1
             LibC.free(str)
             return ret
         }
@@ -254,8 +283,8 @@ public class RTCPeerConnection <: WebrtcClass {
     public prop iceConnectionState: FFIRTCIceConnectionState {
         get() {FFIRTCIceConnectionState.GET(unsafe{peerConnection_GetIceConnectionState(this.ID)})}
     }
-    public prop connectionState: FFIRTCIceConnectionState {
-        get() {FFIRTCIceConnectionState.GET(unsafe{peerConnection_GetConnectionState(this.ID)})}
+    public prop connectionState: FFIRTCPeerConnectionState {
+        get() {FFIRTCPeerConnectionState.GET(unsafe{peerConnection_GetConnectionState(this.ID)})}
     }
     public prop localDescription: RTCSessionDescription {
         get() {
@@ -319,6 +348,9 @@ public class RTCPeerConnection <: WebrtcClass {
     }
 
     public func setLocalDescription(description: RTCSessionDescription, pe!: (ErrorMessage) -> Unit = { error => }): Unit {
+        if (closed.load()) {
+            throw Exception("closed.")
+        }
         unsafe {
             this.setLocalDescription_callback_ = pe;
             peerConnection_setLocalDescription(this.ID, description.cpp.getOrThrow(), {id: Int64, msg: CJ_ErrorMessage =>
@@ -328,6 +360,9 @@ public class RTCPeerConnection <: WebrtcClass {
         }
     }
     public func setRemoteDescription(description: RTCSessionDescription, pe: (ErrorMessage) -> Unit): Unit {
+        if (closed.load()) {
+            throw Exception("closed.")
+        }
         unsafe {
             this.setRemoteDescription_callback_ = pe;
             peerConnection_setRemoteDescription(this.ID, description.cpp.getOrThrow(), {id: Int64, msg: CJ_ErrorMessage =>
@@ -338,15 +373,21 @@ public class RTCPeerConnection <: WebrtcClass {
     }
 
     public func createDataChannel(label: String, dataChannelDict!: CJ_RTCDataChannelInit = CJ_RTCDataChannelInit()): RTCDataChannel {
+        if (closed.load()) {
+            throw Exception("closed.")
+        }
         unsafe {
             let str = LibC.mallocCString(label)
             let ptr = peerConnection_createDataChannel(this.ID, str, dataChannelDict)
             LibC.free(str)
-            return RTCDataChannel(ptr)
+            return RTCDataChannel(ptr, this)
         }
     }
 
     public func addIceCandidate(candidate: ?RTCIceCandidateInit): Unit {
+        if (closed.load()) {
+            throw Exception("closed.")
+        }
         if (let Some(v) <- candidate) {
             unsafe {
                 let cpp = CJ_RTCIceCandidateInit(v.isBuild, LibC.mallocCString(v.candidate), v.sdpMLineIndex, LibC.mallocCString(v.sdpMid), LibC.mallocCString(v.usernameFragment))
@@ -359,13 +400,37 @@ public class RTCPeerConnection <: WebrtcClass {
             }
         }
     }
+
+    public func isClosed(): Bool {
+        return closed.load()
+    }
+
     public func close(): Unit {
+        if (closed.load()) {
+            return
+        }
+        closed.store(true)
+        this.ondatachannel_ = None
+        this.onSignalingChange_ = None
+        this.onIceCandidateError_ = None
+        this.onTrack_ = None
+        this.onConnectionChange_ = None
+        this.onRenegotiationNeeded_ = None
+        this.onStandardizedIceConnectionChange_ = None
+        this.onIceGatheringChange_ = None
+        this.onIceCandidate_ = None
+        this.setLocalDescription_callback_ = {_=>}
+        this.setRemoteDescription_callback_ = {_=>}
+        queue.shutdown(self: true)
         unsafe {
             peerConnection_close(this.getID())
         }
     }
 
     public func setAudioPlayout(playout: Bool): Unit{
+        if (closed.load()) {
+            return
+        }
         unsafe {
             peerConnection_setAudioPlayout(this.getID(), playout)
         }
@@ -373,18 +438,27 @@ public class RTCPeerConnection <: WebrtcClass {
     }
 
     public func setAudioRecording(recording: Bool): Unit{
+        if (closed.load()) {
+            return
+        }
         unsafe {
             peerConnection_setAudioRecording(this.getID(), recording)
         }
     }
 
     public func addTrack(track: MediaStreamTrack, streamVec!: CJ_ArrayMediaStream = CJ_ArrayMediaStream()): Int64 {
+        if (closed.load()) {
+            throw Exception("closed.")
+        }
         unsafe {
             return peerConnection_addTrack(this.getID(), track.getID(), streamVec)
         }
     }
 
     public func getTransceivers(): CPointer<Int64> {
+        if (closed.load()) {
+            throw Exception("closed.")
+        }
         unsafe {
             return peerConnection_getTransceivers(this.getID())
         }
@@ -392,6 +466,9 @@ public class RTCPeerConnection <: WebrtcClass {
 
 
     public func createOffer(iceRestart!: Bool = false): WebrtcResult<RTCSessionDescription> {
+        if (closed.load()) {
+            throw Exception("closed.")
+        }
         unsafe {
             let cpp = peerConnection_createOffer(this.getID(), iceRestart)
             let result = if (cpp.isFail) {
@@ -411,6 +488,9 @@ public class RTCPeerConnection <: WebrtcClass {
 
 
     public func createAnswer(iceRestart!: Bool = false): WebrtcResult<RTCSessionDescription>  {
+        if (closed.load()) {
+            throw Exception("closed.")
+        }
         unsafe {
             let cpp = peerConnection_createAnswer(this.getID())
             let result = if (cpp.isFail) {

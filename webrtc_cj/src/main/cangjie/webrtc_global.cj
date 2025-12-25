@@ -43,7 +43,7 @@ public class ExecutorService {
         thread = spawn {
             while (true) {
                 if (let Some(fn) <- this.TASK.dequeue()) {
-                    spawn {fn()}
+                    fn()
                 } else {
                     break
                 }

@@ -185,7 +185,7 @@ public class ErrorMessage {
     }
     ~init() {
         unsafe {
-            LibC.free(this.cpp.msg)
+//            LibC.free(this.cpp.msg)  // 存在bug. 提前析构
         }
     }
 }

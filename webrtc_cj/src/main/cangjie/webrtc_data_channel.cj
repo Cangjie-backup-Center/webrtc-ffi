@@ -3,6 +3,7 @@
  */
 
 package webrtc_cj
+import std.sync.AtomicBool
 
 foreign {
     func dataConnection_set_class_key(cpp_ptr: Int64, id: Int64): Unit
@@ -78,11 +79,12 @@ public class RTCDataChannel <: WebrtcClass & Resource {
     var onclose_: ?((pc: RTCDataChannel, dc: Event) -> Unit) = None
     var onmessage_: ?((pc: RTCDataChannel, dc: MessageEvent) -> Unit) = None
     var onerror_: ?((pc: RTCDataChannel, dc: RTCErrorEvent) -> Unit) = None
-    var closed: Bool = false
-
+    var closed: AtomicBool = AtomicBool(false)
     let queue = ExecutorService.new()
-    public init(id: Int64) {
+    var pc_: RTCPeerConnection = unsafe { zeroValue<RTCPeerConnection>() }
+    public init(id: Int64, pc: RTCPeerConnection) {
         super(id, this)
+        this.pc_ = pc
         unsafe {dataConnection_set_class_key(this.ID, this.randomid)}
     }
     ~init() {
@@ -100,6 +102,9 @@ public class RTCDataChannel <: WebrtcClass & Resource {
                     dataConnection_set_cj_func_Onopen_(this.ID, { id: Int64, event: CJ_Event =>
                         let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
                         let e =  Event(event.eventType.toString())
+                        if (obj.closed.load() || obj.pc_.isClosed()) {
+                            return
+                        }
                         obj.queue.execute({=>
                             obj.onopen(obj, e)
                         })
@@ -118,6 +123,9 @@ public class RTCDataChannel <: WebrtcClass & Resource {
                      dataConnection_set_cj_func_Onclosing_(this.ID, { id: Int64, event: CJ_Event =>
                         let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
                         let e = Event(event.eventType.toString())
+                        if (obj.closed.load() || obj.pc_.isClosed()) {
+                            return
+                        }
                         obj.queue.execute({=>
                             obj.onclosing(obj, e)
                         })
@@ -136,6 +144,9 @@ public class RTCDataChannel <: WebrtcClass & Resource {
                      dataConnection_set_cj_func_Onclose_(this.ID, { id: Int64, event: CJ_Event =>
                         let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
                         let e = Event(event.eventType.toString())
+                        if (obj.closed.load() || obj.pc_.isClosed()) {
+                            return
+                        }
                         obj.queue.execute({=>
                             obj.onclose(obj, e)
                         })
@@ -153,6 +164,9 @@ public class RTCDataChannel <: WebrtcClass & Resource {
                 unsafe {
                     dataConnection_set_cj_func_Onmessage_(this.ID, { id: Int64, event: CJ_MessageEvent =>
                         let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
+                        if (obj.closed.load() || obj.pc_.isClosed()) {
+                            return
+                        }
                         if (event.binary) {
                             let arr = Array<Byte>(event.data_arr_size, repeat: 0)
                             for(i in 0..event.data_arr_size) {
@@ -287,16 +301,23 @@ public class RTCDataChannel <: WebrtcClass & Resource {
     }
 
     public func close(): Unit {
+        if (closed.load()) {
+            return
+        }
+        this.closed.store( true)
+        this.onopen_ = None
+        this.onclosing_ = None
+        this.onclose_ = None
+        this.onmessage_ = None
+        this.onerror_ = None
+        queue.shutdown(self: true)
         unsafe {
-            if (!this.closed){
-                dataConnection_Close(this.ID)
-                this.closed = true
-            }
+            dataConnection_Close(this.ID)
         }
     }
 
     public func isClosed(): Bool {
-        this.closed
+        this.closed.load()
     }
 
 }

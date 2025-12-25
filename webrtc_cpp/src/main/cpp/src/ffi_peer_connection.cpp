@@ -237,7 +237,7 @@ int64_t ffiPeerConnection::GenerateCertificate(std::string keyParamsName)
     }
 
     ffiPeerConnection::certificate_ = rtc::RTCCertificateGenerator::GenerateCertificate(key_params, absl::nullopt);
-    return reinterpret_cast<int64_t>(&certificate_);
+    return reinterpret_cast<int64_t>(&certificate_);  // 问题点1
 }
 
 bool ffiPeerConnection::GetCanTrickleIceCandidates()
@@ -316,7 +316,7 @@ FFIRTCPeerConnectionState ffiPeerConnection::GetConnectionState()
         case PeerConnectionInterface::PeerConnectionState::kNew:
             return FFIRTCPeerConnectionState::NEW;
         case PeerConnectionInterface::PeerConnectionState::kConnecting:
-            return FFIRTCPeerConnectionState::CONNECTED;
+            return FFIRTCPeerConnectionState::CONNECTING;
         case PeerConnectionInterface::PeerConnectionState::kConnected:
             return FFIRTCPeerConnectionState::CONNECTED;
         case PeerConnectionInterface::PeerConnectionState::kDisconnected:
@@ -324,7 +324,7 @@ FFIRTCPeerConnectionState ffiPeerConnection::GetConnectionState()
         case PeerConnectionInterface::PeerConnectionState::kFailed:
             return FFIRTCPeerConnectionState::FAILED;
         case PeerConnectionInterface::PeerConnectionState::kClosed:
-            return FFIRTCPeerConnectionState::FAILED;
+            return FFIRTCPeerConnectionState::CLOSED;
         default:
             RTC_LOG(LS_WARNING) << "Invalid value of connectionState";
             break;
