@@ -67,7 +67,7 @@ public:
     rtc::scoped_refptr<OhosVideoTrackSource>* videoSourcePtr_ = nullptr;
     rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> pcFactory_;
 
-    ffiPeerConnection* ffipc_ = nullptr;
+//    ffiPeerConnection* ffipc_ = nullptr;
     ffiMediaStreamTrack* ffiVideoMST_ = nullptr;
     ffiMediaStreamTrack* ffiAudioMST_ = nullptr;
 

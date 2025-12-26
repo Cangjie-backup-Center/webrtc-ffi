@@ -73,7 +73,7 @@ void releasePtr(T* ffipc_)
 
 ffiPeerConnectionFactory::~ffiPeerConnectionFactory()
 {
-    releasePtr(ffipc_);
+//    releasePtr(ffipc_);
     audioSourcePtr_->release();
     audioTrackPtr_->release();
     videoSourcePtr_->release();
@@ -109,7 +109,7 @@ rtc::scoped_refptr<VideoTrackInterface> ffiPeerConnectionFactory::getVideoTrack(
 
 int64_t ffiPeerConnectionFactory::ffiCreatePeerConnection(CJ_RTCConfiguration config)
 {
-    ffipc_ = new ffiPeerConnection(config, wrapper_);
+    auto ffipc_ = new ffiPeerConnection(config, wrapper_);
     return reinterpret_cast<int64_t>(ffipc_);
 }
 
@@ -124,7 +124,7 @@ int64_t ffiPeerConnectionFactory::ffiCreateAudioSource(FFIAudioOptions ffi_audio
     audioSource_ = wrapper_->CreateAudioSource(options);
     audioSourcePtr_ = &audioSource_;
     if (audioSourcePtr_) {
-        return reinterpret_cast<int64_t>(audioSourcePtr_);
+        return reinterpret_cast<int64_t>(audioSourcePtr_); // 问题点1
     }
 
     return 0;
@@ -176,7 +176,7 @@ int64_t ffiPeerConnectionFactory::ffiCreateVideoSource(
     
     videoSource_ = wrapper_->CreateVideoSource(std::move(videoCapturer));
     videoSourcePtr_ = &videoSource_;
-    return reinterpret_cast<int64_t>(videoSourcePtr_);
+    return reinterpret_cast<int64_t>(videoSourcePtr_); // 问题点1
 
     return 0;
 }

@@ -31,10 +31,6 @@ public:
     
     ~ffiPeerConnection()
     {
-        if (sender_) {
-            delete sender_;
-            sender_ = nullptr;
-        }
     }
 // readonly
     bool GetCanTrickleIceCandidates();
@@ -120,8 +116,8 @@ protected:
 private:
     std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
     rtc::scoped_refptr<PeerConnectionInterface> pc_;
-    ffiRtpSender* sender_ = nullptr;
-    ffiSctpTransport* sctpTransportRef_ = nullptr;
+//    ffiRtpSender* sender_ = nullptr;
+//    ffiSctpTransport* sctpTransportRef_ = nullptr;
 
     void (*cj_func_call_OnIceCandidateError_)(int64_t id, CJ_RTCPeerConnectionIceErrorEvent ptr) = nullptr;
     void (*cj_func_call_OnTrack_)(int64_t id, CJ_RTCTrackEvent ptr) = nullptr;

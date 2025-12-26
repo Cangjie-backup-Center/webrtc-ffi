@@ -16,7 +16,8 @@ ffiNativeVideoRenderer::ffiNativeVideoRenderer()
 ffiNativeVideoRenderer::~ffiNativeVideoRenderer()
 {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-    delete ffiMST_;
+    this->removeSink();
+//    delete ffiMST_;
 }
 
 void ffiNativeVideoRenderer::removeSink()
@@ -59,12 +60,17 @@ void ffiNativeVideoRenderer::ffiNativeVideoRendererInit(char* surfaceId)
 void ffiNativeVideoRenderer::setVideoTrack(int64_t ffiMST)
 {
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
-    ffiMST_ = reinterpret_cast<ffiMediaStreamTrack*>(ffiMST);
+    removeSink();
+    ffiMediaStreamTrack* raw_ptr = reinterpret_cast<ffiMediaStreamTrack*>(ffiMST);
+    if (raw_ptr == nullptr) {
+        ffiMST_.reset(); // 清空智能指针
+        return;
+    }
+    ffiMST_ = std::shared_ptr<ffiMediaStreamTrack>(raw_ptr);  //reinterpret_cast<ffiMediaStreamTrack*>(ffiMST);
     if (ffiMST_ == nullptr) {
         OH_LOG_Print(LOG_APP, LOG_ERROR, OHOS_LOG_DOMAIN, "webrtc", "ffiMST is null");
         return;
     }
-    removeSink();
     addSink();
 }
 

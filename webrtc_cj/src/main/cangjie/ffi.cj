@@ -389,41 +389,25 @@ public struct CJ_RTCIceCandidateInit {
 
 public class RTCIceCandidateInit <: Serializable<RTCIceCandidateInit> {
 
-    var isBuild_: Bool = false
-    var candidate_: String = ""
-    var sdpMLineIndex_: Int32 = 0
-    var sdpMid_: String = ""
-    var usernameFragment_: String = ""
+    public var candidate: String = ""
+    public var sdpMLineIndex: Int32 = 0
+    public var sdpMid: String = ""
+    public var usernameFragment: String = ""
 
-    public prop isBuild: Bool {get() {this.isBuild_}}
-    public prop candidate: String {get() {this.candidate_.toString()}}
-    public prop sdpMLineIndex: Int32{get() {this.sdpMLineIndex_}}
-    public prop sdpMid: String {get() {this.sdpMid_.toString()}}
-    public prop usernameFragment: String {get() {this.usernameFragment_.toString()}}
-
-    public init(isBuild: Bool, candidate: String, sdpMLineIndex: Int32, sdpMid: String, usernameFragment: String) {
-        if (isBuild) {
-            unsafe {
-                this.isBuild_ = isBuild
-                this.candidate_ = candidate
-                this.sdpMLineIndex_ = sdpMLineIndex
-                this.sdpMid_ = sdpMid
-                this.usernameFragment_ = usernameFragment
-            }
-        }
-    }
-
-    ~init(){
+    public init(candidate: String, sdpMLineIndex: Int32, sdpMid: String, usernameFragment: String) {
+        this.candidate = candidate
+        this.sdpMLineIndex = sdpMLineIndex
+        this.sdpMid = sdpMid
+        this.usernameFragment = usernameFragment
     }
 
     /* 实现 Serializable 接口的序列化方法 */
     public func serialize(): DataModel {
         return DataModelStruct()
-                .add(field<Bool>("isBuild_", isBuild_))
-                .add(field<String>("candidate_", candidate_))
-                .add(field<Int32>("sdpMLineIndex_", sdpMLineIndex_))
-                .add(field<String>("sdpMid_", sdpMid_))
-                .add(field<String>("usernameFragment_", usernameFragment_))
+                .add(field<String>("candidate", candidate))
+                .add(field<Int32>("sdpMLineIndex", sdpMLineIndex))
+                .add(field<String>("sdpMid", sdpMid))
+                .add(field<String>("usernameFragment", usernameFragment))
     }
 
     /* 实现反序列化方法 JSON.*/
@@ -433,11 +417,10 @@ public class RTCIceCandidateInit <: Serializable<RTCIceCandidateInit> {
             case _ => throw Exception("this data is not DataModelStruct")
         }
         let result = RTCIceCandidateInit(
-            Bool.deserialize(dms.get("isBuild_")),
-            String.deserialize(dms.get("candidate_")),
-            Int32.deserialize(dms.get("sdpMLineIndex_")),
-            String.deserialize(dms.get("sdpMid_")),
-            String.deserialize(dms.get("usernameFragment_")),
+            String.deserialize(dms.get("candidate")),
+            Int32.deserialize(dms.get("sdpMLineIndex")),
+            String.deserialize(dms.get("sdpMid")),
+            String.deserialize(dms.get("usernameFragment")),
         )
         return result
     }

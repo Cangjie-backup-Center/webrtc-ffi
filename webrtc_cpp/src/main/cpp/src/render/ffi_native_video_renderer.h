@@ -40,7 +40,7 @@ protected:
 private:
     std::unique_ptr<adapter::NativeWindowRenderer> renderer_;
     std::shared_ptr<EglContext> sharedContext_;
-    ffiMediaStreamTrack* ffiMST_;
+    std::shared_ptr<ffiMediaStreamTrack> ffiMST_;
 
     std::optional<std::string> surfaceId_;
 };

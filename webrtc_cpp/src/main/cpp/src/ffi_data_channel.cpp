@@ -233,7 +233,7 @@ namespace webrtc {
                             data_arr: nullptr,
                             data_arr_size: -1,
                             binary: false,
-                            data_str: reinterpret_cast<const char*>(buffer.data.data())
+                            data_str: reinterpret_cast<const char*>(buffer.data.data()) // 问题点1
                         });
                     }
                 }

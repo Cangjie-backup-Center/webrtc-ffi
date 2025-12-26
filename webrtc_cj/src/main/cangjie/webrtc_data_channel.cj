@@ -34,7 +34,7 @@ foreign {
     func RTCDataChannel_CPP_FREE(cpp_ptr: Int64): Unit
 }
 
-public enum DataChannelState {
+public enum DataChannelState <: Equatable<DataChannelState> {
     CLOSED | CLOSING | CONNECTING | OPEN
 
     static func GET(id: Int64): DataChannelState {
@@ -54,6 +54,20 @@ public enum DataChannelState {
             case OPEN=> 3
         }
     }
+
+    public operator func ==(rhs: DataChannelState): Bool {
+        return match ((this, rhs)) {
+            case (CLOSED, CLOSED) => true
+            case (CLOSING, CLOSING) => true
+            case (CONNECTING, CONNECTING) => true
+            case (OPEN, OPEN) => true
+            case _ => false
+        }
+    }
+    public operator func !=(rhs: DataChannelState): Bool {
+        return !(this == rhs)
+    }
+
 }
 public enum BinaryType {
     BLOB | ARRAYBUFFER
@@ -79,7 +93,7 @@ public class RTCDataChannel <: WebrtcClass & Resource {
     var onclose_: ?((pc: RTCDataChannel, dc: Event) -> Unit) = None
     var onmessage_: ?((pc: RTCDataChannel, dc: MessageEvent) -> Unit) = None
     var onerror_: ?((pc: RTCDataChannel, dc: RTCErrorEvent) -> Unit) = None
-    var closed: AtomicBool = AtomicBool(false)
+//    var closed: AtomicBool = AtomicBool(false)
     let queue = ExecutorService.new()
     var pc_: RTCPeerConnection = unsafe { zeroValue<RTCPeerConnection>() }
     public init(id: Int64, pc: RTCPeerConnection) {
@@ -102,7 +116,7 @@ public class RTCDataChannel <: WebrtcClass & Resource {
                     dataConnection_set_cj_func_Onopen_(this.ID, { id: Int64, event: CJ_Event =>
                         let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
                         let e =  Event(event.eventType.toString())
-                        if (obj.closed.load() || obj.pc_.isClosed()) {
+                        if (obj.isClosed()) {
                             return
                         }
                         obj.queue.execute({=>
@@ -123,7 +137,7 @@ public class RTCDataChannel <: WebrtcClass & Resource {
                      dataConnection_set_cj_func_Onclosing_(this.ID, { id: Int64, event: CJ_Event =>
                         let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
                         let e = Event(event.eventType.toString())
-                        if (obj.closed.load() || obj.pc_.isClosed()) {
+                        if (obj.isClosed()) {
                             return
                         }
                         obj.queue.execute({=>
@@ -144,7 +158,7 @@ public class RTCDataChannel <: WebrtcClass & Resource {
                      dataConnection_set_cj_func_Onclose_(this.ID, { id: Int64, event: CJ_Event =>
                         let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
                         let e = Event(event.eventType.toString())
-                        if (obj.closed.load() || obj.pc_.isClosed()) {
+                        if (obj.isClosed()) {
                             return
                         }
                         obj.queue.execute({=>
@@ -164,7 +178,7 @@ public class RTCDataChannel <: WebrtcClass & Resource {
                 unsafe {
                     dataConnection_set_cj_func_Onmessage_(this.ID, { id: Int64, event: CJ_MessageEvent =>
                         let obj: RTCDataChannel = GetObject<RTCDataChannel>(id)
-                        if (obj.closed.load() || obj.pc_.isClosed()) {
+                        if (obj.isClosed()) {
                             return
                         }
                         if (event.binary) {
@@ -301,23 +315,23 @@ public class RTCDataChannel <: WebrtcClass & Resource {
     }
 
     public func close(): Unit {
-        if (closed.load()) {
+        if (isClosed()) {
             return
         }
-        this.closed.store( true)
-        this.onopen_ = None
-        this.onclosing_ = None
-        this.onclose_ = None
-        this.onmessage_ = None
-        this.onerror_ = None
-        queue.shutdown(self: true)
+//        this.closed.store( true)
+//        this.onopen_ = None
+//        this.onclosing_ = None
+//        this.onclose_ = None
+//        this.onmessage_ = None
+//        this.onerror_ = None
+//        queue.shutdown(self: true)
         unsafe {
             dataConnection_Close(this.ID)
         }
     }
 
     public func isClosed(): Bool {
-        this.closed.load()
+        this.readyState == DataChannelState.CLOSED || this.pc_.isClosed()
     }
 
 }

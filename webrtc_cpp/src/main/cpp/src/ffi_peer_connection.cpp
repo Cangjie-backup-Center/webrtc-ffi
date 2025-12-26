@@ -490,9 +490,9 @@ int64_t ffiPeerConnection::GetSctp()
 {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 
-    if (!sctpTransportRef_) {
-        return (int64_t)sctpTransportRef_;
-    }
+//    if (!sctpTransportRef_) {
+//        return (int64_t)sctpTransportRef_;
+//    }
 
     auto transport = pc_->GetSctpTransport();
     if (!transport) {
@@ -500,7 +500,7 @@ int64_t ffiPeerConnection::GetSctp()
     }
 
     auto sctpTransport = ffiSctpTransport::NewInstance(factory_, transport);
-    sctpTransportRef_ = sctpTransport;
+//    sctpTransportRef_ = sctpTransport;
 
     return reinterpret_cast<int64_t>(sctpTransport);
 }
@@ -827,8 +827,8 @@ int64_t ffiPeerConnection::addTrack(ffiMediaStreamTrack* track, std::vector<webr
         }
     }
 
-    sender_ = ffiRtpSender::NewInstance(this->factory_, this->pc_, result.value());
-    return reinterpret_cast<int64_t>(sender_);
+    auto sender = ffiRtpSender::NewInstance(this->factory_, this->pc_, result.value());
+    return reinterpret_cast<int64_t>(sender);
 }
 
 // void ffiPeerConnection::removeTrack(ffiRtpReceiver* receiver) {
@@ -965,9 +965,9 @@ void ffiPeerConnection::addIceCandidate(CJ_RTCIceCandidateInit iceCandidate)
         }
     }
 
-    delete [] iceCandidate.candidate;
-    delete [] iceCandidate.sdpMid;
-    delete [] iceCandidate.usernameFragment;
+//    delete [] iceCandidate.candidate;
+//    delete [] iceCandidate.sdpMid;
+//    delete [] iceCandidate.usernameFragment;
 
     SdpParseError error;
     auto candidate = CreateIceCandidate(sdpMid, sdpMLineIndex, sdp, &error);
