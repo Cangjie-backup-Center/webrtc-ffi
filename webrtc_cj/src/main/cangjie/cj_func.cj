@@ -71,8 +71,14 @@ public class AudioDeviceModule <: WebrtcClass {
 }
 
 public class PeerConnectionFactory <: WebrtcClass {
-    public init(adm: AudioDeviceModule) {
-        super(unsafe {ffi_newPeerConnectionFactory(adm.ID, ffi_newHardwareVideoEncoderFactory() , ffi_newHardwareVideoDecoderFactory())}, this)
+    public init(adm: AudioDeviceModule, useHardwareAcceleration: Bool) {
+        super(unsafe {
+            if (useHardwareAcceleration) {
+                ffi_newHardwarePeerConnectionFactory(adm.ID, ffi_newHardwareVideoEncoderFactory(), ffi_newHardwareVideoDecoderFactory())
+            } else {
+                ffi_newSoftwarePeerConnectionFactory(adm.ID, ffi_newSoftwareVideoEncoderFactory(), ffi_newSoftwareVideoDecoderFactory())
+            }
+        }, this)
     }
 
     public func createPeerConnection(config: RTCConfiguration): RTCPeerConnection {
@@ -287,7 +293,14 @@ foreign {
     func ffi_newAudioDeviceModule(useStereoInput: Bool, useStereoOutput: Bool): Int64
     func ffi_newHardwareVideoEncoderFactory(): Int64
     func ffi_newHardwareVideoDecoderFactory(): Int64
-    func ffi_newPeerConnectionFactory(ffiADM_int64: Int64, ffiHVEF_int64: Int64 , ffiHVDF_int64: Int64): Int64
+    func ffi_newSoftwareVideoEncoderFactory(): Int64
+    func ffi_newSoftwareVideoDecoderFactory(): Int64
+
+    // func ffi_newPeerConnectionFactory(ffiADM_int64: Int64, ffiHVEF_int64: Int64 , ffiHVDF_int64: Int64): Int64
+
+    func ffi_newHardwarePeerConnectionFactory(ffiADM_int64: Int64, ffiHVEF_int64: Int64 , ffiHVDF_int64: Int64): Int64
+    func ffi_newSoftwarePeerConnectionFactory(ffiADM_int64: Int64, ffiSVEF_int64: Int64 , ffiSVDF_int64: Int64): Int64
+
     func ffi_createAudioSource(ffiPCF_int64: Int64, ffiao: FFIAudioOptions): Int64
     func ffi_createAudioTrack(ffiPCF_int64: Int64, ffi_audioId: CString, ffiAudioSourceId: Int64): Int64
     func ffi_createVideoSource(ffiPCF_int64: Int64, ffiCVSP: CJ_TO_CPP_DisplayMediaStreamOptions, isScreen: Bool): Int64

@@ -437,7 +437,7 @@ class EntryView {
 
         let audioDeviceModule = AudioDeviceModule(true, true)
         this.adm = audioDeviceModule
-        let ret = PeerConnectionFactory(audioDeviceModule)
+        let ret = PeerConnectionFactory(audioDeviceModule, false)
         this.pcf = ret
         ret.SetDefault()
         let filesDir = getContext().filesDir

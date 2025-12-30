@@ -30,10 +30,9 @@ namespace webrtc {
 
 ffiPeerConnectionFactory::ffiPeerConnectionFactory(
     ffiAudioDeviceModule* ffiADM,
-    ffiVideoEncoderFactory* ffiHVEF,
-    ffiVideoDecoderFactory* ffiHVDF)
+    ffiHardwareVideoEncoderFactory* ffiHVEF,
+    ffiHardwareVideoDecoderFactory* ffiHVDF)
 {
-
     rtc::scoped_refptr<OhosAudioDeviceModule> adm;
     std::unique_ptr<VideoEncoderFactory> videoEncoderFactory;
     std::unique_ptr<VideoDecoderFactory> videoDecoderFactory;
@@ -54,6 +53,35 @@ ffiPeerConnectionFactory::ffiPeerConnectionFactory(
     wrapper_ = PeerConnectionFactoryWrapper::Create(
     adm, std::move(videoEncoderFactory), std::move(videoDecoderFactory), audioProcessing);
 }
+
+ffiPeerConnectionFactory::ffiPeerConnectionFactory(
+    ffiAudioDeviceModule* ffiADM,
+    ffiSoftwareVideoEncoderFactory* ffiSVEF,
+    ffiSoftwareVideoDecoderFactory* ffiSVDF)
+{
+
+    rtc::scoped_refptr<OhosAudioDeviceModule> adm;
+    std::unique_ptr<VideoEncoderFactory> videoEncoderFactory;
+    std::unique_ptr<VideoDecoderFactory> videoDecoderFactory;
+    rtc::scoped_refptr<AudioProcessing> audioProcessing;
+
+    adm = ffiADM->getAdm();
+
+    videoEncoderFactory = createSoftwareVideoEncoderFactory(ffiSVEF);
+    if (videoEncoderFactory == nullptr) {
+        return ;
+    }
+    
+    videoDecoderFactory = createSoftwareVideoDecoderFactory(ffiSVDF);
+    if (videoDecoderFactory == nullptr) {
+        return ;
+    }
+    
+    wrapper_ = PeerConnectionFactoryWrapper::Create(
+    adm, std::move(videoEncoderFactory), std::move(videoDecoderFactory), audioProcessing);
+}
+
+
 
 template <typename T>
 void releasePtr(T* ffipc_)

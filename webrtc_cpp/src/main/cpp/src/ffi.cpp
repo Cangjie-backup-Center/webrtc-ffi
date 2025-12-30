@@ -52,23 +52,46 @@ int64_t ffi_newAudioDeviceModule(bool useStereoInput, bool useStereoOutput)
 
 int64_t ffi_newHardwareVideoEncoderFactory()
 {
-    auto ffiHVEF = new webrtc::ffiVideoEncoderFactory();
+    auto ffiHVEF = new webrtc::ffiHardwareVideoEncoderFactory();
     return reinterpret_cast<int64_t>(ffiHVEF);
 }
 
 int64_t ffi_newHardwareVideoDecoderFactory()
 {
-    auto ffiHVDF = new webrtc::ffiVideoDecoderFactory();
+    auto ffiHVDF = new webrtc::ffiHardwareVideoDecoderFactory();
     return reinterpret_cast<int64_t>(ffiHVDF);
 }
 
-int64_t ffi_newPeerConnectionFactory(int64_t ffiADM_int64, int64_t ffiHVEF_int64, int64_t ffiHVDF_int64)
+int64_t ffi_newSoftwareVideoEncoderFactory()
+{
+    auto ffiSVEF = new webrtc::ffiSoftwareVideoEncoderFactory();
+    return reinterpret_cast<int64_t>(ffiSVEF);
+}
+
+int64_t ffi_newSoftwareVideoDecoderFactory()
+{
+    
+    auto ffiSVDF = new webrtc::ffiSoftwareVideoDecoderFactory();
+    return reinterpret_cast<int64_t>(ffiSVDF);
+}
+
+int64_t ffi_newHardwarePeerConnectionFactory(int64_t ffiADM_int64, int64_t ffiHVEF_int64, int64_t ffiHVDF_int64)
 {
     auto ffiADM_ptr = reinterpret_cast<webrtc::ffiAudioDeviceModule*>(ffiADM_int64);
-    auto ffiHVEF_ptr = reinterpret_cast<webrtc::ffiVideoEncoderFactory*>(ffiHVEF_int64);
-    auto ffiHVDF_ptr = reinterpret_cast<webrtc::ffiVideoDecoderFactory*>(ffiHVDF_int64);
+    auto ffiHVEF_ptr = reinterpret_cast<webrtc::ffiHardwareVideoEncoderFactory*>(ffiHVEF_int64);
+    auto ffiHVDF_ptr = reinterpret_cast<webrtc::ffiHardwareVideoDecoderFactory*>(ffiHVDF_int64);
 
     auto ffiPCF = new webrtc::ffiPeerConnectionFactory(ffiADM_ptr, ffiHVEF_ptr, ffiHVDF_ptr);
+    return reinterpret_cast<int64_t>(ffiPCF);
+}
+
+int64_t ffi_newSoftwarePeerConnectionFactory(int64_t ffiADM_int64, int64_t ffiSVEF_int64, int64_t ffiSVDF_int64)
+{
+    auto ffiADM_ptr = reinterpret_cast<webrtc::ffiAudioDeviceModule*>(ffiADM_int64);
+    auto ffiSVEF_ptr = reinterpret_cast<webrtc::ffiSoftwareVideoEncoderFactory*>(ffiSVEF_int64);
+    auto ffiSVDF_ptr = reinterpret_cast<webrtc::ffiSoftwareVideoDecoderFactory*>(ffiSVDF_int64);
+
+    auto ffiPCF = new webrtc::ffiPeerConnectionFactory(ffiADM_ptr, ffiSVEF_ptr, ffiSVDF_ptr);
     return reinterpret_cast<int64_t>(ffiPCF);
 }
 

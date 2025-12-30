@@ -10,18 +10,31 @@
 
 namespace webrtc {
 
-class ffiVideoDecoderFactory {
+class ffiHardwareVideoDecoderFactory {
 public:
     std::shared_ptr<EglContext> GetSharedContext();
-    explicit ffiVideoDecoderFactory();
+    explicit ffiHardwareVideoDecoderFactory();
 
+    ~ffiHardwareVideoDecoderFactory();
+    
 protected:
 
 private:
     std::shared_ptr<EglContext> sharedContext_;
 };
 
-std::unique_ptr<VideoDecoderFactory> createHardwareVideoDecoderFactory(ffiVideoDecoderFactory* ffiHVDF);
+class ffiSoftwareVideoDecoderFactory {
+public:
+    ~ffiSoftwareVideoDecoderFactory();
+    explicit ffiSoftwareVideoDecoderFactory();
+
+protected:
+
+private:
+};
+
+std::unique_ptr<VideoDecoderFactory> createHardwareVideoDecoderFactory(ffiHardwareVideoDecoderFactory* ffiHVDF);
+std::unique_ptr<VideoDecoderFactory> createSoftwareVideoDecoderFactory(ffiSoftwareVideoDecoderFactory* ffiSVDF);
 
 std::unique_ptr<VideoDecoderFactory> CreateDefaultVideoDecoderFactory();
 }

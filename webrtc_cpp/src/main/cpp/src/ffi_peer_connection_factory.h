@@ -36,8 +36,13 @@ enum class NakedValueDisposition {
 class ffiPeerConnectionFactory {
 public:
     ffiPeerConnectionFactory(ffiAudioDeviceModule* ffiADM,
-                        ffiVideoEncoderFactory* ffiHVEF,
-                        ffiVideoDecoderFactory* ffiHVDF);
+                        ffiHardwareVideoEncoderFactory* ffiHVEF,
+                        ffiHardwareVideoDecoderFactory* ffiHVDF);
+
+    ffiPeerConnectionFactory(ffiAudioDeviceModule* ffiADM,
+                        ffiSoftwareVideoEncoderFactory* ffiSVEF,
+                        ffiSoftwareVideoDecoderFactory* ffiSVDF);
+
     ~ffiPeerConnectionFactory();
 
     void copyVauleCreateAudioSource(FFIAudioOptions ffi_audioOptions);

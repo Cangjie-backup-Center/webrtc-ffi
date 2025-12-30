@@ -14,19 +14,31 @@
 
 namespace webrtc {
 
-class ffiVideoEncoderFactory {
+class ffiHardwareVideoEncoderFactory {
 public:
-    explicit ffiVideoEncoderFactory();
+    explicit ffiHardwareVideoEncoderFactory();
     std::shared_ptr<EglContext> getSharedContext();
     bool getEnableH264HighProfile();
-    ~ffiVideoEncoderFactory();
+    ~ffiHardwareVideoEncoderFactory();
 
 private:
     std::shared_ptr<EglContext> sharedContext_;
     bool enableH264HighProfile_{false};
 };
 
-std::unique_ptr<VideoEncoderFactory> createHardwareVideoEncoderFactory(ffiVideoEncoderFactory* ffiHVEF);
+class ffiSoftwareVideoEncoderFactory {
+public:
+    explicit ffiSoftwareVideoEncoderFactory();
+    ~ffiSoftwareVideoEncoderFactory();
+
+protected:
+
+private:
+
+};
+
+std::unique_ptr<VideoEncoderFactory> createHardwareVideoEncoderFactory(ffiHardwareVideoEncoderFactory* ffiHVEF);
+std::unique_ptr<VideoEncoderFactory> createSoftwareVideoEncoderFactory(ffiSoftwareVideoEncoderFactory* ffiSVEF);
 
 std::unique_ptr<VideoEncoderFactory> CreateDefaultVideoEncoderFactory();
 }
