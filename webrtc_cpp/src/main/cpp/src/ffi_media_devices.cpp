@@ -5,7 +5,7 @@
 #include "ffi_media_devices.h"
 #include <cstdint>
 
-using namespace webrtc;
+namespace webrtc{
 
 typedef struct {
     FFIMediaDevices* md;
@@ -91,7 +91,6 @@ void FFIMediaDevices::getUserMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video,
         std::string errorMessage;
         MediaTrackConstraintSet basic;
         if (!ffiValidateAndCopyConstraintSet(*video,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
-            LOGI("Failed to parse track constraints: ", errorMessage.c_str());
             video_ = MediaTrackConstraints();
         }
         std::vector<MediaTrackConstraintSet> advanced;
@@ -112,7 +111,6 @@ void FFIMediaDevices::getUserMedia(CJ_TO_CPP_DisplayMediaStreamOptions* video,
         std::string errorMessage;
         MediaTrackConstraintSet basic;
         if (!ffiValidateAndCopyConstraintSet(*audio,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
-            LOGI("Failed to parse track constraints: ", errorMessage.c_str());
             audio_ = MediaTrackConstraints();
         }
         std::vector<MediaTrackConstraintSet> advanced;
@@ -189,7 +187,6 @@ int64_t FFIMediaDevices::getDisplayMedia(const CJ_TO_CPP_DisplayMediaStreamOptio
         std::string errorMessage;
         MediaTrackConstraintSet basic;
         if (!ffiValidateAndCopyConstraintSet(audio,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
-            LOGI("Failed to parse track constraints: ", errorMessage.c_str());
             audio_ = MediaTrackConstraints();
         }
         std::vector<MediaTrackConstraintSet> advanced;
@@ -210,7 +207,6 @@ int64_t FFIMediaDevices::getDisplayMedia(const CJ_TO_CPP_DisplayMediaStreamOptio
         std::string errorMessage;
         MediaTrackConstraintSet basic;
         if (!ffiValidateAndCopyConstraintSet(systemAudio,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
-            LOGI("Failed to parse track constraints: ", errorMessage.c_str());
             systemAudio_ = MediaTrackConstraints();
         }
         std::vector<MediaTrackConstraintSet> advanced;
@@ -231,7 +227,6 @@ int64_t FFIMediaDevices::getDisplayMedia(const CJ_TO_CPP_DisplayMediaStreamOptio
         std::string errorMessage;
         MediaTrackConstraintSet basic;
         if (!ffiValidateAndCopyConstraintSet(video,  NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
-            LOGI("Failed to parse track constraints: ", errorMessage.c_str());
             video_ = MediaTrackConstraints();
         }
         std::vector<MediaTrackConstraintSet> advanced;
@@ -500,3 +495,4 @@ int64_t FFIMediaDevicesAssist::getDisplayMediaAssist(MediaTrackConstraints video
     this->ffiDisplayMediaStream_ = new FFIMediaStream(this->factory_, this->display_media_stream_);
     return (int64_t)this->ffiDisplayMediaStream_;
 }
+}  // namespace webrtc{

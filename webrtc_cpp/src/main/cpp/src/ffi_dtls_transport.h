@@ -13,6 +13,8 @@
 #include "peer_connection_factory.h"
 #include "ffi_ice_transport.h"
 
+#include <hilog/log.h>
+
 namespace webrtc {
 
 class ffiDtlsTransport : public FFIEventTarget<ffiDtlsTransport>, public DtlsTransportObserverInterface {
@@ -30,9 +32,12 @@ public:
     {
         factory_ = factory;
         dtlsTransport_ = dtlsTransport;
+        factory_->GetNetworkThread()->PostTask([this] { dtlsTransport_->RegisterObserver(this); });
     }
 
-    ~ffiDtlsTransport() {}
+    ~ffiDtlsTransport() {
+        OH_LOG_Print(LOG_APP, LOG_ERROR, 66666, "ohos_webrtc", "----- ffiDtlsTransport::~ffiDtlsTransport");
+    }
 
 public:
     void OnStateChange(DtlsTransportInformation info) override;

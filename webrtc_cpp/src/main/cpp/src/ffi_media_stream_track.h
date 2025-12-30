@@ -18,10 +18,11 @@
 #include "logging/ohos_log.h"
 #include "./utils/marcos.h"
 #include "ffi_define_struct.h"
+#include "ffi_media_source.h"
 
 namespace webrtc {
 
-class ffiMediaStreamTrack {
+class ffiMediaStreamTrack: public ObserverInterface {
 public:
     ffiMediaStreamTrack(std::shared_ptr<PeerConnectionFactoryWrapper> factory,
                         rtc::scoped_refptr<MediaStreamTrackInterface> track);
@@ -48,6 +49,7 @@ public:
 
 protected:
     void RemoveAllVideoSinks();
+    void OnChanged() override;
 private:
     std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
     rtc::scoped_refptr<MediaStreamTrackInterface> track_;

@@ -777,7 +777,7 @@ void ffiPeerConnection::OnTrack(rtc::scoped_refptr<RtpTransceiverInterface> tran
             if (this->cj_func_call_OnTrack_) {
                 int64_t* result = new int64_t[streams.size()];
                 for (uint32_t i = 0; i < streams.size(); i++) {
-                    result[i] = (int64_t)streams[i].get();
+                    result[i] = (int64_t) new FFIMediaStream(factory_, streams[i]);
                 }
                 this->cj_func_call_OnTrack_(this->cj_class_key, CJ_RTCTrackEvent{
                     type : "track",
@@ -1036,7 +1036,7 @@ void ffiPeerConnection::setConfiguration(CJ_RTCConfiguration cjConfig)
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
     PeerConnectionInterface::RTCConfiguration config;
     if (!CangjieToNativeConfiguration(cjConfig, config)) {
-        LOGI("CangjieToNativeConfiguration error");
+//        LOGI("CangjieToNativeConfiguration error");
     }
 
     auto error = pc_->SetConfiguration(config);

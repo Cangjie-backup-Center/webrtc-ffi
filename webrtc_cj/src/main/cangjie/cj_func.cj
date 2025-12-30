@@ -96,17 +96,32 @@ public class PeerConnectionFactory <: WebrtcClass {
             ffi_StopAecDump(this.getID())
         }
     }
+
+    public func createAudioSource(options: FFIAudioOptions): AudioSource {
+        return AudioSource(this, options)
+    }
+    public func createAudioTrack(id: String, source: AudioSource): AudioTrack {
+        return AudioTrack(this, id, source)
+    }
+    public func createVideoSource(ffiCVSP: CJ_MediaTrackConstraintSet, isScreen: Bool): VideoSource {
+        return VideoSource(this, ffiCVSP, isScreen)
+    }
+    public func createVideoTrack(id: String, source: VideoSource): VideoTrack {
+        return VideoTrack(this, id, source)
+    }
+
+
 }
 
 public class AudioSource <: WebrtcClass {
-    public init(pcf: PeerConnectionFactory, options: FFIAudioOptions) {
+    init(pcf: PeerConnectionFactory, options: FFIAudioOptions) {
         super(unsafe {ffi_createAudioSource(pcf.ID, options)}, this)
     }
 }
 
 public class VideoTrack <: MediaStreamTrack {
-    public init(pcf: PeerConnectionFactory, tag: String) {
-        super( unsafe {ffi_createVideoTrack(pcf.ID,LibC.mallocCString(tag))}, this)
+    public init(pcf: PeerConnectionFactory, tag: String, ffiVideoSource: VideoSource) {
+        super( unsafe {ffi_createVideoTrack(pcf.ID, LibC.mallocCString(tag), ffiVideoSource.ID)}, this)
     }
 
     public init(ffiMST: CJ_MediaStreamTrack) {
@@ -122,7 +137,7 @@ public class VideoTrack <: MediaStreamTrack {
 }
 
 public class AudioTrack <: MediaStreamTrack {
-    public init(pcf: PeerConnectionFactory, tag: String) {
+    public init(pcf: PeerConnectionFactory, tag: String, source: AudioSource) {
         super(unsafe {ffi_createAudioTrack(pcf.ID, LibC.mallocCString(tag))}, this)
     }
 
@@ -274,9 +289,9 @@ foreign {
     func ffi_newHardwareVideoDecoderFactory(): Int64
     func ffi_newPeerConnectionFactory(ffiADM_int64: Int64, ffiHVEF_int64: Int64 , ffiHVDF_int64: Int64): Int64
     func ffi_createAudioSource(ffiPCF_int64: Int64, ffiao: FFIAudioOptions): Int64
-    func ffi_createAudioTrack(ffiPCF_int64: Int64, ffi_audioId: CString): Int64
+    func ffi_createAudioTrack(ffiPCF_int64: Int64, ffi_audioId: CString, ffiAudioSourceId: Int64): Int64
     func ffi_createVideoSource(ffiPCF_int64: Int64, ffiCVSP: CJ_TO_CPP_DisplayMediaStreamOptions, isScreen: Bool): Int64
-    func ffi_createVideoTrack(ffiPCF_int64: Int64, ffi_videoId: CString): Int64
+    func ffi_createVideoTrack(ffiPCF_int64: Int64, ffi_videoId: CString, ffiVideoSourceId: Int64): Int64
     func ffi_SetDefault(ffiPCF_int64: Int64): Unit
     func ffi_StartAecDump(ffiPCF_int64: Int64, fd: Int32, max_size_bytes: Int32): Bool
     func ffi_StopAecDump(ffiPCF_int64: Int64): Unit

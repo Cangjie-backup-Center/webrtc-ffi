@@ -485,20 +485,20 @@ class EntryView {
     }
 
     func sendOffer(): Unit {
-             try {
-                let offer = this.pc.getOrThrow().createOffer()
-                match (offer) {
-                    case Ok(v) =>
-                        this.pc?.setLocalDescription(v)
-                        let cjmsg = CJ_MessageData(v, Option<RTCIceCandidateInit>.None)
-                        let dm = cjmsg.serialize()
-                        let obj: JsonValue = dm.toJson()
-                        this.sendMessage(obj.toJsonString())
-                    case Error(str) => AppLog.error("${Index_WebRTC_TAG} str: ${str}")
-                }
-             } catch (e: Exception) {
-                AppLog.error('${Index_WebRTC_TAG} sendOffer: ${e}')
-             }
+         try {
+            let offer = this.pc.getOrThrow().createOffer()
+            match (offer) {
+                case Ok(v) =>
+                    this.pc?.setLocalDescription(v)
+                    let cjmsg = CJ_MessageData(v, Option<RTCIceCandidateInit>.None)
+                    let dm = cjmsg.serialize()
+                    let obj: JsonValue = dm.toJson()
+                    this.sendMessage(obj.toJsonString())
+                case Error(str) => AppLog.error("${Index_WebRTC_TAG} str: ${str}")
+            }
+         } catch (e: Exception) {
+            AppLog.error('${Index_WebRTC_TAG} sendOffer: ${e}')
+         }
     }
 
     func sendMessage(message: String) {
@@ -534,40 +534,40 @@ class EntryView {
     }
 
     func prepareLocalMedia(): Unit {
-            if (this.localAudioTrack.isNone()) {
-                var ffiao: FFIAudioOptions = FFIAudioOptions()
-                ffiao.noise_suppression = true
-                ffiao.echo_cancellation = true
-                this.localAudioSource = AudioSource(this.pcf.getOrThrow(), ffiao)
-                this.localAudioTrack = AudioTrack(this.pcf.getOrThrow(), "audio")
-            }
-            if (this.localCameraVideoTrack.isNone()) {
-                this.localVideoSource = VideoSource(this.pcf.getOrThrow(), CJ_MediaTrackConstraintSet(width:1280.0, height:720.0, facingMode:"user"), false)
-                this.localCameraVideoTrack = VideoTrack(this.pcf.getOrThrow(), "video")
-                this.mXComponentController1.setVideoTrack(this.localCameraVideoTrack.getOrThrow())
-                this.mXComponentController1.setMirror(true)
-                this.mXComponentController1.setScalingMode(FFIScalingModeEnum.ASPECTFIT)
-            }
+        if (this.localAudioTrack.isNone()) {
+            var ffiao: FFIAudioOptions = FFIAudioOptions()
+            ffiao.noise_suppression = true
+            ffiao.echo_cancellation = true
+            this.localAudioSource = AudioSource(this.pcf.getOrThrow(), ffiao)
+            this.localAudioTrack = AudioTrack(this.pcf.getOrThrow(), "audio")
+        }
+        if (this.localCameraVideoTrack.isNone()) {
+            this.localVideoSource = VideoSource(this.pcf.getOrThrow(), CJ_MediaTrackConstraintSet(width:1280.0, height:720.0, facingMode:"user"), false)
+            this.localCameraVideoTrack = VideoTrack(this.pcf.getOrThrow(), "video")
+            this.mXComponentController1.setVideoTrack(this.localCameraVideoTrack.getOrThrow())
+            this.mXComponentController1.setMirror(true)
+            this.mXComponentController1.setScalingMode(FFIScalingModeEnum.ASPECTFIT)
+        }
     }
 
     func prepareDisplayMedia(): Unit {
-            if (this.displayMediaStream.isNone()) {
-                this.displayMediaStream = mediaDevices.getDisplayMedia(CJ_MediaTrackConstraintSet(width: 720.0, height: 1280.0, ohosScreenCaptureAudioFilter: "current-app"), true, true)
-                this.retVideoTrack = this.displayMediaStream.getVideoTracks()
-                this.localVideoTrack = this.retVideoTrack[0]
-                this.mXComponentController1.setVideoTrack(this.retVideoTrack[0])
-                this.mXComponentController1.setScalingMode(FFIScalingModeEnum.ASPECTFIT)
+        if (this.displayMediaStream.isNone()) {
+            this.displayMediaStream = mediaDevices.getDisplayMedia(CJ_MediaTrackConstraintSet(width: 720.0, height: 1280.0, ohosScreenCaptureAudioFilter: "current-app"), true, true)
+            this.retVideoTrack = this.displayMediaStream.getVideoTracks()
+            this.localVideoTrack = this.retVideoTrack[0]
+            this.mXComponentController1.setVideoTrack(this.retVideoTrack[0])
+            this.mXComponentController1.setScalingMode(FFIScalingModeEnum.ASPECTFIT)
 
-                let audioTracks = this.displayMediaStream.getAudioTracks()
-                if (audioTracks.size > 0) {
-                     this.localAudioTrack = audioTracks[0]
-                     AppLog.error('${Index_WebRTC_TAG} audioTrack: ${this.localAudioTrack.getOrThrow().getID()}')
-                }
-                if (audioTracks.size > 1) {
-                     this.localAudioTrack2 = audioTracks[1]
-                     AppLog.error('${Index_WebRTC_TAG} audioTrack2: ${this.localAudioTrack.getOrThrow().getID()}')
-                }
+            let audioTracks = this.displayMediaStream.getAudioTracks()
+            if (audioTracks.size > 0) {
+                 this.localAudioTrack = audioTracks[0]
+                 AppLog.error('${Index_WebRTC_TAG} audioTrack: ${this.localAudioTrack.getOrThrow().getID()}')
             }
+            if (audioTracks.size > 1) {
+                 this.localAudioTrack2 = audioTracks[1]
+                 AppLog.error('${Index_WebRTC_TAG} audioTrack2: ${this.localAudioTrack.getOrThrow().getID()}')
+            }
+        }
     }
 
 
@@ -613,8 +613,8 @@ class EntryView {
             }
         }
         this.pc?.onnegotiationneeded = { pc, event =>
-//                      AppLog.info('${Index_WebRTC_TAG} onnegotiationneeded: this= ${this.pc}')
-//                      AppLog.info('${Index_WebRTC_TAG} onnegotiationneeded: event= ${event}')
+//              AppLog.info('${Index_WebRTC_TAG} onnegotiationneeded: this= ${this.pc}')
+//              AppLog.info('${Index_WebRTC_TAG} onnegotiationneeded: event= ${event}')
         }
         this.pc?.onIceCandidate = { pc, event =>
 //              AppLog.info('${Index_WebRTC_TAG} onicecandidate: this=')
@@ -703,7 +703,7 @@ class EntryView {
         this.sendChannel?.onmessage = {pc, event => this.setStatus("Received data channel message")}
         this.sendChannel?.onerror = this.onDataChannelError
         this.sendChannel?.onclose = this.onDataChannelClose
-         }
+        }
     }
 
     func onDataChannelOpen(pc: RTCDataChannel, event: Event): Unit {

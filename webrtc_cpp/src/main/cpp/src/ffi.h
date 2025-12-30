@@ -38,11 +38,11 @@ extern "C" {
     int64_t ffi_newHardwareVideoDecoderFactory();
     int64_t ffi_newPeerConnectionFactory(int64_t ffiADM_int64, int64_t ffiHVEF_int64, int64_t ffiHVDF_int64);
     int64_t ffi_createAudioSource(int64_t ffiPCF_int64, FFIAudioOptions ffiao);
-    int64_t ffi_createAudioTrack(int64_t ffiPCF_int64, char* ffi_audioId);
+    int64_t ffi_createAudioTrack(int64_t ffiPCF_int64, char* ffi_audioId, int64_t ffiAudioSourceId);
     int64_t ffi_createVideoSource(int64_t ffiPCF_int64,
         CJ_TO_CPP_DisplayMediaStreamOptions fficvsp, bool isScreencast);
 
-    int64_t ffi_createVideoTrack(int64_t ffiPCF_int64, char* ffi_videoId);
+    int64_t ffi_createVideoTrack(int64_t ffiPCF_int64, CHAR_PTR ffi_videoId, int64_t ffiVideoSourceId);
     int64_t ffiPeerConnectionFactory_ffiCreatePeerConnection(int64_t ffiPCF_int64, CJ_RTCConfiguration config);
     void ffi_SetDefault(int64_t ffiPCF_int64);
     bool ffi_StartAecDump(int64_t ffiPCF_int64, int fd, int max_size_bytes);

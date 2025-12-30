@@ -10,7 +10,7 @@
 #include <string>
 #include <memory>
 #include <cstdint>
-using namespace webrtc;
+namespace webrtc {
 
 void webrtc::FFIMediaStream::AddTrack(int64_t mst)
 {
@@ -88,7 +88,7 @@ int64_t webrtc::FFIMediaStream::GetTrackById(std::string trackId_str)
 
 CJ_ReturnArray webrtc::FFIMediaStream::GetTracks()
 {
-    auto audioTracks = stream_->GetAudioTracks();
+    auto audioTracks = stream_->GetAudioTracks();  // typedef std::vector<rtc::scoped_refptr<AudioTrackInterface> > AudioTrackVector;
     auto videoTracks = stream_->GetVideoTracks();
 
     int64_t* result = new int64_t[audioTracks.size() + videoTracks.size()];
@@ -127,4 +127,30 @@ CJ_ReturnArray webrtc::FFIMediaStream::GetVideoTracks()
     }
 
     return (CJ_ReturnArray){result, (int64_t)(videoTracks.size())};
+}
+
+void FFIMediaStream::OnAudioTrackAddedToStream(AudioTrackInterface* track, MediaStreamInterface* stream)
+{
+    (void)stream;
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__ << " track: " << track->id();
+}
+
+void FFIMediaStream::OnVideoTrackAddedToStream(VideoTrackInterface* track, MediaStreamInterface* stream)
+{
+    (void)stream;
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__ << " track: " << track->id();
+}
+
+void FFIMediaStream::OnAudioTrackRemovedFromStream(AudioTrackInterface* track, MediaStreamInterface* stream)
+{
+    (void)stream;
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__ << " track: " << track->id();
+}
+
+void FFIMediaStream::OnVideoTrackRemovedFromStream(VideoTrackInterface* track, MediaStreamInterface* stream)
+{
+    (void)stream;
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__ << " track: " << track->id();
+}
+
 }

@@ -78,12 +78,12 @@ int64_t ffi_createAudioSource(int64_t ffiPCF_int64, FFIAudioOptions ffiao)
     return ffiPCF_ptr->ffiCreateAudioSource(ffiao);
 }
 
-int64_t ffi_createAudioTrack(int64_t ffiPCF_int64, CHAR_PTR ffi_audioId)
+int64_t ffi_createAudioTrack(int64_t ffiPCF_int64, CHAR_PTR ffi_audioId, int64_t ffiAudioSourceId)
 {
     auto ffiPCF_ptr = reinterpret_cast<webrtc::ffiPeerConnectionFactory*>(ffiPCF_int64);
     std::string ffi_id_str(ffi_audioId);
     delete[] ffi_audioId;
-    return ffiPCF_ptr->ffiCreateAudioTrack(ffi_id_str);
+    return ffiPCF_ptr->ffiCreateAudioTrack(ffi_id_str, reinterpret_cast<webrtc::FFIAudioSource*>(ffiAudioSourceId));
 }
 
 int64_t ffi_createVideoSource(int64_t ffiPCF_int64, CJ_TO_CPP_DisplayMediaStreamOptions fficvsp, bool isScreencast)
@@ -92,12 +92,12 @@ int64_t ffi_createVideoSource(int64_t ffiPCF_int64, CJ_TO_CPP_DisplayMediaStream
     return ffiPCF_ptr->ffiCreateVideoSource(fficvsp, isScreencast);
 }
 
-int64_t ffi_createVideoTrack(int64_t ffiPCF_int64, CHAR_PTR ffi_videoId)
+int64_t ffi_createVideoTrack(int64_t ffiPCF_int64, CHAR_PTR ffi_videoId, int64_t ffiVideoSourceId)
 {
     webrtc::ffiPeerConnectionFactory* ffiPCF_ptr = (webrtc::ffiPeerConnectionFactory*)ffiPCF_int64;
     std::string ffi_videoId_str(ffi_videoId);
     delete[] ffi_videoId;
-    int64_t ffiMST = ffiPCF_ptr->ffiCreateVideoTrack(ffi_videoId_str);
+    int64_t ffiMST = ffiPCF_ptr->ffiCreateVideoTrack(ffi_videoId_str, reinterpret_cast<webrtc::FFIVideoSource*>(ffiVideoSourceId));
     return ffiMST;
 }
 

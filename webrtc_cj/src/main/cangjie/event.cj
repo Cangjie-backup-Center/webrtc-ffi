@@ -155,7 +155,7 @@ public class RTCIceCandidate <: Serializable<RTCIceCandidate> {
 
     public func toRTCIceCandidateInit(): RTCIceCandidateInit {
         //     public init(isBuild: Bool, candidate: String, sdpMLineIndex: Int32, sdpMid: String, usernameFragment: String) {
-        return RTCIceCandidateInit(true, this.candidate, Int32(this.sdpMLineIndex), this.sdpMid, this.usernameFragment)
+        return RTCIceCandidateInit(this.candidate, Int32(this.sdpMLineIndex), this.sdpMid, this.usernameFragment)
     }
 
     /* 实现反序列化方法 */
@@ -234,7 +234,6 @@ public class RTCTrackEvent {
     public let transceiver: RtpTransceiver
 
     public RTCTrackEvent(TYPE: String,  streams: Array<Int64>, mediaStreamTrack_ptr: Int64, RtpReceiver_ptr: Int64, RtpTransceiver_ptr: Int64) {
-        var tmpMST: CJ_MediaStreamTrack
         this.TYPE = TYPE
         this.streams = streams
         this.track = VideoTrack(mediaStreamTrack_ptr)

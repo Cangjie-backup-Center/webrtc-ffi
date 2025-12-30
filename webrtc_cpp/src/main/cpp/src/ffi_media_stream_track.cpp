@@ -4,6 +4,7 @@
 
 #include "ffi_media_stream_track.h"
 #include "ffi_exception.h"
+#include "ffi_media_source.h"
 #include <cstdint>
 #include <hilog/log.h>
 
@@ -17,6 +18,7 @@ ffiMediaStreamTrack::ffiMediaStreamTrack(
 {
     factory_ = factory;
     track_ = track;
+    track_->RegisterObserver(this);
 }
 
 ffiMediaStreamTrack::~ffiMediaStreamTrack()
@@ -52,7 +54,6 @@ void ffiMediaStreamTrack::RemoveVideoSink(rtc::VideoSinkInterface<VideoFrame>* s
     {
         std::lock_guard<std::mutex> lock(sinksMutex_);
         if (videoSinks_.erase(sink) == 0) {
-            LOGI("Failed to erase video sink");
             return;
         }
     }
@@ -67,7 +68,6 @@ void ffiMediaStreamTrack::AddVideoSink(rtc::VideoSinkInterface<VideoFrame>* sink
         std::lock_guard<std::mutex> lock(sinksMutex_);
         auto setRet = videoSinks_.insert(sink);
         if (!setRet.second) {
-            LOGI("Failed to insert video sink");
             return;
         }
     }
@@ -214,6 +214,13 @@ void ffiMediaStreamTrack::RemoveAllVideoSinks()
     }
 }
 
+void ffiMediaStreamTrack::OnChanged()
+{
+    RTC_DLOG(LS_INFO) << __FUNCTION__ << "(" << track_->kind() << ") state=" << track_->state()
+                      << ", enabled=" << track_->enabled();
+}
+
+
 CJ_ffiMediaStreamTrackJson ffiMediaStreamTrack::ToJson()
 {
     CJ_ffiMediaStreamTrackJson js;
@@ -248,16 +255,16 @@ int64_t ffiMediaStreamTrack::GetSource()
     if (IsAudioTrack()) {
         auto audioSource = factory_->GetAudioSource(track_);
         if (audioSource) {
-            return 0;
+            return (int64_t)FFIAudioSource::NewInstance(audioSource);
         }
     } else if (IsVideoTrack()) {
         auto videoSource = factory_->GetVideoSource(track_);
         if (videoSource) {
-            return 0;
+            return (int64_t)FFIVideoSource::NewInstance(videoSource);
         }
     }
 
     return -1;
 }
 
-}
+} // namespace webrtc

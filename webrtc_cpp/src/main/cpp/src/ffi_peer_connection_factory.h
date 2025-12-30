@@ -44,14 +44,11 @@ public:
     void copyVauleCreateAudioTrack(std::string ffi_id);
     void copyVauleCreateVideoTrack(std::string ffi_videoId);
 
-    rtc::scoped_refptr<OhosVideoTrackSource> getVideoSource();
-    rtc::scoped_refptr<VideoTrackInterface> getVideoTrack();
-
     int64_t ffiCreatePeerConnection(CJ_RTCConfiguration config);
     int64_t ffiCreateAudioSource(FFIAudioOptions ffi_audioOptions);
-    int64_t ffiCreateAudioTrack(std::string ffi_audioId_str);
+    int64_t ffiCreateAudioTrack(std::string ffi_audioId_str, FFIAudioSource ffiAudioSource);
     int64_t ffiCreateVideoSource(CJ_TO_CPP_DisplayMediaStreamOptions ffi_videoSource, bool isScreencast);
-    int64_t ffiCreateVideoTrack(std::string ffi_videoId_str);
+    int64_t ffiCreateVideoTrack(std::string ffi_videoId_str, FFIVideoSource* ffiVideoSource);
 
     std::shared_ptr<PeerConnectionFactoryWrapper> GetWrapper() const
     {
@@ -67,10 +64,6 @@ public:
     rtc::scoped_refptr<OhosVideoTrackSource>* videoSourcePtr_ = nullptr;
     rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> pcFactory_;
 
-//    ffiPeerConnection* ffipc_ = nullptr;
-    ffiMediaStreamTrack* ffiVideoMST_ = nullptr;
-    ffiMediaStreamTrack* ffiAudioMST_ = nullptr;
-
     std::shared_ptr<PeerConnectionFactoryWrapper> GetPeerConnectionFactoryWrapper () const
     {
         return wrapper_;
@@ -78,11 +71,6 @@ public:
 
 private:
     std::shared_ptr<PeerConnectionFactoryWrapper> wrapper_;
-    rtc::scoped_refptr<OhosLocalAudioSource> audioSource_;
-    rtc::scoped_refptr<OhosVideoTrackSource> videoSource_;
-
-    rtc::scoped_refptr<VideoTrackInterface> videoTrack_;
-    rtc::scoped_refptr<AudioTrackInterface> audioTrack_;
 
     std::string audioId_;
     std::string videoId_;
