@@ -83,7 +83,8 @@ int64_t ffi_createAudioTrack(int64_t ffiPCF_int64, CHAR_PTR ffi_audioId, int64_t
     auto ffiPCF_ptr = reinterpret_cast<webrtc::ffiPeerConnectionFactory*>(ffiPCF_int64);
     std::string ffi_id_str(ffi_audioId);
     delete[] ffi_audioId;
-    return ffiPCF_ptr->ffiCreateAudioTrack(ffi_id_str, reinterpret_cast<webrtc::FFIAudioSource*>(ffiAudioSourceId));
+    auto source = reinterpret_cast<webrtc::FFIAudioSource*>(ffiAudioSourceId);
+    return ffiPCF_ptr->ffiCreateAudioTrack(ffi_id_str, source);
 }
 
 int64_t ffi_createVideoSource(int64_t ffiPCF_int64, CJ_TO_CPP_DisplayMediaStreamOptions fficvsp, bool isScreencast)

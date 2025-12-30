@@ -101,10 +101,10 @@ int64_t ffiPeerConnectionFactory::ffiCreateAudioSource(FFIAudioOptions ffi_audio
 }
 
 
-int64_t ffiPeerConnectionFactory::ffiCreateAudioTrack(std::string ffi_audioId_str, FFIAudioSource ffiAudioSource)
+int64_t ffiPeerConnectionFactory::ffiCreateAudioTrack(std::string ffi_audioId_str, FFIAudioSource* ffiAudioSource)
 {
     copyVauleCreateAudioTrack(ffi_audioId_str);
-    auto audioTrack = wrapper_->CreateAudioTrack(audioId_, ffiAudioSource.Get());
+    auto audioTrack = wrapper_->CreateAudioTrack(audioId_, ffiAudioSource->Get());
     auto ffiMST = new ffiMediaStreamTrack(wrapper_, audioTrack);
     return reinterpret_cast<int64_t>(ffiMST);
 }

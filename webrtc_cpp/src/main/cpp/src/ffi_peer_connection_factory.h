@@ -46,7 +46,7 @@ public:
 
     int64_t ffiCreatePeerConnection(CJ_RTCConfiguration config);
     int64_t ffiCreateAudioSource(FFIAudioOptions ffi_audioOptions);
-    int64_t ffiCreateAudioTrack(std::string ffi_audioId_str, FFIAudioSource ffiAudioSource);
+    int64_t ffiCreateAudioTrack(std::string ffi_audioId_str, FFIAudioSource* ffiAudioSource);
     int64_t ffiCreateVideoSource(CJ_TO_CPP_DisplayMediaStreamOptions ffi_videoSource, bool isScreencast);
     int64_t ffiCreateVideoTrack(std::string ffi_videoId_str, FFIVideoSource* ffiVideoSource);
 

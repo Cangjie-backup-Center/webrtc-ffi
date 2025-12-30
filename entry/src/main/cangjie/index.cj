@@ -538,12 +538,12 @@ class EntryView {
             var ffiao: FFIAudioOptions = FFIAudioOptions()
             ffiao.noise_suppression = true
             ffiao.echo_cancellation = true
-            this.localAudioSource = AudioSource(this.pcf.getOrThrow(), ffiao)
-            this.localAudioTrack = AudioTrack(this.pcf.getOrThrow(), "audio")
+            this.localAudioSource = this.pcf.getOrThrow().createAudioSource(ffiao)
+            this.localAudioTrack = this.pcf.getOrThrow().createAudioTrack("audio", this.localAudioSource.getOrThrow())
         }
         if (this.localCameraVideoTrack.isNone()) {
-            this.localVideoSource = VideoSource(this.pcf.getOrThrow(), CJ_MediaTrackConstraintSet(width:1280.0, height:720.0, facingMode:"user"), false)
-            this.localCameraVideoTrack = VideoTrack(this.pcf.getOrThrow(), "video")
+            this.localVideoSource = this.pcf.getOrThrow().createVideoSource(CJ_MediaTrackConstraintSet(width:1280.0, height:720.0, facingMode:"user"), false)
+            this.localCameraVideoTrack = this.pcf.getOrThrow().createVideoTrack("video", this.localVideoSource.getOrThrow())
             this.mXComponentController1.setVideoTrack(this.localCameraVideoTrack.getOrThrow())
             this.mXComponentController1.setMirror(true)
             this.mXComponentController1.setScalingMode(FFIScalingModeEnum.ASPECTFIT)

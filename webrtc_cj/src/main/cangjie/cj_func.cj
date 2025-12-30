@@ -138,13 +138,13 @@ public class VideoTrack <: MediaStreamTrack {
 
 public class AudioTrack <: MediaStreamTrack {
     public init(pcf: PeerConnectionFactory, tag: String, source: AudioSource) {
-        super(unsafe {ffi_createAudioTrack(pcf.ID, LibC.mallocCString(tag))}, this)
+        super(unsafe {ffi_createAudioTrack(pcf.ID, LibC.mallocCString(tag), source.ID)}, this)
     }
 
 }
 
 public class VideoSource <: WebrtcClass {
-    public init(pcf: PeerConnectionFactory, ffiCVSP: CJ_MediaTrackConstraintSet, isScreen: Bool) {
+    init(pcf: PeerConnectionFactory, ffiCVSP: CJ_MediaTrackConstraintSet, isScreen: Bool) {
         super(unsafe{ffi_createVideoSource(pcf.ID, CJ_TO_CPP_DisplayMediaStreamOptions(ffiCVSP), isScreen)}, this)
     }
 }
