@@ -29,25 +29,27 @@ public:
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 
         // 创建工作线程
-        workerThread_ = std::thread([this]() {
-            this->Run();
-        });
+//        workerThread_ = std::thread([this]() {
+//            this->Run();
+//        });
     }
 
     ~FFIEventTarget()
     {
         Stop();
-        if (workerThread_.joinable()) {
-            workerThread_.join();
-        }
+//        if (workerThread_.joinable()) {
+//            workerThread_.join();
+//        }
     }
 
     void Dispatch(std::unique_ptr<Event<T>> event)
     {
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
 
-        this->Enqueue(std::move(event));
-        conditionVariable_.notify_one();
+//        this->Enqueue(std::move(event));
+//        conditionVariable_.notify_one();
+        T* target = static_cast<T*>(this);
+        event->Process(*target);
     }
 
     virtual void Stop()

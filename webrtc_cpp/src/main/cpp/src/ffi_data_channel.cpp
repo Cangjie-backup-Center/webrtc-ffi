@@ -8,8 +8,10 @@
 #include "webrtc_func.h"
 
 namespace webrtc {
-    ffiDataChannelObserverTemp::ffiDataChannelObserverTemp(rtc::scoped_refptr<DataChannelInterface> dataChannel)
-        : dataChannel_(std::move(dataChannel))
+
+    ffiDataChannelObserverTemp::ffiDataChannelObserverTemp(std::shared_ptr<PeerConnectionFactoryWrapper> factory,
+                                                           rtc::scoped_refptr<DataChannelInterface> dataChannel)
+        : factory_(factory), dataChannel_(std::move(dataChannel))
     {
         RTC_LOG(LS_VERBOSE) << __FUNCTION__;
         dataChannel_->RegisterObserver(this);
@@ -19,7 +21,7 @@ namespace webrtc {
     {
         RTC_LOG(LS_VERBOSE) << __FUNCTION__;
     
-        dataChannel_->UnregisterObserver();
+//        dataChannel_->UnregisterObserver();
     }
     
 
@@ -27,42 +29,50 @@ namespace webrtc {
     std::string ffiDataChannelObserverTemp::GetLabel()
     {
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-        return dataChannel_->label();
+        return dataChannel_ ? dataChannel_->label() : "";
     }
     bool ffiDataChannelObserverTemp::GetOrdered()
     {
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-        return dataChannel_->ordered();
+        return dataChannel_ ? dataChannel_->ordered() : false;
     }
     int64_t ffiDataChannelObserverTemp::GetMaxPacketLifeTime()
     {
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-        return dataChannel_->maxPacketLifeTime().value();
+        if (dataChannel_ && dataChannel_->maxPacketLifeTime()) {
+            return dataChannel_->maxPacketLifeTime().value();
+        }
+        throw new std::exception();
     }
     int64_t ffiDataChannelObserverTemp::GetMaxRetransmits()
     {
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-        return dataChannel_->maxRetransmitsOpt().value();
+        if (dataChannel_ && dataChannel_->maxRetransmitsOpt()) {
+            return dataChannel_->maxRetransmitsOpt().value();
+        }
     }
     std::string ffiDataChannelObserverTemp::GetProtocol()
     {
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-        return dataChannel_->protocol();
+        return dataChannel_ ? dataChannel_->protocol(): "";
     }
     bool ffiDataChannelObserverTemp::GetNegotiated()
     {
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-        return dataChannel_->negotiated();
+        return dataChannel_ ? dataChannel_->negotiated(): false;
     }
     int64_t ffiDataChannelObserverTemp::GetId()
     {
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-        return dataChannel_->id();
+        if (dataChannel_ && dataChannel_->id() != -1) {
+            return dataChannel_->id();
+        }
     }
     FFIDataChannelState ffiDataChannelObserverTemp::GetReadyState()
     {
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-        switch (dataChannel_->state()) {
+        auto state = dataChannel_ ? dataChannel_->state() : DataChannelInterface::kClosed;
+        switch (state) {
             case DataChannelInterface::kConnecting:
                 return FFIDataChannelState::CONNECTING;
             case DataChannelInterface::kOpen:
@@ -79,7 +89,7 @@ namespace webrtc {
     int64_t ffiDataChannelObserverTemp::GetBufferedAmount()
     {
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-        return dataChannel_->buffered_amount();
+        return dataChannel_ ? dataChannel_->buffered_amount() : 0;
     }
     int64_t ffiDataChannelObserverTemp::GetBufferedAmountLowThreshold()
     {
@@ -109,14 +119,16 @@ namespace webrtc {
     void ffiDataChannelObserverTemp::Send(uint8_t* data, int64_t size)
     {
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-        if (dataChannel_->state() != DataChannelInterface::kOpen) {
+        if (!dataChannel_ || dataChannel_->state() != DataChannelInterface::kOpen) {
             CANGJIE_THROW("Datachannel state is not open");
+            return;
         }
 
         auto ptr = new uint8_t[size];
         auto retMemcpy = webrtc_mcp(ptr, size, data, size);
         if (retMemcpy != SOFT_MEMCPY_SUCCESS) {
             CANGJIE_THROW("webrtc_mcp error");
+            return;
         }
 
         dataChannel_->SendAsync(DataBuffer(rtc::CopyOnWriteBuffer(ptr, size), true), [&](RTCError err) {
@@ -143,7 +155,9 @@ namespace webrtc {
     void ffiDataChannelObserverTemp::Close()
     {
         RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-        dataChannel_->Close();
+        if (dataChannel_) {
+ 	         dataChannel_->Close();
+        }
     }
 
     void ffiDataChannelObserverTemp::SetOnStateChange(void (*pe)(int64_t id, int64_t ptr))
@@ -171,6 +185,12 @@ namespace webrtc {
         RTC_LOG(LS_VERBOSE) << __FUNCTION__;
     
         auto state = dataChannel_->state();
+    
+        if (state == DataChannelInterface::kClosed) {
+ 	         
+ 	         dataChannel_->UnregisterObserver();
+ 	     }
+    
         this->Dispatch(CallbackEvent<ffiDataChannelObserverTemp>::Create(
             [this, state](ffiDataChannelObserverTemp& target) {
                 RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
@@ -196,6 +216,7 @@ namespace webrtc {
                         if (cj_func_call_Onclose_) {
                             cj_func_call_Onclose_(cj_class_key, CJ_Event{type: "close"});
                         }
+                        dataChannel_ = nullptr;
                         this->Stop();
                         break;
                 }

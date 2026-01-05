@@ -6,6 +6,7 @@ package webrtc_cj
 import std.collection.concurrent.ConcurrentHashMap
 import std.collection.concurrent.BlockingQueue
 import std.sync.*
+import ohos.concurrency.launch
 
 
 class WebRtcGlobal {
@@ -40,19 +41,21 @@ public class ExecutorService {
     }
 
     func reset() {
-        thread = spawn {
-            while (true) {
-                if (let Some(fn) <- this.TASK.dequeue()) {
-                    fn()
-                } else {
-                    break
-                }
-            }
-        }
+//        thread = spawn {
+//            while (true) {
+//                if (let Some(fn) <- this.TASK.dequeue()) {
+//                    spawn {
+//                        launch {fn()}
+//                    }
+//                } else {
+//                    break
+//                }
+//            }
+//        }
     }
 
     public func execute(fn: () -> Unit): Unit {
-        this.TASK.enqueue(fn)
+        launch {fn()}
     }
 
     public func shutdown(self!: Bool = false): Unit {

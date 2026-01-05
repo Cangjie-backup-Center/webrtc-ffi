@@ -8,6 +8,7 @@
 #include "event/ffi_event_target.h"
 #include "ffi_cj_class.h"
 #include "ffi_define_struct.h"
+#include "peer_connection_factory.h"
 #include <cstdint>
 
 namespace webrtc {
@@ -19,7 +20,8 @@ class ffiDataChannelObserverTemp : public FFIEventTarget<ffiDataChannelObserverT
                                    public DataChannelObserver,
                                    public CJ_CLASS_BASE::ffiCjClass {
 public:
-    explicit ffiDataChannelObserverTemp(rtc::scoped_refptr<DataChannelInterface> dataChannel);
+    explicit ffiDataChannelObserverTemp(std::shared_ptr<PeerConnectionFactoryWrapper> factory,
+                                        rtc::scoped_refptr<DataChannelInterface> dataChannel);
     ~ffiDataChannelObserverTemp() override;
 
     rtc::scoped_refptr<DataChannelInterface> Get() const
@@ -27,6 +29,11 @@ public:
         return dataChannel_;
     }
 
+     std::shared_ptr<PeerConnectionFactoryWrapper> GetFactory() const
+     {
+         return factory_;
+     }
+ 	 
 // readonly
     std::string GetLabel();
     bool GetOrdered();
@@ -59,6 +66,7 @@ protected:
     void OnBufferedAmountChange(uint64_t sentDataSize) override;
 
 private:
+    std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
     void (*cj_func_call_Onopen_)(int64_t id, CJ_Event ptr) = nullptr;
     void (*cj_func_call_Onclose_)(int64_t id, CJ_Event ptr) = nullptr;
     void (*cj_func_call_Onclosing_)(int64_t id, CJ_Event ptr) = nullptr;

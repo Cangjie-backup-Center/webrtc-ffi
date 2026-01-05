@@ -64,10 +64,6 @@ public:
     bool StartAecDump(int fd, int max_size_bytes);
     void StopAecDump();
 
-    rtc::scoped_refptr<OhosLocalAudioSource>* audioSourcePtr_ = nullptr;
-    rtc::scoped_refptr<AudioTrackInterface>* audioTrackPtr_ = nullptr;
-    rtc::scoped_refptr<OhosVideoTrackSource>* videoSourcePtr_ = nullptr;
-    rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> pcFactory_;
 
     std::shared_ptr<PeerConnectionFactoryWrapper> GetPeerConnectionFactoryWrapper () const
     {

@@ -16,6 +16,9 @@ public class VideoRenderController <: XComponentController {
 
     protected override func onSurfaceCreated(surfaceId: String) {
         mySurfaceId = surfaceId
+
+        AppLog.info("------ XComponentController onSurfaceCreated thread name: ${Thread.currentThread.name}")
+
         unsafe {
             renderer = ffi_newNativeVideoRenderer(LibC.mallocCString(mySurfaceId))
         }

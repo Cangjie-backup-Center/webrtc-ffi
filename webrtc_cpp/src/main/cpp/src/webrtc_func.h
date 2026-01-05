@@ -5,7 +5,7 @@
 #ifndef SOFT_FUNC_H
 #define SOFT_FUNC_H
 #include "ffi_exception.h"
-
+#include "hilog/log.h"
 #define SOFT_MEMCPY_SUCCESS 0
 #define SOFT_MEMCPY_NULL_POINTER -1
 #define SOFT_MEMCPY_INSUFFICIENT_SPACE -2
@@ -15,7 +15,7 @@
 #define SOFT_MEMSET_INSUFFICIENT_SPACE -2
 
 #define CHAR_PTR char*
-
+#define OHOS_LOG_DOMAIN 0xD001234
 template<typename T>
 int32_t webrtc_mcp(void *dest, uint32_t dest_size, const T *src, uint32_t src_size)
 {
@@ -73,5 +73,12 @@ int32_t webrtc_scp(T *dest, uint32_t dest_size, const T *src, uint32_t src_size)
     dest_ptr[src_size] = '\0';
     return SOFT_MEMCPY_SUCCESS;
 }
+
+inline void webrtc_hilog_print_threadname(std::string filefunc, int fileLine) {
+    char threandSelf[64];
+    pthread_getname_np(pthread_self(), threandSelf, sizeof(threandSelf));
+    OH_LOG_Print(LOG_APP, LOG_INFO, OHOS_LOG_DOMAIN, "FFI_thread_name", "------ 函数名:%{public}s, 行号:%{public}d, 线程名:%{public}s", filefunc.c_str(), fileLine, threandSelf);
+}
+
 
 #endif // SOFT_FUNC_H

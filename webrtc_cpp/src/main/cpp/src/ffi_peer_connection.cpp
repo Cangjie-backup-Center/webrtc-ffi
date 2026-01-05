@@ -698,14 +698,14 @@ void ffiPeerConnection::OnDataChannel(rtc::scoped_refptr<DataChannelInterface> c
         RTC_LOG(LS_ERROR) << "The channel is nullptr";
         return;
     }
-    auto observer = std::make_unique<ffiDataChannelObserverTemp>(channel);
+    auto observer = new ffiDataChannelObserverTemp(factory_, channel);
     Dispatch(CallbackEvent<ffiPeerConnection>::Create(
-        [this, obs = observer.release()]
+        [this, observer]
         (ffiPeerConnection& target) {
             RTC_DCHECK_EQ(this, &target);
             if (this->cj_func_call_OnDataChannel_) {
                 CJ_RTCDataChannelEvent* crdce = new CJ_RTCDataChannelEvent();
-                crdce->channel = (int64_t)obs;
+                crdce->channel = (int64_t)observer;
                 this->cj_func_call_OnDataChannel_(this->cj_class_key, (int64_t)crdce);
             }
         }
@@ -926,7 +926,7 @@ int64_t ffiPeerConnection::createDataChannel(CHAR_PTR label, CJ_RTCDataChannelIn
             auto& error = result.error();
             CANGJIE_THROW("CreateDataChannel error");
         }
-        ffiDataChannelObserverTemp* observerPtr = new ffiDataChannelObserverTemp(result.value());
+        ffiDataChannelObserverTemp* observerPtr = new ffiDataChannelObserverTemp(factory_, result.value());
         return reinterpret_cast<int64_t>(observerPtr);
     }
     
@@ -937,7 +937,7 @@ int64_t ffiPeerConnection::createDataChannel(CHAR_PTR label, CJ_RTCDataChannelIn
         CANGJIE_THROW("CreateDataChannelOrError error");
     }
 
-    ffiDataChannelObserverTemp* observerPtr = new ffiDataChannelObserverTemp(result.value());
+    ffiDataChannelObserverTemp* observerPtr = new ffiDataChannelObserverTemp(factory_, result.value());
     return (int64_t)observerPtr;
 }
 
