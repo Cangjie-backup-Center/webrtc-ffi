@@ -256,8 +256,8 @@ public class RTCPeerConnection <: WebrtcClass {
     public prop iceConnectionState: FFIRTCIceConnectionState {
         get() {FFIRTCIceConnectionState.GET(unsafe{peerConnection_GetIceConnectionState(this.ID)})}
     }
-    public prop connectionState: FFIRTCIceConnectionState {
-        get() {FFIRTCIceConnectionState.GET(unsafe{peerConnection_GetConnectionState(this.ID)})}
+    public prop connectionState: FFIRTCPeerConnectionState {
+        get() {FFIRTCPeerConnectionState.GET(unsafe{peerConnection_GetConnectionState(this.ID)})}
     }
     public prop localDescription: RTCSessionDescription {
         get() {

@@ -331,7 +331,7 @@ public class RTCDataChannel <: WebrtcClass & Resource {
     }
 
     public func isClosed(): Bool {
-        this.readyState == DataChannelState.CLOSED || this.pc_.isClosed()
+        this.readyState == DataChannelState.CLOSED
     }
 
 }

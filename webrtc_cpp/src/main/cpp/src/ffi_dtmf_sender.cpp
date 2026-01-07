@@ -69,13 +69,9 @@ bool ffiDtmfSender::InsertDTMF(const char* tones, int64_t duration, int64_t inte
 void ffiDtmfSender::OnToneChange(const std::string& tone, const std::string& tone_buffer)
 {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-
-    Dispatch(CallbackEvent<ffiDtmfSender>::Create([this, tone](ffiDtmfSender& target) {
-        RTC_DCHECK_EQ(this, &target);
-        if (cj_func_call_OnToneChange_) {
-            cj_func_call_OnToneChange_(this->GetCJClassID(), tone.data());
-        }
-    }));
+    if (cj_func_call_OnToneChange_) {
+        cj_func_call_OnToneChange_(this->GetCJClassID(), tone.data());
+    }
 }
 
 }

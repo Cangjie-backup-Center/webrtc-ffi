@@ -97,16 +97,19 @@ void ffiIceTransport::OnStateChange(cricket::IceTransportInternal* iceTransport)
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
 
     iceTransportState_ = iceTransport_->internal()->GetIceTransportState();
-    
-    this->Dispatch(CallbackEvent<ffiIceTransport>::Create(
-        [this, state = iceTransportState_.load()](ffiIceTransport& target) {
-        RTC_DCHECK_EQ(this, &target);
-        if (this->cj_func_call_OnStateChange_)
-            this->cj_func_call_OnStateChange_(this->GetCJClassID(), CJ_Event{type: "statechange"});
-        if (state == IceTransportState::kClosed) {
-            target.Stop();
-        }
-    }));
+    auto state = iceTransportState_.load();
+
+    if (this->ShouldStop()) {
+        return;
+    }
+
+    if (this->cj_func_call_OnStateChange_) {
+        this->cj_func_call_OnStateChange_(this->GetCJClassID(), CJ_Event{type: "statechange"});
+    }
+
+    if (state == IceTransportState::kClosed) {
+        Stop();
+    }
 }
 
 void ffiIceTransport::OnGatheringStateChange(cricket::IceTransportInternal* iceTransport)
@@ -115,26 +118,19 @@ void ffiIceTransport::OnGatheringStateChange(cricket::IceTransportInternal* iceT
 
     iceGatheringState_ = iceTransport->gathering_state();
     
-    this->Dispatch(CallbackEvent<ffiIceTransport>::Create(
-        [this, state = iceTransportState_.load()](ffiIceTransport& target) {
-        RTC_DCHECK_EQ(this, &target);
-        if (this->cj_func_call_OnGatheringStateChange_) {
-            this->cj_func_call_OnGatheringStateChange_(this->GetCJClassID(), CJ_Event{type: "gatheringstatechange"});
-        }
-    }));
+     if (this->cj_func_call_OnGatheringStateChange_) {
+        this->cj_func_call_OnGatheringStateChange_(this->GetCJClassID(), CJ_Event{type: "gatheringstatechange"});
+    }
 }
 
 void ffiIceTransport::OnSelectedCandidatePairChange(const cricket::CandidatePairChangeEvent& event)
 {
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
-    this->Dispatch(CallbackEvent<ffiIceTransport>::Create(
-        [this, state = iceTransportState_.load()](ffiIceTransport& target) {
-        RTC_DCHECK_EQ(this, &target);
-        if (this->cj_func_call_OnSelectedCandidatePairChange_) {
-            this->cj_func_call_OnSelectedCandidatePairChange_(this->GetCJClassID(),
-                CJ_Event{ type: "selectedcandidatepairchange" });
-        }
-    }));
+
+    if (this->cj_func_call_OnSelectedCandidatePairChange_) {
+        this->cj_func_call_OnSelectedCandidatePairChange_(this->GetCJClassID(),
+            CJ_Event{ type: "selectedcandidatepairchange" });
+    }
 }
 
 }

@@ -55,14 +55,18 @@ void ffiSctpTransport::OnStateChange(SctpTransportInformation info)
 
     auto sctpTransportState = info.state();
 
-    Dispatch(CallbackEvent<ffiSctpTransport>::Create([this, sctpTransportState](ffiSctpTransport& target) {
-        RTC_DCHECK_EQ(this, &target);
-        if (cj_func_call_OnStateChange_ && this->cj_class_key)
-            cj_func_call_OnStateChange_(this->cj_class_key, CJ_Event{type: "statechange"});
-        if (sctpTransportState == SctpTransportState::kClosed) {
-            target.Stop();
-        }
-    }));
+    if (this->ShouldStop()) {
+        return;
+    }
+    
+    if (cj_func_call_OnStateChange_ && this->cj_class_key) {
+        cj_func_call_OnStateChange_(this->cj_class_key, CJ_Event{type: "statechange"});
+    }
+
+    if (sctpTransportState == SctpTransportState::kClosed) {
+        this->Stop();
+    }
+
 }
 
 }

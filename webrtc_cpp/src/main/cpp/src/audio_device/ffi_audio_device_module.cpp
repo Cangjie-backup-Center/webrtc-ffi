@@ -46,19 +46,14 @@ void ffiAudioDeviceModule::SetOnAudioInputErrorCallback(void (*callback)(int64_t
 void ffiAudioDeviceModule::OnAudioInputError(AudioInput* input, AudioErrorType type, const std::string& message)
 {
     RTC_LOG(LS_INFO) << __FUNCTION__ << "Audio input error: " << type << " " << message;
-    this->Dispatch(CallbackEvent<ffiAudioDeviceModule>::Create(
-        [this, type, message]
-        (ffiAudioDeviceModule& target) {
-            RTC_DCHECK_EQ(this, &target);
-            if (this->cj_func_call_OnAudioInputError_) {
-                this->cj_func_call_OnAudioInputError_(this->cj_class_key, CJ_AudioErrorEvent {
-                        type : (int32_t)type,
-                        message : strdup(message.c_str()),
-                    }
-                );
+    
+    if (this->cj_func_call_OnAudioInputError_) {
+        this->cj_func_call_OnAudioInputError_(this->cj_class_key, CJ_AudioErrorEvent {
+                type : (int32_t)type,
+                message : strdup(message.c_str()),
             }
-        }
-    ));
+        );
+    }
 }
 
 void ffiAudioDeviceModule::SetOnAudioInputStateChangeCallback(void (*callback)(int64_t id, int newState))
@@ -69,14 +64,10 @@ void ffiAudioDeviceModule::SetOnAudioInputStateChangeCallback(void (*callback)(i
 void ffiAudioDeviceModule::OnAudioInputStateChange(AudioInput* input, AudioStateType newState)
 {
     RTC_LOG(LS_INFO) << __FUNCTION__ << "Audio output state change: " << newState;
-    this->Dispatch(CallbackEvent<ffiAudioDeviceModule>::Create(
-        [this, newState](ffiAudioDeviceModule& target) {
-            RTC_DCHECK_EQ(this, &target);
-            if (this->cj_func_call_OnAudioInputStateChange_) {
-                this->cj_func_call_OnAudioInputStateChange_(this->cj_class_key, (int)newState);
-            }
-        }
-    ));
+    
+    if (this->cj_func_call_OnAudioInputStateChange_) {
+        this->cj_func_call_OnAudioInputStateChange_(this->cj_class_key, (int)newState);
+    }
 }
 
 void ffiAudioDeviceModule::SetOnAudioInputDataReadyCallback(void (*callback)(int64_t id, CJ_AudioDataEvent event))
@@ -89,22 +80,15 @@ void ffiAudioDeviceModule::OnAudioInputDataReady(AudioInput* input, void* buffer
 {
     auto copyData = new rtc::CopyOnWriteBuffer((uint8_t*)buffer, length);
 
-    this->Dispatch(CallbackEvent<ffiAudioDeviceModule>::Create(
-        [this, input, length, copyData]
-        (ffiAudioDeviceModule& target) {
-            RTC_DCHECK_EQ(this, &target);
-            if (this->cj_func_call_OnAudioInputDataReady_) {
-                this->cj_func_call_OnAudioInputDataReady_(this->cj_class_key, CJ_AudioDataEvent{
-                        sampleRate : input->GetSampleRate(),
-                        audioFormat : AUDIOSTREAM_SAMPLE_S16LE,
-                        channelCount : input->GetChannelCount(),
-                        data : copyData->MutableData(),
-                        dataLength : length,
-                    }
-                );
-            }
-        }
-    ));
+    if (this->cj_func_call_OnAudioInputDataReady_) {
+        this->cj_func_call_OnAudioInputDataReady_(this->cj_class_key, CJ_AudioDataEvent{
+            sampleRate : input->GetSampleRate(),
+            audioFormat : AUDIOSTREAM_SAMPLE_S16LE,
+            channelCount : input->GetChannelCount(),
+            data : copyData->MutableData(),
+            dataLength : length,
+        });
+    }
 }
 
 void ffiAudioDeviceModule::SetOnAudioOutputErrorCallback(void (*callback)(int64_t id, CJ_AudioErrorEvent event))
@@ -115,20 +99,14 @@ void ffiAudioDeviceModule::SetOnAudioOutputErrorCallback(void (*callback)(int64_
 void ffiAudioDeviceModule::OnAudioOutputError(AudioOutput* output, AudioErrorType type, const std::string& message)
 {
     RTC_LOG(LS_INFO) << __FUNCTION__ << "Audio output error: " << type << " " << message;
-    this->Dispatch(CallbackEvent<ffiAudioDeviceModule>::Create(
-        [this, type, message]
-        (ffiAudioDeviceModule& target) {
-            RTC_DCHECK_EQ(this, &target);
 
-            if (this->cj_func_call_OnAudioOutputError_) {
-                this->cj_func_call_OnAudioOutputError_(this->cj_class_key, CJ_AudioErrorEvent{
-                        type : (int32_t)type,
-                        message : strdup(message.c_str()),
-                    }
-                );
+    if (this->cj_func_call_OnAudioOutputError_) {
+        this->cj_func_call_OnAudioOutputError_(this->cj_class_key, CJ_AudioErrorEvent{
+                type : (int32_t)type,
+                message : strdup(message.c_str()),
             }
-        }
-    ));
+        );
+    }
 }
 
 void ffiAudioDeviceModule::SetOnAudioOutputStateChangeCallback(void (*callback)(int64_t id, int newState))
@@ -139,15 +117,10 @@ void ffiAudioDeviceModule::SetOnAudioOutputStateChangeCallback(void (*callback)(
 void ffiAudioDeviceModule::OnAudioOutputStateChange(AudioOutput* output, AudioStateType newState)
 {
     RTC_LOG(LS_INFO) << __FUNCTION__ << "Audio output state change: " << newState;
-    this->Dispatch(CallbackEvent<ffiAudioDeviceModule>::Create(
-        [this, newState]
-        (ffiAudioDeviceModule& target) {
-            RTC_DCHECK_EQ(this, &target);
-            if (this->cj_func_call_OnAudioOutputStateChange_) {
-                this->cj_func_call_OnAudioOutputStateChange_(this->cj_class_key, (int)newState);
-            }
-        }
-    ));
+
+    if (this->cj_func_call_OnAudioOutputStateChange_) {
+        this->cj_func_call_OnAudioOutputStateChange_(this->cj_class_key, (int)newState);
+    }
 }
 
 }

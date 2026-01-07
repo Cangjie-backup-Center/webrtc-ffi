@@ -42,24 +42,24 @@ public:
 //        }
     }
 
-    void Dispatch(std::unique_ptr<Event<T>> event)
-    {
-        RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-
-//        this->Enqueue(std::move(event));
-//        conditionVariable_.notify_one();
-        T* target = static_cast<T*>(this);
-        event->Process(*target);
-    }
+//    void Dispatch(std::unique_ptr<Event<T>> event)
+//    {
+//        RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
+//
+//
+//        T* target = static_cast<T*>(this);
+//        event->Process(*target);
+//    }
 
     virtual void Stop()
     {
+        std::lock_guard<std::mutex> lock(mutex_);
         shouldStop_ = true;
-        Dispatch(EmptyEvent<T>::Create());
     }
 
     bool ShouldStop() const
     {
+        std::lock_guard<std::mutex> lock(mutex_);
         return shouldStop_;
     }
 
