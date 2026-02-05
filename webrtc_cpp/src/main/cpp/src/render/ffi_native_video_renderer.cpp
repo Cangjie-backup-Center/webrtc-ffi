@@ -1,9 +1,4 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 #include "ffi_native_video_renderer.h"
-#include "logging/ohos_log.h"
 #define OHOS_LOG_DOMAIN 0xD001234
 
 namespace webrtc {
@@ -16,7 +11,8 @@ ffiNativeVideoRenderer::ffiNativeVideoRenderer()
 ffiNativeVideoRenderer::~ffiNativeVideoRenderer()
 {
     RTC_DLOG(LS_VERBOSE) << __FUNCTION__;
-    delete ffiMST_;
+    this->removeSink();
+//    delete ffiMST_;
 }
 
 void ffiNativeVideoRenderer::removeSink()
@@ -44,9 +40,10 @@ void ffiNativeVideoRenderer::addSink()
     ffiMST_->AddSink(renderer_.get());
 }
 
-void ffiNativeVideoRenderer::ffiNativeVideoRendererInit(int64_t surfaceId)
+void ffiNativeVideoRenderer::ffiNativeVideoRendererInit(char* surfaceId)
 {
-    surfaceId_ = std::to_string(surfaceId);
+    surfaceId_ = std::string(surfaceId);
+    delete[] surfaceId;
     sharedContext_ = EglEnv::GetDefault().GetContext();
     auto nativeWindow = ohos::NativeWindow::CreateFromSurfaceId(std::stoull(*surfaceId_));
     if (nativeWindow.IsEmpty()) {
@@ -58,12 +55,12 @@ void ffiNativeVideoRenderer::ffiNativeVideoRendererInit(int64_t surfaceId)
 void ffiNativeVideoRenderer::setVideoTrack(int64_t ffiMST)
 {
     RTC_LOG(LS_VERBOSE) << __FUNCTION__;
-    ffiMST_ = reinterpret_cast<ffiMediaStreamTrack*>(ffiMST);
-    if (ffiMST_ == nullptr) {
-        OH_LOG_Print(LOG_APP, LOG_ERROR, OHOS_LOG_DOMAIN, "webrtc", "ffiMST is null");
-        return;
-    }
     removeSink();
+    if (ffiMST_){
+        delete ffiMST_;
+        ffiMST_ = nullptr;
+    }
+    ffiMST_ = reinterpret_cast<ffiMediaStreamTrack*>(ffiMST);
     addSink();
 }
 

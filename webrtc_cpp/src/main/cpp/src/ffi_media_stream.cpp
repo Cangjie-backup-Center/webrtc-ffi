@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 #include "ffi_media_stream.h"
 
 #include "rtc_base/logging.h"
@@ -10,7 +6,7 @@
 #include <string>
 #include <memory>
 #include <cstdint>
-using namespace webrtc;
+namespace webrtc {
 
 void webrtc::FFIMediaStream::AddTrack(int64_t mst)
 {
@@ -74,32 +70,30 @@ void webrtc::FFIMediaStream::RemoveTrack(int64_t mst)
 int64_t webrtc::FFIMediaStream::GetTrackById(std::string trackId_str)
 {
     std::string trackId = trackId_str;
-    atif_ = stream_->FindAudioTrack(trackId);
-    if (atif_) {
-        return reinterpret_cast<int64_t>(atif_.get());
+    auto audioTrack = stream_->FindAudioTrack(trackId);
+    if (audioTrack) {
+        return reinterpret_cast<int64_t>(new ffiMediaStreamTrack(factory_, audioTrack));
     }
 
-    vtif_ = stream_->FindVideoTrack(trackId);
-    if (vtif_) {
-        return reinterpret_cast<int64_t>(vtif_.get());
+    auto videoTrack = stream_->FindVideoTrack(trackId);
+    if (videoTrack) {
+        return reinterpret_cast<int64_t>(new ffiMediaStreamTrack(factory_, videoTrack));
     }
     RTC_LOG(LS_INFO) << "No track with id: " << trackId;
 }
 
 CJ_ReturnArray webrtc::FFIMediaStream::GetTracks()
 {
-    auto audioTracks = stream_->GetAudioTracks();
+    auto audioTracks = stream_->GetAudioTracks();  // typedef std::vector<rtc::scoped_refptr<AudioTrackInterface> > AudioTrackVector;
     auto videoTracks = stream_->GetVideoTracks();
 
     int64_t* result = new int64_t[audioTracks.size() + videoTracks.size()];
     for (uint32_t i = 0; i < audioTracks.size(); i++) {
-        audioMediaStreamTrackPtr = new ffiMediaStreamTrack(factory_, audioTracks[i]);
-        result[i] = reinterpret_cast<int64_t>(audioMediaStreamTrackPtr);
+        result[i] = reinterpret_cast<int64_t>(new ffiMediaStreamTrack(factory_, audioTracks[i]));
     }
 
     for (uint32_t i = 0; i < videoTracks.size(); i++) {
-        videoMediaStreamTrackPtr = new ffiMediaStreamTrack(factory_, videoTracks[i]);
-        result[audioTracks.size() + i] = reinterpret_cast<int64_t>(videoMediaStreamTrackPtr);
+        result[audioTracks.size() + i] = reinterpret_cast<int64_t>(new ffiMediaStreamTrack(factory_, videoTracks[i]));
     }
     return (CJ_ReturnArray){result, (int64_t)(audioTracks.size() + videoTracks.size())};
 }
@@ -110,8 +104,7 @@ CJ_ReturnArray webrtc::FFIMediaStream::GetAudioTracks()
     auto audioTracks = stream_->GetAudioTracks();
     int64_t* result = new int64_t[audioTracks.size()];
     for (uint32_t i = 0; i < audioTracks.size(); i++) {
-        audioMediaStreamTrackPtr = new ffiMediaStreamTrack(factory_, audioTracks[i]);
-        result[i] = reinterpret_cast<int64_t>(audioMediaStreamTrackPtr);
+        result[i] = reinterpret_cast<int64_t>(new ffiMediaStreamTrack(factory_, audioTracks[i]));
     }
     return (CJ_ReturnArray){result, (int64_t)(audioTracks.size())};
 }
@@ -122,9 +115,34 @@ CJ_ReturnArray webrtc::FFIMediaStream::GetVideoTracks()
 
     int64_t* result = new int64_t[videoTracks.size()];
     for (uint32_t i = 0; i < videoTracks.size(); i++) {
-        videoMediaStreamTrackPtr = new ffiMediaStreamTrack(factory_, videoTracks[i]);
-        result[i] = reinterpret_cast<int64_t>(videoMediaStreamTrackPtr);
+        result[i] = reinterpret_cast<int64_t>(new ffiMediaStreamTrack(factory_, videoTracks[i]));
     }
 
     return (CJ_ReturnArray){result, (int64_t)(videoTracks.size())};
+}
+
+void FFIMediaStream::OnAudioTrackAddedToStream(AudioTrackInterface* track, MediaStreamInterface* stream)
+{
+    (void)stream;
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__ << " track: " << track->id();
+}
+
+void FFIMediaStream::OnVideoTrackAddedToStream(VideoTrackInterface* track, MediaStreamInterface* stream)
+{
+    (void)stream;
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__ << " track: " << track->id();
+}
+
+void FFIMediaStream::OnAudioTrackRemovedFromStream(AudioTrackInterface* track, MediaStreamInterface* stream)
+{
+    (void)stream;
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__ << " track: " << track->id();
+}
+
+void FFIMediaStream::OnVideoTrackRemovedFromStream(VideoTrackInterface* track, MediaStreamInterface* stream)
+{
+    (void)stream;
+    RTC_DLOG(LS_VERBOSE) << __FUNCTION__ << " track: " << track->id();
+}
+
 }

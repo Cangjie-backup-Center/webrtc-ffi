@@ -1,13 +1,13 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 #include "ffi.h"
 #include "ffi_data_channel.h"
-
+#include "logging/ffi_native_logging.h"
+#include "webrtc_func.h"
+#include <thread>
+#include <hilog/log.h>
 #include <cstdint>
+#include "webrtc_func.h"
 
-int64_t ffi_newNativeVideoRenderer(int64_t surfaceId)
+int64_t ffi_newNativeVideoRenderer(char* surfaceId)
 {
     webrtc::ffiNativeVideoRenderer* ffiNVR = new webrtc::ffiNativeVideoRenderer();
     ffiNVR->ffiNativeVideoRendererInit(surfaceId);
@@ -44,46 +44,69 @@ void ffi_release(int64_t ffiNVR)
     ffiNVR_ptr->release();
 }
 
-int64_t ffi_newAudioDeviceModule(bool useStereoInput, bool useStereoOutput)
+int64_t ffi_newAudioDeviceModule(CJ_AudioDeviceModuleOptions admOptions)
 {
-    auto ffiADM = new webrtc::ffiAudioDeviceModule(useStereoInput, useStereoOutput);
+    auto ffiADM = new webrtc::ffiAudioDeviceModule(admOptions);
     return reinterpret_cast<int64_t>(ffiADM);
 }
 
 int64_t ffi_newHardwareVideoEncoderFactory()
 {
-    auto ffiHVEF = new webrtc::ffiVideoEncoderFactory();
+    auto ffiHVEF = new webrtc::ffiHardwareVideoEncoderFactory();
     return reinterpret_cast<int64_t>(ffiHVEF);
 }
 
 int64_t ffi_newHardwareVideoDecoderFactory()
 {
-    auto ffiHVDF = new webrtc::ffiVideoDecoderFactory();
+    auto ffiHVDF = new webrtc::ffiHardwareVideoDecoderFactory();
     return reinterpret_cast<int64_t>(ffiHVDF);
 }
 
-int64_t ffi_newPeerConnectionFactory(int64_t ffiADM_int64, int64_t ffiHVEF_int64, int64_t ffiHVDF_int64)
+int64_t ffi_newSoftwareVideoEncoderFactory()
+{
+    auto ffiSVEF = new webrtc::ffiSoftwareVideoEncoderFactory();
+    return reinterpret_cast<int64_t>(ffiSVEF);
+}
+
+int64_t ffi_newSoftwareVideoDecoderFactory()
+{
+    auto ffiSVDF = new webrtc::ffiSoftwareVideoDecoderFactory();
+    return reinterpret_cast<int64_t>(ffiSVDF);
+}
+
+int64_t ffi_newHardwarePeerConnectionFactory(int64_t ffiADM_int64, int64_t ffiHVEF_int64, int64_t ffiHVDF_int64)
 {
     auto ffiADM_ptr = reinterpret_cast<webrtc::ffiAudioDeviceModule*>(ffiADM_int64);
-    auto ffiHVEF_ptr = reinterpret_cast<webrtc::ffiVideoEncoderFactory*>(ffiHVEF_int64);
-    auto ffiHVDF_ptr = reinterpret_cast<webrtc::ffiVideoDecoderFactory*>(ffiHVDF_int64);
+    auto ffiHVEF_ptr = reinterpret_cast<webrtc::ffiHardwareVideoEncoderFactory*>(ffiHVEF_int64);
+    auto ffiHVDF_ptr = reinterpret_cast<webrtc::ffiHardwareVideoDecoderFactory*>(ffiHVDF_int64);
 
     auto ffiPCF = new webrtc::ffiPeerConnectionFactory(ffiADM_ptr, ffiHVEF_ptr, ffiHVDF_ptr);
     return reinterpret_cast<int64_t>(ffiPCF);
 }
 
-int64_t ffi_createAudioSource(int64_t ffiPCF_int64, FFIAudioOptions ffiao)
+int64_t ffi_newSoftwarePeerConnectionFactory(int64_t ffiADM_int64, int64_t ffiSVEF_int64, int64_t ffiSVDF_int64)
 {
-    auto ffiPCF_ptr = reinterpret_cast<webrtc::ffiPeerConnectionFactory*>(ffiPCF_int64);
-    return ffiPCF_ptr->ffiCreateAudioSource(ffiao);
+    auto ffiADM_ptr = reinterpret_cast<webrtc::ffiAudioDeviceModule*>(ffiADM_int64);
+    auto ffiSVEF_ptr = reinterpret_cast<webrtc::ffiSoftwareVideoEncoderFactory*>(ffiSVEF_int64);
+    auto ffiSVDF_ptr = reinterpret_cast<webrtc::ffiSoftwareVideoDecoderFactory*>(ffiSVDF_int64);
+
+    auto ffiPCF = new webrtc::ffiPeerConnectionFactory(ffiADM_ptr, ffiSVEF_ptr, ffiSVDF_ptr);
+    return reinterpret_cast<int64_t>(ffiPCF);
 }
 
-int64_t ffi_createAudioTrack(int64_t ffiPCF_int64, CHAR_PTR ffi_audioId)
+int64_t ffi_createAudioSource(int64_t ffiPCF_int64, CJ_TO_CPP_DisplayMediaStreamOptions ffiaudioOptions)
+{
+    auto ffiPCF_ptr = reinterpret_cast<webrtc::ffiPeerConnectionFactory*>(ffiPCF_int64);
+    return ffiPCF_ptr->ffiCreateAudioSource(ffiaudioOptions);
+}
+
+int64_t ffi_createAudioTrack(int64_t ffiPCF_int64, CHAR_PTR ffi_audioId, int64_t ffiAudioSourceId)
 {
     auto ffiPCF_ptr = reinterpret_cast<webrtc::ffiPeerConnectionFactory*>(ffiPCF_int64);
     std::string ffi_id_str(ffi_audioId);
     delete[] ffi_audioId;
-    return ffiPCF_ptr->ffiCreateAudioTrack(ffi_id_str);
+    auto source = reinterpret_cast<webrtc::FFIAudioSource*>(ffiAudioSourceId);
+    return ffiPCF_ptr->ffiCreateAudioTrack(ffi_id_str, source);
 }
 
 int64_t ffi_createVideoSource(int64_t ffiPCF_int64, CJ_TO_CPP_DisplayMediaStreamOptions fficvsp, bool isScreencast)
@@ -92,12 +115,12 @@ int64_t ffi_createVideoSource(int64_t ffiPCF_int64, CJ_TO_CPP_DisplayMediaStream
     return ffiPCF_ptr->ffiCreateVideoSource(fficvsp, isScreencast);
 }
 
-int64_t ffi_createVideoTrack(int64_t ffiPCF_int64, CHAR_PTR ffi_videoId)
+int64_t ffi_createVideoTrack(int64_t ffiPCF_int64, CHAR_PTR ffi_videoId, int64_t ffiVideoSourceId)
 {
     webrtc::ffiPeerConnectionFactory* ffiPCF_ptr = (webrtc::ffiPeerConnectionFactory*)ffiPCF_int64;
     std::string ffi_videoId_str(ffi_videoId);
     delete[] ffi_videoId;
-    int64_t ffiMST = ffiPCF_ptr->ffiCreateVideoTrack(ffi_videoId_str);
+    int64_t ffiMST = ffiPCF_ptr->ffiCreateVideoTrack(ffi_videoId_str, reinterpret_cast<webrtc::FFIVideoSource*>(ffiVideoSourceId));
     return ffiMST;
 }
 
@@ -123,40 +146,6 @@ void ffi_StopAecDump(int64_t ffiPCF_int64)
 {
     webrtc::ffiPeerConnectionFactory* ffiPCF_ptr = (webrtc::ffiPeerConnectionFactory*)ffiPCF_int64;
     ffiPCF_ptr->StopAecDump();
-}
-
-void ffi_SetSurfaceId(int64_t surfaceId)
-{
-    PluginManager::SetSurfaceId(surfaceId);
-}
-
-void ffi_ChangeSurface(int64_t surfaceId, double width, double height)
-{
-    PluginManager::ChangeSurface(surfaceId, width, height);
-}
-
-void ffi_DrawPattern(int64_t surfaceId)
-{
-    PluginManager::DrawPattern(surfaceId);
-}
-void ffi_ChangeColor(int64_t surfaceId)
-{
-    PluginManager::ChangeColor(surfaceId);
-}
-
-void ffi_DestroySurface(int64_t surfaceId)
-{
-    PluginManager::DestroySurface(surfaceId);
-}
-
-bool ffi_GetXComponentHasDraw(int64_t surfaceId)
-{
-    return PluginManager::GetXComponentHasDraw(surfaceId);
-}
-
-bool ffi_XComponentHasChangeColor(int64_t surfaceId)
-{
-    return PluginManager::GetXComponentHasChangeColor(surfaceId);
 }
 
 int64_t ffi_webrtc_mediaDevices_create()
@@ -528,12 +517,6 @@ void peerConnection_setAudioPlayout(int64_t cpp_ptr, bool playout)
     cpp_ptr_->setAudioPlayout(playout);
 }
 
-void peerConnection_CPP_FREE(int64_t cpp_ptr)
-{
-    auto cpp_ptr_ = reinterpret_cast<webrtc::ffiPeerConnection*>(cpp_ptr);
-    delete cpp_ptr_;
-}
-
 // dataConnection
 void dataConnection_set_class_key(int64_t cpp_ptr, int64_t classKey)
 {
@@ -704,4 +687,17 @@ void ffiDtmfSender_set_OnToneChange(int64_t cpp_ptr, void (*pe)(int64_t id, cons
 {
     auto cpp_ptr_ = reinterpret_cast<webrtc::ffiDtmfSender*>(cpp_ptr);
     cpp_ptr_->cj_func_call_OnToneChange_ = pe;
+}
+
+void ffi_EnableLogThreads()
+{
+    webrtc::ffiNativeLogging::EnableLogThreads();
+}
+void ffi_EnableLogTimeStamps()
+{
+    webrtc::ffiNativeLogging::EnableLogTimeStamps();
+}
+void ffi_EnableLogToDebugOutput(int32_t Logging)
+{
+    webrtc::ffiNativeLogging::EnableLogToDebugOutput(Logging);
 }

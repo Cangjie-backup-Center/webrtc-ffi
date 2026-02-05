@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 #include "ffi_peer_connection_factory.h"
 #include "user_media/media_constraints_util.h"
 
@@ -30,15 +26,9 @@ namespace webrtc {
 
 ffiPeerConnectionFactory::ffiPeerConnectionFactory(
     ffiAudioDeviceModule* ffiADM,
-    ffiVideoEncoderFactory* ffiHVEF,
-    ffiVideoDecoderFactory* ffiHVDF)
+    ffiHardwareVideoEncoderFactory* ffiHVEF,
+    ffiHardwareVideoDecoderFactory* ffiHVDF)
 {
-    audioSourcePtr_ = nullptr;
-    audioTrackPtr_ = nullptr;
-    videoSourcePtr_ = nullptr;
-    ffiVideoMST_ = nullptr;
-    ffiAudioMST_ = nullptr;
-
     rtc::scoped_refptr<OhosAudioDeviceModule> adm;
     std::unique_ptr<VideoEncoderFactory> videoEncoderFactory;
     std::unique_ptr<VideoDecoderFactory> videoDecoderFactory;
@@ -48,13 +38,11 @@ ffiPeerConnectionFactory::ffiPeerConnectionFactory(
 
     videoEncoderFactory = createHardwareVideoEncoderFactory(ffiHVEF);
     if (videoEncoderFactory == nullptr) {
-        LOGI("videoEncoderFactory create fail");
         return ;
     }
     
     videoDecoderFactory = createHardwareVideoDecoderFactory(ffiHVDF);
     if (videoDecoderFactory == nullptr) {
-        LOGI("videoDecoderFactory create fail");
         return ;
     }
     
@@ -62,30 +50,34 @@ ffiPeerConnectionFactory::ffiPeerConnectionFactory(
     adm, std::move(videoEncoderFactory), std::move(videoDecoderFactory), audioProcessing);
 }
 
-template <typename T>
-void releasePtr(T* ffipc_)
+ffiPeerConnectionFactory::ffiPeerConnectionFactory(
+    ffiAudioDeviceModule* ffiADM,
+    ffiSoftwareVideoEncoderFactory* ffiSVEF,
+    ffiSoftwareVideoDecoderFactory* ffiSVDF)
 {
-    if (ffipc_) {
-        delete ffipc_;
-        ffipc_ = nullptr;
+
+    rtc::scoped_refptr<OhosAudioDeviceModule> adm;
+    std::unique_ptr<VideoEncoderFactory> videoEncoderFactory;
+    std::unique_ptr<VideoDecoderFactory> videoDecoderFactory;
+    rtc::scoped_refptr<AudioProcessing> audioProcessing;
+
+    adm = ffiADM->getAdm();
+
+    videoEncoderFactory = createSoftwareVideoEncoderFactory(ffiSVEF);
+    if (videoEncoderFactory == nullptr) {
+        return ;
     }
+    
+    videoDecoderFactory = createSoftwareVideoDecoderFactory(ffiSVDF);
+    if (videoDecoderFactory == nullptr) {
+        return ;
+    }
+    
+    wrapper_ = PeerConnectionFactoryWrapper::Create(
+    adm, std::move(videoEncoderFactory), std::move(videoDecoderFactory), audioProcessing);
 }
 
-ffiPeerConnectionFactory::~ffiPeerConnectionFactory()
-{
-    releasePtr(ffipc_);
-    audioSourcePtr_->release();
-    audioTrackPtr_->release();
-    videoSourcePtr_->release();
-    releasePtr(ffiVideoMST_);
-    releasePtr(ffiAudioMST_);
-}
-
-void ffiPeerConnectionFactory::copyVauleCreateAudioSource(FFIAudioOptions ffi_audioOptions)
-{
-    audioOptions_.echo_cancellation = ffi_audioOptions.echo_cancellation;
-    audioOptions_.noise_suppression = ffi_audioOptions.noise_suppression;
-}
+ffiPeerConnectionFactory::~ffiPeerConnectionFactory(){}
 
 void ffiPeerConnectionFactory::copyVauleCreateAudioTrack(std::string ffi_audioId)
 {
@@ -97,45 +89,34 @@ void ffiPeerConnectionFactory::copyVauleCreateVideoTrack(std::string ffi_videoId
     videoId_ = ffi_videoId;
 }
 
-rtc::scoped_refptr<OhosVideoTrackSource> ffiPeerConnectionFactory::getVideoSource()
-{
-    return videoSource_;
-}
-
-rtc::scoped_refptr<VideoTrackInterface> ffiPeerConnectionFactory::getVideoTrack()
-{
-    return videoTrack_;
-}
-
 int64_t ffiPeerConnectionFactory::ffiCreatePeerConnection(CJ_RTCConfiguration config)
 {
-    ffipc_ = new ffiPeerConnection(config, wrapper_);
+    auto ffipc_ = new ffiPeerConnection(config, wrapper_);
     return reinterpret_cast<int64_t>(ffipc_);
 }
 
-int64_t ffiPeerConnectionFactory::ffiCreateAudioSource(FFIAudioOptions ffi_audioOptions)
+int64_t ffiPeerConnectionFactory::ffiCreateAudioSource(CJ_TO_CPP_DisplayMediaStreamOptions ffi_audioOptions)
 {
-    copyVauleCreateAudioSource(ffi_audioOptions);
     cricket::AudioOptions options;
+    
+    MediaTrackConstraints audioConstraints;
+    CJToNative(ffi_audioOptions, audioConstraints);
 
-    options.echo_cancellation = audioOptions_.echo_cancellation;
-    options.noise_suppression = audioOptions_.noise_suppression;
+    CopyConstraintsIntoAudioOptions(audioConstraints, options);
 
-    audioSource_ = wrapper_->CreateAudioSource(options);
-    audioSourcePtr_ = &audioSource_;
-    if (audioSourcePtr_) {
-        return reinterpret_cast<int64_t>(audioSourcePtr_);
+    auto audioSource = wrapper_->CreateAudioSource(options);
+    if (!audioSource) {
+        CANGJIE_THROW("Create AudioSource fail");
     }
-
-    return 0;
+    return (int64_t)FFIAudioSource::NewInstance(audioSource);
 }
 
 
-int64_t ffiPeerConnectionFactory::ffiCreateAudioTrack(std::string ffi_audioId_str)
+int64_t ffiPeerConnectionFactory::ffiCreateAudioTrack(std::string ffi_audioId_str, FFIAudioSource* ffiAudioSource)
 {
     copyVauleCreateAudioTrack(ffi_audioId_str);
-    audioTrack_ = wrapper_->CreateAudioTrack(audioId_, audioSource_);
-    auto ffiMST = new ffiMediaStreamTrack(wrapper_, audioTrack_);
+    auto audioTrack = wrapper_->CreateAudioTrack(audioId_, ffiAudioSource->Get());
+    auto ffiMST = new ffiMediaStreamTrack(wrapper_, audioTrack);
     return reinterpret_cast<int64_t>(ffiMST);
 }
 
@@ -174,20 +155,22 @@ int64_t ffiPeerConnectionFactory::ffiCreateVideoSource(
         }
     }
     
-    videoSource_ = wrapper_->CreateVideoSource(std::move(videoCapturer));
-    videoSourcePtr_ = &videoSource_;
-    return reinterpret_cast<int64_t>(videoSourcePtr_);
+    auto videoSource = wrapper_->CreateVideoSource(std::move(videoCapturer));
+    if (!videoSource) {
+        CANGJIE_THROW("Create VideoSource fail");
+    }
 
-    return 0;
+    return (int64_t)FFIVideoSource::NewInstance(videoSource);
 }
 
-int64_t ffiPeerConnectionFactory::ffiCreateVideoTrack(std::string ffi_videoId_str)
+
+int64_t ffiPeerConnectionFactory::ffiCreateVideoTrack(std::string ffi_videoId_str, FFIVideoSource* ffiVideoSource)
 {
     copyVauleCreateVideoTrack(ffi_videoId_str);
-    videoTrack_ = wrapper_->CreateVideoTrack(videoId_, videoSource_);
+    auto videoTrack = wrapper_->CreateVideoTrack(videoId_, ffiVideoSource->Get());
 
-    ffiVideoMST_ = new ffiMediaStreamTrack(wrapper_, videoTrack_);
-    return reinterpret_cast<int64_t>(ffiVideoMST_);
+    auto ffiVideoMST = new ffiMediaStreamTrack(wrapper_, videoTrack);
+    return reinterpret_cast<int64_t>(ffiVideoMST);
 }
 
 bool ffiPeerConnectionFactory::StartAecDump(int fd, int max_size_bytes)
@@ -238,12 +221,12 @@ bool ffiValidateAndCopyConstraint(CHAR_PTR ffiCreateVideoSourceChar,
     return true;
 }
 
-void ffiValidateAndCopyConstraint(double ffiCreateVideoSourceDouble,
+void ffiValidateAndCopyConstraint(int32_t ffiCreateVideoSourceLong,
     NakedValueDisposition nakedTreatment,
     LongConstraint& constraint)
 {
-    if (ffiCreateVideoSourceDouble != 0.0 && NapiMediaConstraints::IsConstraintSupported(constraint.GetName())) {
-        ffiCopyLongConstraint(ffiCreateVideoSourceDouble, nakedTreatment, constraint);
+    if (ffiCreateVideoSourceLong != 0 && NapiMediaConstraints::IsConstraintSupported(constraint.GetName())) {
+        ffiCopyLongConstraint(ffiCreateVideoSourceLong, nakedTreatment, constraint);
     }
 }
 
@@ -256,7 +239,7 @@ void ffiValidateAndCopyConstraint(double ffiCreateVideoSourceDouble,
     }
 }
 
-void ffiCopyLongConstraint(double value, NakedValueDisposition nakedTreatment, LongConstraint& constraint)
+void ffiCopyLongConstraint(int32_t value, NakedValueDisposition nakedTreatment, LongConstraint& constraint)
 {
     switch (nakedTreatment) {
         case NakedValueDisposition::kTreatAsIdeal:
@@ -439,6 +422,45 @@ bool ffiValidateAndCopyConstraintSet(const CJ_TO_CPP_DisplayMediaStreamOptions c
     }
 
     return true;
+}
+
+MediaTrackConstraints cjParseTrackConstraints(
+    CJ_TO_CPP_DisplayMediaStreamOptions cjTrackConstraints, 
+    std::string& errorMessage)
+{
+    MediaTrackConstraintSet basic;
+    if (!ffiValidateAndCopyConstraintSet(cjTrackConstraints, NakedValueDisposition::kTreatAsIdeal, basic, errorMessage)) {
+        RTC_LOG(LS_ERROR) << "Failed to parse track constraints: " << errorMessage;
+        return MediaTrackConstraints();
+    }
+
+    std::vector<MediaTrackConstraintSet> advanced;
+    MediaTrackConstraints constraints;
+    constraints.Initialize(basic, advanced);
+
+    return constraints;
+}
+
+void CJToNative(CJ_TO_CPP_DisplayMediaStreamOptions cjTrackConstraints,
+    MediaTrackConstraints& nativeTrackConstraints)
+{
+    if (cjTrackConstraints.isBool) {
+        if (cjTrackConstraints.boolean) {
+            MediaTrackConstraints constraints;
+            constraints.Initialize();
+            nativeTrackConstraints = constraints;
+        } else {
+            nativeTrackConstraints = MediaTrackConstraints();
+        }
+    } else {
+        std::string errorMessage;
+        auto constraints = cjParseTrackConstraints(cjTrackConstraints, errorMessage);
+        if (constraints.IsNull()) {
+            CANGJIE_THROW(errorMessage);
+        }
+        nativeTrackConstraints = constraints;
+        return;
+    }
 }
 
 }

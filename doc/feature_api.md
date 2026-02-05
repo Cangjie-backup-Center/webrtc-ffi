@@ -8,17 +8,6 @@
 
 public class VideoRenderController <: XComponentController {
     /*
-     * 构造函数, 创建新的VideoRenderController
-     */
-    public init()
-
-    /*
-     * 创建视频渲染器
-     * 返回值 Unit - Unit
-     */
-    public func newNativeVideoRenderer(): Unit
-
-    /*
      * 设置视频轨
      * 
      * 参数 VideoTrack - 传入ID赋值成功的VideoTrack类
@@ -46,16 +35,7 @@ public class VideoRenderController <: XComponentController {
     
 ```
 
-### 1.2 webrtc 提供 FFIAudioOptions
-```cangjie
-struct FFIAudioOptions{
-    var echo_cancellation : Bool = false   // 表示媒体轨道是否支持回声消除约束条件
-    var noise_suppression : Bool = false   // 表示媒体轨道是否支持噪音抑制约束条件
-}
-
-```
-
-### 1.3  webrtc 提供 FFIScalingModeEnum
+### 1.2  webrtc 提供 FFIScalingModeEnum
 
 ``` cangjie
 /*
@@ -67,7 +47,7 @@ public enum FFIScalingModeEnum {
 }
 ```
 
-### 1.4 webrtc 提供 CJ_MediaTrackConstraintSet和CJ_TO_CPP_DisplayMediaStreamOptions
+### 1.3 webrtc 提供 CJ_MediaTrackConstraintSet和CJ_TO_CPP_DisplayMediaStreamOptions
 
 ```cangjie
 // 该结构体中保存有桌面共享时video的各项参数，结构体不单独使用而是搭配CJ_TO_CPP_DisplayMediaStreamOptions使用
@@ -121,29 +101,6 @@ public struct CJ_MediaTrackConstraintSet{
 }
 ```
 
-```cangjie
-
-public struct CJ_TO_CPP_DisplayMediaStreamOptions {
-	/*
-	* 传入CJ_MediaTrackConstraintSet创建CJ_TO_CPP_DisplayMediaStreamOptions实例
-    *
-    * 参数 - CJ_MediaTrackConstraintSet // 详见struct CJ_MediaTrackConstraintSet
-    * 返回值 - CJ_TO_CPP_DisplayMediaStreamOptions实例
-    */
-    public init(mtc: CJ_MediaTrackConstraintSet) 
-    
-    /*
-    * 自定义布尔值创建CJ_TO_CPP_DisplayMediaStreamOptions实例
-    *
-    * 参数 - boolean // 自定义布尔值参数 
-    * 返回值 - CJ_TO_CPP_DisplayMediaStreamOptions实例
-    */
-    public init(boolean: Bool) 
-    
-    public init() 
-}
-```
-
 ### 1.5 webrtc 提供重要功能类
 
 ```cangjie
@@ -155,21 +112,131 @@ public struct CJ_TO_CPP_DisplayMediaStreamOptions {
     	/*
          * 创建音频设备模块
          *
-         * 参数 useStereoInput - 是否使用立体声输入
-         * 参数 useStereoOutput - 是否使用立体声输出
+         * 参数 admOption - admOptions包含音频构建的初始化参数
          * 返回值 - AudioDeviceModule实例
          */
-    	public init(useStereoInput: Bool, useStereoOutput: Bool)
+    	public init(admOption: admOptions)
 	}
+	
+	/*
+     * 构建音频设备管理模块初始化参数
+     *
+     */
+	public struct admOptions {
+		/*
+		* 参数 input - 音频输入参数
+		* 参数 output - 音频输出参数
+		* 参数 audioSampleFormat - 音频采样格式
+		* 参数 useStereoInput - 是否使用立体声输入，默认为false，即单声道
+		* 参数 useStereoOutput - 是否使用立体声输出，默认为false，即单声道
+		*/
+
+        public init(
+            input!: inputOptions = inputOptions(),
+            output!: outputOptions = outputOptions(),
+            audioSampleFormat!: AudioSampleFormat = AudioSampleFormat.SAMPLE_FORMAT_S16LE,
+            useStereoInput!: Bool = false,
+            useStereoOutput!: Bool = false
+        )
+	}
+
+	/*
+     * 构建音频设备管理模块初始化音频输入参数
+     *
+     */
+	public struct inputOptions {
+	/*
+	* 参数 Source - 音频输入参数，参见ohos.multimedia.audio.cj.SourceType，默认为 SOURCE_TYPE_VOICE_COMMUNICATION
+	* 参数 SampleRate - 音频输入格式
+    * 参数 UseLowLatency - 控制是否使用低延迟输入输出，默认为 false
+    */
+	
+    public var Source : SourceType
+    public var SampleRate : Int32
+    public var UseLowLatency : Bool
+    public init(Source!: SourceType = SourceType.SOURCE_TYPE_VOICE_COMMUNICATION,
+        SampleRate!: Int32 = 48000,
+        UseLowLatency!: Bool = false
+        ) {
+    	this.Source = Source
+        this.SampleRate = SampleRate
+        this.UseLowLatency = UseLowLatency
+    	}
+	}
+	
+	/*
+     * 构建音频设备管理模块初始化音频输出参数
+     *
+     */
+     public struct outputOptions {
+     /*
+	* 参数 Usage - 音频输出参数，参见ohos.multimedia.audio.cj.StreamUsage, 默认为 STREAM_USAGE_VOICE_COMMUNICATION
+	* 参数 SampleRate - 音频输出格式
+    * 参数 UseLowLatency - 控制是否使用低延迟输入输出，默认为 false
+    */
+    
+    public init(Usage!: StreamUsage = StreamUsage.STREAM_USAGE_VOICE_COMMUNICATION,
+            SampleRate!: Int32 = 48000,
+            UseLowLatency!: Bool = false
+            ) {
+            this.Usage = Usage
+            this.SampleRate = SampleRate
+            this.UseLowLatency = UseLowLatency
+        }
+    }
 
     public class PeerConnectionFactory <: WebrtcClass {
     	/*
          * 创建对等连接工厂
          *
          * 参数 AudioDeviceModule - 传入AudioDeviceModule的初始化(硬件视频编码器工厂id)
+         * 参数 videoMode - 选择使用硬解/软解
          * 返回值 - PeerConnectionFactory实例
          */
-        public init(adm: AudioDeviceModule) 
+        public init(adm: AudioDeviceModule, videoMode: VideoEncoderAndDecoderMode) 
+        
+        /*
+         * 创建连接管理实例
+         *
+         * 参数 config - RTCConfiguration类
+         * 返回值 - RTCPeerConnection实例
+         */
+        public func createPeerConnection(config: RTCConfiguration): RTCPeerConnection
+
+		/*
+         * 创建音频源
+         *
+         * 参数 audioOptions - CJ_MediaTrackConstraintSet只需要修改echoCancellation、autoGainControl、noiseSuppression以控制音频
+         * 返回值 - AudioSource实例
+         */
+    	public func createAudioSource(audioOptions: CJ_MediaTrackConstraintSet): AudioSource 
+    
+    	/*
+         * 创建音频轨
+         *
+         * 参数 id - 实例标签
+         * 参数 source - AudioSource
+         * 返回值 - AudioTrack实例
+         */
+    	public func createAudioTrack(id: String, source: AudioSource): AudioTrack
+    
+    	/*
+         * 创建音频源
+         *
+         * 参数 ffiCVSP - CJ_MediaTrackConstraintSet类
+         * 参数 isScreen - 屏幕捕获器是否开启
+         * 返回值 - VideoSource实例
+         */
+    	public func createVideoSource(ffiCVSP: CJ_MediaTrackConstraintSet, isScreen: Bool): VideoSource
+    	
+    	/*
+         * 创建音频轨
+         *
+         * 参数 id - 实例标签
+         * 参数 source - 音频源
+         * 返回值 - VideoTrack实例
+         */
+    	public func createVideoTrack(id: String, source: VideoSource): VideoTrack
 	}
      
      /*
@@ -181,9 +248,9 @@ public struct CJ_TO_CPP_DisplayMediaStreamOptions {
          * 创建音频源
          *
          * 参数 pcf - 传入连接工厂
-         * 参数 options - 音频配置选项
+         * 参数 audioOptions - 音频配置选项
          */
-    	 public init(pcf: PeerConnectionFactory, options: FFIAudioOptions)
+    	 public init(pcf: PeerConnectionFactory, audioOptions: CJ_MediaTrackConstraintSet)
      }
      
     /*
@@ -195,13 +262,13 @@ public struct CJ_TO_CPP_DisplayMediaStreamOptions {
          * 创建音轨
          *
          * 参数 pcf - 传入连接工厂
-         * 参数 tag - 音轨标签(自定)
+         * 参数 tag - 音轨标签
+         * 参数 ffiVideoSource - 音频源
          * 返回值 - AudioTrack实例
          */
-        public init(pcf: PeerConnectionFactory, tag: String) 
-       
+        public init(pcf: PeerConnectionFactory, tag: String, ffiVideoSource: VideoSource) 
 	}
-            
+	
     /*
      * 视频源管理类
      *
@@ -412,3 +479,4 @@ public struct CJ_TO_CPP_DisplayMediaStreamOptions {
 
 
 
+ 

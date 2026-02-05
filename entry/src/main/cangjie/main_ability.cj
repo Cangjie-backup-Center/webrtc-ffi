@@ -29,6 +29,8 @@ class MainAbility <: UIAbility {
 
     public override func onWindowStageCreate(windowStage: WindowStage): Unit {
         AppLog.info("MainAbility onWindowStageCreate.")
+        let win = windowStage.getMainWindow()
+        win.setWindowKeepScreenOn(true)
         windowStage.loadContent("EntryView")
     }
 }

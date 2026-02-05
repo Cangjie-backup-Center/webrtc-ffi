@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 #ifndef WEBRTC4CJ_FFI_PEER_CONNECTION_H
 #define WEBRTC4CJ_FFI_PEER_CONNECTION_H
 
@@ -31,10 +27,6 @@ public:
     
     ~ffiPeerConnection()
     {
-        if (sender_) {
-            delete sender_;
-            sender_ = nullptr;
-        }
     }
 // readonly
     bool GetCanTrickleIceCandidates();
@@ -75,6 +67,7 @@ public:
     void close();
     void setAudioRecording(bool recording);
     void setAudioPlayout(bool playout);
+    void deleteCJ_RTCTrackEvent();
 
     static int64_t GenerateCertificate(std::string keyname);
     static rtc::scoped_refptr<rtc::RTCCertificate> certificate_;
@@ -120,9 +113,8 @@ protected:
 private:
     std::shared_ptr<PeerConnectionFactoryWrapper> factory_;
     rtc::scoped_refptr<PeerConnectionInterface> pc_;
-    ffiRtpSender* sender_ = nullptr;
-    ffiSctpTransport* sctpTransportRef_ = nullptr;
-
+//    ffiRtpSender* sender_ = nullptr;
+//    ffiSctpTransport* sctpTransportRef_ = nullptr;
     void (*cj_func_call_OnIceCandidateError_)(int64_t id, CJ_RTCPeerConnectionIceErrorEvent ptr) = nullptr;
     void (*cj_func_call_OnTrack_)(int64_t id, CJ_RTCTrackEvent ptr) = nullptr;
     void (*cj_func_call_OnSignalingChange_)(int64_t id, CJ_Event ptr) = nullptr;

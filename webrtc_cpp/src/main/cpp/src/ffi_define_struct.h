@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 #ifndef WEBRTC4CJ_FFI_DEFINE_STRUCT_H
 #define WEBRTC4CJ_FFI_DEFINE_STRUCT_H
 
@@ -65,18 +61,19 @@ enum class FFIScreenCaptureMode { HOME_SCREEN, SPECIFIED_SCREEN, SPECIFIED_WINDO
 enum class FFIScreenCaptureAudioFilterEnum { CURRENT_APP, NOTIFICATION };
 
 typedef struct {
+    int32_t inputOptionsSource;
+    int32_t inputOptionsSampleRate;
+    bool inputOptionsUseLowLatency;
+    int32_t outputOptionsSampleRate;
+    int32_t outputOptionsUsage;
+    bool outputOptionsUseLowLatency;
+    bool useStereoInput;
+    bool useStereoOutput;
+    int32_t audioFormat;
     bool echo_cancellation;
-    // bool auto_gain_control;
     bool noise_suppression;
-    // bool highpass_filter;
-    // bool stereo_swapping;
-    // int32_t audio_jitter_buffer_max_packets;
-    // bool audio_jitter_buffer_fast_accelerate;
-    // int audio_jitter_buffer_min_delay_ms;
-    // bool audio_network_adaptor;
-    // std::string audio_network_adaptor_config;
-    // bool init_recording_on_send;
-}FFIAudioOptions;
+    int32_t audioSampleFormat;
+}CJ_AudioDeviceModuleOptions;
 
 typedef struct {
     double width;
@@ -86,23 +83,23 @@ typedef struct {
 }FFICreateVideoSourceParameters;
 
 typedef struct {
-    double width;
-    double height;
+    int32_t width;
+    int32_t height;
     double aspectRatio;
     double frameRate;
     CHAR_PTR facingMode;
     CHAR_PTR resizeMode;
-    double sampleRate;
-    double sampleSize;
+    int32_t sampleRate;
+    int32_t sampleSize;
     bool echoCancellation;
     bool autoGainControl;
     bool noiseSuppression;
     double latency;
-    double channelCount;
+    int32_t channelCount;
     CHAR_PTR deviceId;
     CHAR_PTR groupId;
     CHAR_PTR ohosScreenCaptureMode;
-    double ohosScreenCaptureDisplayId;
+    int32_t ohosScreenCaptureDisplayId;
     CHAR_PTR ohosScreenCaptureMissionId;
     CHAR_PTR ohosScreenCaptureWindowFilter;
     CHAR_PTR ohosScreenCaptureAudioFilter;
@@ -188,9 +185,9 @@ typedef struct {
 
 typedef struct {
     CHAR_PTR sdp;
-    int64_t sdp_size;
+    uint64_t sdp_size;
     CHAR_PTR RTCSdpType;
-    int64_t RTCSdpType_size;
+    uint64_t RTCSdpType_size;
     bool undefined = true; // 如果 true , 其他值就无效了
 } CJ_RTCSessionDescription;
 
@@ -218,7 +215,7 @@ typedef struct {
 } CJ_MediaStreamTrack;
 
 typedef struct {
-    const CHAR_PTR type;
+    CHAR_PTR type;
     int64_t *streams;
     int64_t streams_size;
     int64_t MediaStreamTrack_ptr; // CJ_MediaStreamTrack

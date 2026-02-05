@@ -1,6 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
 package webrtc_cj
 import ohos.base.throwNativeError
 
@@ -135,11 +132,6 @@ public class RTCIceCandidate <: Serializable<RTCIceCandidate> {
         this.usernameFragment = usernameFragment
     }
 
-//    @OverflowWrapping
-//    public func toJson(): RTCIceCandidateInit {
-//        return RTCIceCandidateInit(true, candidate, Int32(sdpMLineIndex), sdpMid, usernameFragment)
-//    }
-
      /* 实现 Serializable 接口的序列化方法 */
     public func serialize(): DataModel {
         return DataModelStruct().add(field<String>("candidate", candidate))
@@ -160,7 +152,7 @@ public class RTCIceCandidate <: Serializable<RTCIceCandidate> {
 
     public func toRTCIceCandidateInit(): RTCIceCandidateInit {
         //     public init(isBuild: Bool, candidate: String, sdpMLineIndex: Int32, sdpMid: String, usernameFragment: String) {
-        return RTCIceCandidateInit(true, this.candidate, Int32(this.sdpMLineIndex), this.sdpMid, this.usernameFragment)
+        return RTCIceCandidateInit(this.candidate, Int32(this.sdpMLineIndex), this.sdpMid, this.usernameFragment)
     }
 
     /* 实现反序列化方法 */
@@ -222,7 +214,7 @@ public struct CJ_MediaStreamTrack {
 }
 
 @C
-struct CJ_RTCTrackEvent {
+public struct CJ_RTCTrackEvent {
     let TYPE: CString = unsafe {zeroValue<CString>()}
     let streams: CPointer<Int64> = unsafe {zeroValue<CPointer<Int64>>()}
     let streams_size: Int64 = -1
@@ -239,7 +231,6 @@ public class RTCTrackEvent {
     public let transceiver: RtpTransceiver
 
     public RTCTrackEvent(TYPE: String,  streams: Array<Int64>, mediaStreamTrack_ptr: Int64, RtpReceiver_ptr: Int64, RtpTransceiver_ptr: Int64) {
-        var tmpMST: CJ_MediaStreamTrack
         this.TYPE = TYPE
         this.streams = streams
         this.track = VideoTrack(mediaStreamTrack_ptr)

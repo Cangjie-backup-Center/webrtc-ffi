@@ -1,10 +1,7 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
- */
-
 #ifndef WEBRTC_FFI_PEER_CONNECTION_FACTORY_H_
 #define WEBRTC_FFI_PEER_CONNECTION_FACTORY_H_
 
+#include <cstdint>
 #include <memory>
 
 #include "audio_device/ohos_audio_device_module.h"
@@ -16,6 +13,8 @@
 #include "ffi_media_stream_track.h"
 #include "user_media/media_constraints.h"
 #include "media_track_constraints.h"
+#include "user_media/media_constraints.h"
+#include "user_media/media_constraints_util.h"
 
 #include "api/peer_connection_interface.h"
 #include "rtc_base/socket_server.h"
@@ -36,22 +35,23 @@ enum class NakedValueDisposition {
 class ffiPeerConnectionFactory {
 public:
     ffiPeerConnectionFactory(ffiAudioDeviceModule* ffiADM,
-                        ffiVideoEncoderFactory* ffiHVEF,
-                        ffiVideoDecoderFactory* ffiHVDF);
+                        ffiHardwareVideoEncoderFactory* ffiHVEF,
+                        ffiHardwareVideoDecoderFactory* ffiHVDF);
+
+    ffiPeerConnectionFactory(ffiAudioDeviceModule* ffiADM,
+                        ffiSoftwareVideoEncoderFactory* ffiSVEF,
+                        ffiSoftwareVideoDecoderFactory* ffiSVDF);
+
     ~ffiPeerConnectionFactory();
 
-    void copyVauleCreateAudioSource(FFIAudioOptions ffi_audioOptions);
     void copyVauleCreateAudioTrack(std::string ffi_id);
     void copyVauleCreateVideoTrack(std::string ffi_videoId);
 
-    rtc::scoped_refptr<OhosVideoTrackSource> getVideoSource();
-    rtc::scoped_refptr<VideoTrackInterface> getVideoTrack();
-
     int64_t ffiCreatePeerConnection(CJ_RTCConfiguration config);
-    int64_t ffiCreateAudioSource(FFIAudioOptions ffi_audioOptions);
-    int64_t ffiCreateAudioTrack(std::string ffi_audioId_str);
+    int64_t ffiCreateAudioSource(CJ_TO_CPP_DisplayMediaStreamOptions ffi_audioOptions);
+    int64_t ffiCreateAudioTrack(std::string ffi_audioId_str, FFIAudioSource* ffiAudioSource);
     int64_t ffiCreateVideoSource(CJ_TO_CPP_DisplayMediaStreamOptions ffi_videoSource, bool isScreencast);
-    int64_t ffiCreateVideoTrack(std::string ffi_videoId_str);
+    int64_t ffiCreateVideoTrack(std::string ffi_videoId_str, FFIVideoSource* ffiVideoSource);
 
     std::shared_ptr<PeerConnectionFactoryWrapper> GetWrapper() const
     {
@@ -62,14 +62,6 @@ public:
     bool StartAecDump(int fd, int max_size_bytes);
     void StopAecDump();
 
-    rtc::scoped_refptr<OhosLocalAudioSource>* audioSourcePtr_ = nullptr;
-    rtc::scoped_refptr<AudioTrackInterface>* audioTrackPtr_ = nullptr;
-    rtc::scoped_refptr<OhosVideoTrackSource>* videoSourcePtr_ = nullptr;
-    rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> pcFactory_;
-
-    ffiPeerConnection* ffipc_ = nullptr;
-    ffiMediaStreamTrack* ffiVideoMST_ = nullptr;
-    ffiMediaStreamTrack* ffiAudioMST_ = nullptr;
 
     std::shared_ptr<PeerConnectionFactoryWrapper> GetPeerConnectionFactoryWrapper () const
     {
@@ -78,15 +70,9 @@ public:
 
 private:
     std::shared_ptr<PeerConnectionFactoryWrapper> wrapper_;
-    rtc::scoped_refptr<OhosLocalAudioSource> audioSource_;
-    rtc::scoped_refptr<OhosVideoTrackSource> videoSource_;
-
-    rtc::scoped_refptr<VideoTrackInterface> videoTrack_;
-    rtc::scoped_refptr<AudioTrackInterface> audioTrack_;
 
     std::string audioId_;
     std::string videoId_;
-    FFIAudioOptions audioOptions_;
 
     PeerConnectionFactoryInterface* GetFactory() const
     {
@@ -105,14 +91,14 @@ bool ffiValidateAndCopyConstraint(CHAR_PTR ffiCreateVideoSourceChar,
     NakedValueDisposition nakedTreatment,
     StringConstraint& constraint,
     std::string& errorMessage);
-void ffiValidateAndCopyConstraint(double ffiCreateVideoSourceDouble,
+void ffiValidateAndCopyConstraint(int32_t ffiCreateVideoSourceLong,
     NakedValueDisposition nakedTreatment,
     LongConstraint& constraint);
 void ffiValidateAndCopyConstraint(double ffiCreateVideoSourceDouble,
     NakedValueDisposition nakedTreatment,
     DoubleConstraint& constraint);
 
-void ffiCopyLongConstraint(double value, NakedValueDisposition nakedTreatment, LongConstraint& constraint);
+void ffiCopyLongConstraint(int32_t value, NakedValueDisposition nakedTreatment, LongConstraint& constraint);
 void ffiCopyDoubleConstraint(double value, NakedValueDisposition nakedTreatment, DoubleConstraint& constraint);
 
 bool ffiValidateAndCopyStringConstraint(CHAR_PTR ffiCreateVideoSourceChar,
@@ -138,6 +124,14 @@ void ffiValidateAndCopyBooleanConstraint(bool ffiCreateVideoSourceBool,
     NakedValueDisposition nakedTreatment,
     BooleanConstraint& constraint);
 
+MediaTrackConstraints cjParseTrackConstraints(
+    CJ_TO_CPP_DisplayMediaStreamOptions cjTrackConstraints, 
+    std::string& errorMessage);
+
+void CJToNative(CJ_TO_CPP_DisplayMediaStreamOptions cjTrackConstraints,
+    MediaTrackConstraints& nativeTrackConstraints);
 }
+
+
 
 #endif // WEBRTC_FFI_PEER_CONNECTION_FACTORY_H_

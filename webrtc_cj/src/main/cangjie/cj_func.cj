@@ -9,12 +9,6 @@ import std.sync.*
 import std.ast.Expr
 
 @C
-public struct FFIAudioOptions{
-    public var echo_cancellation: Bool = false
-    public var noise_suppression: Bool = false
-}
-
-@C
 struct FFICreateVideoSourceParameters{
     public var width: Float64
     public var height: Float64
@@ -37,9 +31,6 @@ sealed abstract class WebrtcClass {
     }
 
     protected init(id: Int64, that: WebrtcClass) {
-        if (WebRtcGlobal.OBJECT_POOL.contains(id)) {
-            throw Webrtc4cjFFIException("The Cangjie mapping object of C++objects does not allow the creation of secondary objects.")
-        }
         this.ID = id
         WebRtcGlobal.map.add(this.randomid, that)
         WebRtcGlobal.OBJECT_POOL.add(id, that)
@@ -65,18 +56,31 @@ sealed abstract class WebrtcClass {
 }
 
 public class AudioDeviceModule <: WebrtcClass {
-    public init(useStereoInput: Bool, useStereoOutput: Bool) {
-        super(unsafe {ffi_newAudioDeviceModule(useStereoInput, useStereoOutput)}, this)
+    public init(admOption: admOptions) {
+        super(unsafe {ffi_newAudioDeviceModule(CJ_AudioDeviceModuleOptions(
+            inputOptionsSource: ffiSourceType.GET(admOption.input.Source),
+            inputOptionsSampleRate: admOption.input.SampleRate,
+            inputOptionsUseLowLatency: admOption.input.UseLowLatency,
+            outputOptionsUsage: ffiStreamUsage.GET(admOption.output.Usage),
+            outputOptionsSampleRate: admOption.output.SampleRate,
+            outputOptionsUseLowLatency: admOption.output.UseLowLatency,
+            useStereoInput: admOption.useStereoInput,
+            useStereoOutput: admOption.useStereoOutput,
+            audioSampleFormat: ffiAudioSampleFormat.GET(admOption.audioSampleFormat)
+        ))}, this)
     }
 }
 
 public class PeerConnectionFactory <: WebrtcClass {
-    public init(adm: AudioDeviceModule) {
-        super(unsafe {ffi_newPeerConnectionFactory(adm.ID, ffi_newHardwareVideoEncoderFactory() , ffi_newHardwareVideoDecoderFactory())}, this)
+    public init(adm: AudioDeviceModule, videoMode: VideoEncoderAndDecoderMode) {
+        super(unsafe {
+            if (VideoEncoderAndDecoderMode.GET(videoMode)) {
+                ffi_newHardwarePeerConnectionFactory(adm.ID, ffi_newHardwareVideoEncoderFactory(), ffi_newHardwareVideoDecoderFactory())
+            } else {
+                ffi_newSoftwarePeerConnectionFactory(adm.ID, ffi_newSoftwareVideoEncoderFactory(), ffi_newSoftwareVideoDecoderFactory())
+            }
+        }, this)
     }
-//    public func createPeerConnectionFactoryID(adm: AudioDeviceModule) {
-//        this.ID = cj_newPeerConnectionFactory(adm.ID, cj_newHardwareVideoEncoderFactory() , cj_newHardwareVideoDecoderFactory())
-//    }
 
     public func createPeerConnection(config: RTCConfiguration): RTCPeerConnection {
         unsafe {
@@ -84,7 +88,7 @@ public class PeerConnectionFactory <: WebrtcClass {
         }
     }
 
-    public func SetDefault(){
+    public func SetDefault(): Unit{
         unsafe {
             ffi_SetDefault(this.ID)
         }
@@ -94,22 +98,37 @@ public class PeerConnectionFactory <: WebrtcClass {
         return unsafe {ffi_StartAecDump(this.getID(), fd, max_size_bytes)}
     }
 
-    public func stopAecDump() {
+    public func stopAecDump(): Unit{
         unsafe {
             ffi_StopAecDump(this.getID())
         }
     }
+
+    public func createAudioSource(audioOptions: CJ_MediaTrackConstraintSet): AudioSource {
+        return AudioSource(this, audioOptions)
+    }
+    public func createAudioTrack(id: String, source: AudioSource): AudioTrack {
+        return AudioTrack(this, id, source)
+    }
+    public func createVideoSource(ffiCVSP: CJ_MediaTrackConstraintSet, isScreen: Bool): VideoSource {
+        return VideoSource(this, ffiCVSP, isScreen)
+    }
+    public func createVideoTrack(id: String, source: VideoSource): VideoTrack {
+        return VideoTrack(this, id, source)
+    }
+
+
 }
 
 public class AudioSource <: WebrtcClass {
-    public init(pcf: PeerConnectionFactory, options: FFIAudioOptions) {
-        super(unsafe {ffi_createAudioSource(pcf.ID, options)}, this)
+    init(pcf: PeerConnectionFactory, audioOptions: CJ_MediaTrackConstraintSet) {
+        super(unsafe {ffi_createAudioSource(pcf.ID, CJ_TO_CPP_DisplayMediaStreamOptions(audioOptions))}, this)
     }
 }
 
 public class VideoTrack <: MediaStreamTrack {
-    public init(pcf: PeerConnectionFactory, tag: String) {
-        super( unsafe {ffi_createVideoTrack(pcf.ID,LibC.mallocCString(tag))}, this)
+    public init(pcf: PeerConnectionFactory, tag: String, ffiVideoSource: VideoSource) {
+        super( unsafe {ffi_createVideoTrack(pcf.ID, LibC.mallocCString(tag), ffiVideoSource.ID)}, this)
     }
 
     public init(ffiMST: CJ_MediaStreamTrack) {
@@ -119,17 +138,20 @@ public class VideoTrack <: MediaStreamTrack {
     public init(id: Int64) {
         super(id, this)
     }
+    ~init(){
+        DelObject(this.ID)
+    }
 }
 
 public class AudioTrack <: MediaStreamTrack {
-    public init(pcf: PeerConnectionFactory, tag: String) {
-        super(unsafe {ffi_createAudioTrack(pcf.ID, LibC.mallocCString(tag))}, this)
+    public init(pcf: PeerConnectionFactory, tag: String, source: AudioSource) {
+        super(unsafe {ffi_createAudioTrack(pcf.ID, LibC.mallocCString(tag), source.ID)}, this)
     }
 
 }
 
 public class VideoSource <: WebrtcClass {
-    public init(pcf: PeerConnectionFactory, ffiCVSP: CJ_MediaTrackConstraintSet, isScreen: Bool) {
+    init(pcf: PeerConnectionFactory, ffiCVSP: CJ_MediaTrackConstraintSet, isScreen: Bool) {
         super(unsafe{ffi_createVideoSource(pcf.ID, CJ_TO_CPP_DisplayMediaStreamOptions(ffiCVSP), isScreen)}, this)
     }
 }
@@ -173,11 +195,17 @@ public class RtpReceiver <: WebrtcClass {
     public init(id: Int64) {
         super(id, this)
     }
+    ~init(){
+        DelObject(this.ID)
+    }
 }
 
 public class RtpTransceiver <: WebrtcClass {
     public init(id: Int64) {
         super(id, this)
+    }
+    ~init(){
+        DelObject(this.ID)
     }
 }
 
@@ -188,6 +216,9 @@ public class MediaStream <: WebrtcClass {
 
     public init() {
         super(this)
+    }
+    ~init(){
+        DelObject(this.ID)
     }
 
     public func getTracks(): Array<MediaStreamTrack> {
@@ -242,10 +273,6 @@ public class MediaDevices <: WebrtcClass {
         var captureohosSystemAudio: CJ_TO_CPP_DisplayMediaStreamOptions = CJ_TO_CPP_DisplayMediaStreamOptions(systemAudio)
 
         unsafe {
-            let ret = ffi_webrtc_mediaDevices_enumerateDevices(this.ID);
-        }
-
-        unsafe {
              return MediaStream(ffi_webrtc_mediaDevices_getDisplayMedia(this.ID, captureVideo, captureAudio, captureohosSystemAudio))
         }
     }
@@ -253,21 +280,28 @@ public class MediaDevices <: WebrtcClass {
 
 foreign {
     func ffiPeerConnectionFactory_ffiCreatePeerConnection(cpp_ptr: Int64, config: CJ_RTCConfiguration): Int64
-    func ffi_newNativeVideoRenderer(surfaceId: Int64): Int64
+    func ffi_newNativeVideoRenderer(surfaceId: CString): Int64
     func ffi_setVideoTrack(ffiNVR: Int64, surfaceId: Int64): Unit
     func ffi_setMirror(ffiNVR: Int64, mirrorBool: Bool): Unit
     func ffi_setMirrorVertically(ffiNVR: Int64, mirrorVerticallyBool: Bool): Unit
     func ffi_setScalingMode(ffiNVR: Int64 , scalingMode: Int32): Unit
     func ffi_release(ffiNVR: Int64): Unit
 
-    func ffi_newAudioDeviceModule(useStereoInput: Bool, useStereoOutput: Bool): Int64
+    func ffi_newAudioDeviceModule(admOptions: CJ_AudioDeviceModuleOptions): Int64
     func ffi_newHardwareVideoEncoderFactory(): Int64
     func ffi_newHardwareVideoDecoderFactory(): Int64
-    func ffi_newPeerConnectionFactory(ffiADM_int64: Int64, ffiHVEF_int64: Int64 , ffiHVDF_int64: Int64): Int64
-    func ffi_createAudioSource(ffiPCF_int64: Int64, ffiao: FFIAudioOptions): Int64
-    func ffi_createAudioTrack(ffiPCF_int64: Int64, ffi_audioId: CString): Int64
+    func ffi_newSoftwareVideoEncoderFactory(): Int64
+    func ffi_newSoftwareVideoDecoderFactory(): Int64
+
+    // func ffi_newPeerConnectionFactory(ffiADM_int64: Int64, ffiHVEF_int64: Int64 , ffiHVDF_int64: Int64): Int64
+
+    func ffi_newHardwarePeerConnectionFactory(ffiADM_int64: Int64, ffiHVEF_int64: Int64 , ffiHVDF_int64: Int64): Int64
+    func ffi_newSoftwarePeerConnectionFactory(ffiADM_int64: Int64, ffiSVEF_int64: Int64 , ffiSVDF_int64: Int64): Int64
+
+    func ffi_createAudioSource(ffiPCF_int64: Int64, ffiao: CJ_TO_CPP_DisplayMediaStreamOptions): Int64
+    func ffi_createAudioTrack(ffiPCF_int64: Int64, ffi_audioId: CString, ffiAudioSourceId: Int64): Int64
     func ffi_createVideoSource(ffiPCF_int64: Int64, ffiCVSP: CJ_TO_CPP_DisplayMediaStreamOptions, isScreen: Bool): Int64
-    func ffi_createVideoTrack(ffiPCF_int64: Int64, ffi_videoId: CString): Int64
+    func ffi_createVideoTrack(ffiPCF_int64: Int64, ffi_videoId: CString, ffiVideoSourceId: Int64): Int64
     func ffi_SetDefault(ffiPCF_int64: Int64): Unit
     func ffi_StartAecDump(ffiPCF_int64: Int64, fd: Int32, max_size_bytes: Int32): Bool
     func ffi_StopAecDump(ffiPCF_int64: Int64): Unit
@@ -332,4 +366,26 @@ foreign {
     func ffiDtmfSender_GetToneBuffer(cpp_ptr: Int64): CString
     func ffiDtmfSender_InsertDTMF(cpp_ptr: Int64, tones: CString, duration: Int64, interToneGap: Int64): Bool
     func ffiDtmfSender_set_OnToneChange(cpp_ptr: Int64, pe: CFunc<(Int64, CString) -> Unit>): Unit
+
+    func ffi_EnableLogThreads(): Unit
+    func ffi_EnableLogTimeStamps(): Unit
+    func ffi_EnableLogToDebugOutput(LoggingSeverity: Int32): Unit
+}
+
+public func EnableLogThreads(): Unit {
+    unsafe {
+        ffi_EnableLogThreads()
+    }
+}
+
+public func EnableLogTimeStamps(): Unit {
+    unsafe {
+        ffi_EnableLogTimeStamps()
+    }
+}
+
+public func EnableLogToDebugOutput(logging: LoggingSeverity): Unit {
+    unsafe {
+        ffi_EnableLogToDebugOutput(LoggingSeverity.GET(logging))
+    }
 }
